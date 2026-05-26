@@ -139,21 +139,6 @@ export async function scheduleMedicationNotifications() {
     });
   });
 
-  const groupTitleFor = (timeStr: string): string => {
-    const [h] = timeStr.split(':').map(Number);
-    if (!isArabic) {
-      if (h >= 4 && h < 6) return '🌅 Fajr Medications';
-      if (h >= 6 && h < 12) return '☀️ Morning Medications';
-      if (h >= 12 && h < 17) return '🌤️ Afternoon Medications';
-      if (h >= 17 && h < 21) return '🌆 Evening Medications';
-      return '🌙 Night Medications';
-    }
-    if (h >= 4 && h < 6) return '🌅 أدوية الفجر';
-    if (h >= 6 && h < 12) return '☀️ أدوية الصباح';
-    if (h >= 12 && h < 17) return '🌤️ أدوية الظهر';
-    if (h >= 17 && h < 21) return '🌆 أدوية العصر';
-    return '🌙 أدوية المساء';
-  };
 
   const scheduleEntry = (
     id: number,
