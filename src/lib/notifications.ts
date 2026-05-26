@@ -121,45 +121,87 @@ export async function scheduleMedicationNotifications() {
     smallIcon: string;
   }> = [];
 
-  // Schedule individual notifications per medication per time
-  // This avoids grouping issues and ensures each dose gets its own notification
-  medications.forEach((med) => {
-    med.times.forEach((timeStr) => {
-      const [hours, minutes] = timeStr.split(':').map(Number);
-      if (isNaN(hours) || isNaN(minutes)) return;
+  // Split medications into daily (group by time) vs non-daily (per-med notification)
+  const DAILY_FREQS = new Set([
+    'Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every X hours',
+    'once_daily', 'twice_daily', 'three_times_daily', 'four_times_daily', 'every_x_hours', 'daily',
+  ]);
 
-      // Calculate the actual notification time (dose time minus reminder offset)
-      const totalMinutes = hours * 60 + minutes - reminderMinutes;
-      const notifyHour = ((Math.floor(totalMinutes / 60) % 24) + 24) % 24;
-      const notifyMinute = ((totalMinutes % 60) + 60) % 60;
+  const dailyMeds = medications.filter(m => DAILY_FREQS.has(m.frequency));
+  const nonDailyMeds = medications.filter(m => !DAILY_FREQS.has(m.frequency));
 
+  // Group daily meds by their time slot
+  const groups = new Map<string, Medication[]>();
+  dailyMeds.forEach(med => {
+    med.times.forEach(timeStr => {
+      if (!groups.has(timeStr)) groups.set(timeStr, []);
+      groups.get(timeStr)!.push(med);
+    });
+  });
+
+  const groupTitleFor = (timeStr: string): string => {
+    const [h] = timeStr.split(':').map(Number);
+    if (!isArabic) {
+      if (h >= 4 && h < 6) return '🌅 Fajr Medications';
+      if (h >= 6 && h < 12) return '☀️ Morning Medications';
+      if (h >= 12 && h < 17) return '🌤️ Afternoon Medications';
+      if (h >= 17 && h < 21) return '🌆 Evening Medications';
+      return '🌙 Night Medications';
+    }
+    if (h >= 4 && h < 6) return '🌅 أدوية الفجر';
+    if (h >= 6 && h < 12) return '☀️ أدوية الصباح';
+    if (h >= 12 && h < 17) return '🌤️ أدوية الظهر';
+    if (h >= 17 && h < 21) return '🌆 أدوية العصر';
+    return '🌙 أدوية المساء';
+  };
+
+  const scheduleEntry = (
+    id: number,
+    timeStr: string,
+    title: string,
+    body: string,
+    allTaken: boolean,
+  ) => {
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    if (isNaN(hours) || isNaN(minutes)) return;
+    const totalMinutes = hours * 60 + minutes - reminderMinutes;
+    const notifyHour = ((Math.floor(totalMinutes / 60) % 24) + 24) % 24;
+    const notifyMinute = ((totalMinutes % 60) + 60) % 60;
+    scheduledIds.push(id);
+
+    let schedule: any;
+    if (allTaken) {
+      const tomorrow = new Date(now);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      tomorrow.setHours(notifyHour, notifyMinute, 0, 0);
+      schedule = { at: tomorrow, repeats: true, every: 'day', allowWhileIdle: true };
+    } else {
+      schedule = { on: { hour: notifyHour, minute: notifyMinute }, allowWhileIdle: true };
+    }
+    notifications.push({
+      id, title, body, schedule,
+      sound: 'default',
+      smallIcon: 'ic_stat_icon_config_sample',
+    });
+  };
+
+  // Daily grouped notifications (one per time slot)
+  groups.forEach((meds, timeStr) => {
+    const allTaken = meds.every(m => takenToday.has(`${m.id}|${timeStr}`));
+    const title = groupTitleFor(timeStr);
+    const names = meds.map(m => `${m.name} (${m.dosage} ${m.form})`).join(isArabic ? '، ' : ', ');
+    const body = isArabic ? `حان موعد جرعة: ${names}` : `Time to take: ${names}`;
+    const id = stableId('group', timeStr);
+    scheduleEntry(id, timeStr, title, body, allTaken);
+  });
+
+  // Non-daily meds (weekly / biweekly / monthly) — per-med notification
+  nonDailyMeds.forEach(med => {
+    med.times.forEach(timeStr => {
+      const allTaken = takenToday.has(`${med.id}|${timeStr}`);
       const { title, body } = getNotificationBody([med], isArabic);
       const id = stableId(med.id, timeStr);
-      scheduledIds.push(id);
-
-      const alreadyTakenToday = takenToday.has(`${med.id}|${timeStr}`);
-
-      let schedule: any;
-      if (alreadyTakenToday) {
-        // Dose already taken today — schedule next occurrence for TOMORROW
-        // at the same hour:minute, then let it repeat daily from there.
-        const tomorrow = new Date(now);
-        tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(notifyHour, notifyMinute, 0, 0);
-        schedule = { at: tomorrow, repeats: true, every: 'day', allowWhileIdle: true };
-      } else {
-        // Cron-like 'on' schedule: fires once per day at exact hour:minute
-        schedule = { on: { hour: notifyHour, minute: notifyMinute }, allowWhileIdle: true };
-      }
-
-      notifications.push({
-        id,
-        title,
-        body,
-        schedule,
-        sound: 'default',
-        smallIcon: 'ic_stat_icon_config_sample',
-      });
+      scheduleEntry(id, timeStr, title, body, allTaken);
     });
   });
 
