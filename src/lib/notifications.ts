@@ -79,11 +79,18 @@ function stableId(medId: string, timeStr: string): number {
 }
 
 export async function scheduleMedicationNotifications() {
-  // Cancel all previously scheduled notifications
-  if (scheduledIds.length > 0) {
-    await LocalNotifications.cancel({ notifications: scheduledIds.map(id => ({ id })) });
-    scheduledIds = [];
+  // Cancel ALL previously scheduled notifications (including stale ones from previous app versions)
+  try {
+    const pending = await LocalNotifications.getPending();
+    if (pending.notifications && pending.notifications.length > 0) {
+      await LocalNotifications.cancel({
+        notifications: pending.notifications.map(n => ({ id: n.id })),
+      });
+    }
+  } catch (e) {
+    console.warn('[Notifications] Failed to cancel pending notifications', e);
   }
+  scheduledIds = [];
 
   const status = await LocalNotifications.checkPermissions();
   if (status.display !== 'granted') return;
