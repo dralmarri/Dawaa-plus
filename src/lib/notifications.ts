@@ -188,9 +188,22 @@ export async function scheduleMedicationNotifications() {
   // Daily grouped notifications (one per time slot)
   groups.forEach((meds, timeStr) => {
     const allTaken = meds.every(m => takenToday.has(`${m.id}|${timeStr}`));
-    const title = groupTitleFor(timeStr);
-    const names = meds.map(m => `${m.name} (${m.dosage} ${m.form})`).join(isArabic ? '، ' : ', ');
-    const body = isArabic ? `حان موعد جرعة: ${names}` : `Time to take: ${names}`;
+    const [h] = timeStr.split(':').map(Number);
+    let title: string;
+    let body: string;
+    if (isArabic) {
+      if (h >= 4 && h < 6) { title = 'حان الآن موعد جرعة الفجر'; body = 'تذكير: حان وقت أخذ جرعة الفجر'; }
+      else if (h >= 6 && h < 12) { title = 'حان الآن موعد جرعة الصباح'; body = 'تذكير: حان وقت أخذ جرعة الصباح'; }
+      else if (h >= 12 && h < 17) { title = 'حان الآن موعد جرعة الظهر'; body = 'تذكير: حان وقت أخذ جرعة الظهر'; }
+      else if (h >= 17 && h < 21) { title = 'حان الآن موعد جرعة العصر'; body = 'تذكير: حان وقت أخذ جرعة العصر'; }
+      else { title = 'حان الآن موعد جرعة المساء'; body = 'تذكير: حان وقت أخذ جرعة المساء'; }
+    } else {
+      if (h >= 4 && h < 6) { title = 'Fajr Dose Time'; body = 'Reminder: It is time to take your Fajr dose'; }
+      else if (h >= 6 && h < 12) { title = 'Morning Dose Time'; body = 'Reminder: It is time to take your morning dose'; }
+      else if (h >= 12 && h < 17) { title = 'Afternoon Dose Time'; body = 'Reminder: It is time to take your afternoon dose'; }
+      else if (h >= 17 && h < 21) { title = 'Evening Dose Time'; body = 'Reminder: It is time to take your evening dose'; }
+      else { title = 'Night Dose Time'; body = 'Reminder: It is time to take your night dose'; }
+    }
     const id = stableId('group', timeStr);
     scheduleEntry(id, timeStr, title, body, allTaken);
   });
