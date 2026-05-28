@@ -431,10 +431,7 @@ export async function startNotificationLoop() {
  */
 export async function cancelDoseNotification(medicationId: string, timeStr: string) {
   try {
-    const id = stableId(medicationId, timeStr);
-    await LocalNotifications.cancel({ notifications: [{ id }] });
-    // Remove from tracked ids so it gets re-armed on next schedule
-    scheduledIds = scheduledIds.filter(x => x !== id);
+    await scheduleMedicationNotifications();
     console.log(`[Notifications] Canceled dose reminder for ${medicationId} @ ${timeStr}`);
   } catch (e) {
     console.warn('[Notifications] Failed to cancel dose notification', e);
