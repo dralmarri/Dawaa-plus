@@ -208,21 +208,16 @@ export async function scheduleMedicationNotifications() {
     smallIcon: string;
   }> = [];
 
-  // Split medications into daily (group by time) vs non-daily (per-med notification)
-  const DAILY_FREQS = new Set([
-    'Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every X hours',
-    'once_daily', 'twice_daily', 'three_times_daily', 'four_times_daily', 'every_x_hours', 'daily',
-  ]);
-
   const dailyMeds = medications.filter(m => DAILY_FREQS.has(m.frequency));
   const nonDailyMeds = medications.filter(m => !DAILY_FREQS.has(m.frequency));
 
-  // Group daily meds by their time slot
-  const groups = new Map<string, Medication[]>();
+  // Group daily meds into only three dose reminders: Fajr, morning, evening
+  const groups = new Map<'fajr' | 'morning' | 'evening', Array<{ med: Medication; timeStr: string }>>();
   dailyMeds.forEach(med => {
     med.times.forEach(timeStr => {
-      if (!groups.has(timeStr)) groups.set(timeStr, []);
-      groups.get(timeStr)!.push(med);
+      const period = getDosePeriod(timeStr);
+      if (!groups.has(period)) groups.set(period, []);
+      groups.get(period)!.push({ med, timeStr });
     });
   });
 
@@ -257,36 +252,44 @@ export async function scheduleMedicationNotifications() {
     });
   };
 
-  // Daily grouped notifications (one per time slot)
-  groups.forEach((meds, timeStr) => {
-    const allTaken = meds.every(m => takenToday.has(`${m.id}|${timeStr}`));
-    const [h] = timeStr.split(':').map(Number);
-    let title: string;
-    let body: string;
-    if (isArabic) {
-      if (h >= 4 && h < 6) { title = 'حان الآن موعد جرعة الفجر'; body = 'تذكير: حان وقت أخذ جرعة الفجر'; }
-      else if (h >= 6 && h < 12) { title = 'حان الآن موعد جرعة الصباح'; body = 'تذكير: حان وقت أخذ جرعة الصباح'; }
-      else if (h >= 12 && h < 17) { title = 'حان الآن موعد جرعة الظهر'; body = 'تذكير: حان وقت أخذ جرعة الظهر'; }
-      else if (h >= 17 && h < 21) { title = 'حان الآن موعد جرعة العصر'; body = 'تذكير: حان وقت أخذ جرعة العصر'; }
-      else { title = 'حان الآن موعد جرعة المساء'; body = 'تذكير: حان وقت أخذ جرعة المساء'; }
-    } else {
-      if (h >= 4 && h < 6) { title = 'Fajr Dose Time'; body = 'Reminder: It is time to take your Fajr dose'; }
-      else if (h >= 6 && h < 12) { title = 'Morning Dose Time'; body = 'Reminder: It is time to take your morning dose'; }
-      else if (h >= 12 && h < 17) { title = 'Afternoon Dose Time'; body = 'Reminder: It is time to take your afternoon dose'; }
-      else if (h >= 17 && h < 21) { title = 'Evening Dose Time'; body = 'Reminder: It is time to take your evening dose'; }
-      else { title = 'Night Dose Time'; body = 'Reminder: It is time to take your night dose'; }
-    }
-    const id = stableId('group', timeStr);
+  // Daily grouped notifications (maximum three medication reminders total)
+  groups.forEach((items, period) => {
+    const timeStr = items.map(item => item.timeStr).sort(compareTime)[0];
+    const allTaken = items.every(item => takenToday.has(`${item.med.id}|${item.timeStr}`));
+    const { title, body } = getGroupedDoseText(period, isArabic);
+    const id = stableId('daily-group', period);
     scheduleEntry(id, timeStr, title, body, allTaken);
   });
 
-  // Non-daily meds (weekly / biweekly / monthly) — per-med notification
+  // Non-daily meds (weekly / biweekly / monthly) — per-med notification only on their correct date
   nonDailyMeds.forEach(med => {
+    const nextDate = getNextMedicationDate(med, now);
+    if (!nextDate) return;
+
     med.times.forEach(timeStr => {
-      const allTaken = takenToday.has(`${med.id}|${timeStr}`);
+      const isToday = nextDate.toDateString() === now.toDateString();
+      const allTaken = isToday && takenToday.has(`${med.id}|${timeStr}`);
       const { title, body } = getNotificationBody([med], isArabic);
       const id = stableId(med.id, timeStr);
-      scheduleEntry(id, timeStr, title, body, allTaken);
+      if (isToday) {
+        scheduleEntry(id, timeStr, title, body, allTaken);
+      } else {
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        if (isNaN(hours) || isNaN(minutes)) return;
+        const at = new Date(nextDate);
+        const totalMinutes = hours * 60 + minutes - reminderMinutes;
+        at.setHours(Math.floor(totalMinutes / 60), ((totalMinutes % 60) + 60) % 60, 0, 0);
+        if (at.getTime() <= now.getTime()) return;
+        scheduledIds.push(id);
+        notifications.push({
+          id,
+          title,
+          body,
+          schedule: { at, allowWhileIdle: true },
+          sound: 'default',
+          smallIcon: 'ic_stat_icon_config_sample',
+        });
+      }
     });
   });
 
