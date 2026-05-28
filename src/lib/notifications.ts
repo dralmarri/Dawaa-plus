@@ -64,6 +64,86 @@ function getNotificationBody(meds: Medication[], isArabic: boolean): { title: st
   };
 }
 
+const DAILY_FREQS = new Set([
+  'Once daily', 'Twice daily', 'Three times daily', 'Four times daily', 'Every X hours',
+  'once_daily', 'twice_daily', 'three_times_daily', 'four_times_daily', 'every_x_hours', 'daily',
+]);
+
+function getDosePeriod(timeStr: string): 'fajr' | 'morning' | 'evening' {
+  const [hour] = timeStr.split(':').map(Number);
+  if (hour >= 4 && hour < 6) return 'fajr';
+  if (hour >= 6 && hour < 12) return 'morning';
+  return 'evening';
+}
+
+function getGroupedDoseText(period: 'fajr' | 'morning' | 'evening', isArabic: boolean) {
+  if (isArabic) {
+    if (period === 'fajr') return { title: 'حان الآن موعد جرعة الفجر', body: 'تذكير: حان وقت أخذ جرعة الفجر' };
+    if (period === 'morning') return { title: 'حان الآن موعد جرعة الصباح', body: 'تذكير: حان وقت أخذ جرعة الصباح' };
+    return { title: 'حان الآن موعد جرعة المساء', body: 'تذكير: حان وقت أخذ جرعة المساء' };
+  }
+
+  if (period === 'fajr') return { title: 'Fajr Dose Time', body: 'Reminder: It is time to take your Fajr dose' };
+  if (period === 'morning') return { title: 'Morning Dose Time', body: 'Reminder: It is time to take your morning dose' };
+  return { title: 'Evening Dose Time', body: 'Reminder: It is time to take your evening dose' };
+}
+
+function isTemporaryMedicationExpired(med: Medication, date: Date): boolean {
+  if (med.isChronic || !med.durationDays || !med.createdAt) return false;
+  const created = new Date(med.createdAt);
+  created.setHours(0, 0, 0, 0);
+  const end = new Date(created);
+  end.setDate(end.getDate() + med.durationDays);
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+  return target > end;
+}
+
+function isMedicationScheduledOnDate(med: Medication, date: Date): boolean {
+  if (isTemporaryMedicationExpired(med, date)) return false;
+  if (DAILY_FREQS.has(med.frequency)) return true;
+  if (!med.startDate) return false;
+
+  const target = new Date(date);
+  target.setHours(0, 0, 0, 0);
+  const start = new Date(med.startDate);
+  start.setHours(0, 0, 0, 0);
+  if (target < start) return false;
+
+  const diffDays = Math.floor((target.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+  switch (med.frequency) {
+    case 'Every week':
+    case 'weekly':
+      return diffDays % 7 === 0;
+    case 'Every 2 weeks':
+    case 'every_two_weeks':
+      return diffDays % 14 === 0;
+    case 'Every month':
+    case 'monthly':
+      return target.getDate() === start.getDate();
+    default:
+      return true;
+  }
+}
+
+function getNextMedicationDate(med: Medication, from: Date): Date | null {
+  const cursor = new Date(from);
+  cursor.setHours(0, 0, 0, 0);
+
+  for (let i = 0; i <= 370; i++) {
+    if (isMedicationScheduledOnDate(med, cursor)) return new Date(cursor);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return null;
+}
+
+function compareTime(a: string, b: string): number {
+  const [aH = 0, aM = 0] = a.split(':').map(Number);
+  const [bH = 0, bM = 0] = b.split(':').map(Number);
+  return (aH * 60 + aM) - (bH * 60 + bM);
+}
+
 /**
  * Generate a stable numeric ID from medication ID + time string
  */
