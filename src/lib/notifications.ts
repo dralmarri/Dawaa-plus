@@ -387,29 +387,7 @@ export async function scheduleMedicationNotifications() {
     }
   });
 
-  // Daily summary
-  if (settings.dailySummary && medications.length > 0) {
-    const [sumH, sumM] = (settings.dailySummaryTime || '08:00').split(':').map(Number);
-
-    const summaryId = 9998;
-    scheduledIds.push(summaryId);
-
-    const medList = medications.map(m => {
-      const timesStr = m.times.join(isArabic ? '، ' : ', ');
-      return `${m.name} (${timesStr})`;
-    }).join('\n');
-
-    const totalDoses = medications.reduce((sum, m) => sum + m.times.length, 0);
-
-    notifications.push({
-      id: summaryId,
-      title: isArabic ? `📋 ملخص أدوية اليوم (${totalDoses} جرعة)` : `📋 Today's Medications (${totalDoses} doses)`,
-      body: medList,
-      schedule: { on: { hour: sumH, minute: sumM }, allowWhileIdle: true },
-      sound: 'default',
-      smallIcon: 'ic_stat_icon_config_sample',
-    });
-  }
+  // Daily summary notification removed per user request
 
   if (notifications.length > 0) {
     await LocalNotifications.schedule({ notifications });
