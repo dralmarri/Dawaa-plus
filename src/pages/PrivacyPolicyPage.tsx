@@ -52,8 +52,8 @@ const PrivacyPolicyPage = () => {
           <section>
             <h2 className="text-lg font-bold mb-2">{isRTL ? "التواصل معنا" : "Contact Us"}</h2>
             <p>{isRTL
-              ? "إذا كان لديك أي استفسار حول سياسة الخصوصية، يرجى التواصل معنا عبر البريد الإلكتروني: dralmarri@gmail.com"
-              : "If you have any questions about this privacy policy, please contact us at: dralmarri@gmail.com"
+              ? "إذا كان لديك أي استفسار حول سياسة الخصوصية، يرجى التواصل معنا عبر صفحة \"تواصل معنا\" داخل التطبيق."
+              : "If you have any questions about this privacy policy, please reach us via the \"Contact us\" page inside the app."
             }</p>
           </section>
 
