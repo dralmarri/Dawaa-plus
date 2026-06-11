@@ -29,7 +29,7 @@ const MedicationsPage = () => {
 
   return (
     <div className="pb-28">
-      <PageHeader title={t.medications} onAdd={() => navigate("/medications/add")} />
+      <PageHeader title={t.medications} showBack onAdd={() => navigate("/medications/add")} />
 
       {medications.length === 0 ? (
         <EmptyState

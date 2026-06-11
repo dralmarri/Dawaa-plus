@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft } from "lucide-react";
 import { store } from "@/lib/store";
 import ChipSelector from "@/components/ChipSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -124,7 +124,10 @@ const SettingsPage = () => {
 
   return (
     <div className="pb-28">
-      <div className="px-4 pt-6 pb-4">
+      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+        <button onClick={() => navigate(-1)} className="text-foreground" aria-label="back">
+          <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
+        </button>
         <h1 className="text-3xl font-bold text-foreground">{t.settings}</h1>
       </div>
 

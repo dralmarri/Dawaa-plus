@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
-import { CalendarDays, Check, X, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
@@ -9,6 +10,7 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 
 const HistoryPage = () => {
+  const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
 
   // Ensure today's doses are generated
@@ -61,7 +63,10 @@ const HistoryPage = () => {
 
   return (
     <div className="pb-28">
-      <div className="px-4 pt-6 pb-4">
+      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+        <button onClick={() => navigate(-1)} className="text-foreground" aria-label="back">
+          <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
+        </button>
         <h1 className="text-3xl font-bold text-foreground">{t.doseHistory}</h1>
       </div>
 
