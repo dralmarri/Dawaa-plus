@@ -1,5 +1,6 @@
 import { LocalNotifications, PermissionStatus } from '@capacitor/local-notifications';
 import { store } from './store';
+import { speak } from './voice';
 import type { Medication, Appointment } from '@/types';
 
 let scheduledIds: number[] = [];
