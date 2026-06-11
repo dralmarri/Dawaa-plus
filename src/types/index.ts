@@ -25,6 +25,7 @@ export interface BloodPressureReading {
   period: 'Morning' | 'Evening';
   date: string;
   time: string;
+  notes?: string;
 }
 
 export interface Appointment {
