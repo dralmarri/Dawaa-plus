@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MapPin, Navigation, Pill, Hospital, Stethoscope, Loader2, AlertCircle } from "lucide-react";
+import { MapPin, Navigation, Pill, Hospital, Stethoscope, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -164,31 +164,46 @@ const NearbyPlacesPage = () => {
           <p className="text-sm text-muted-foreground mt-1">
             {coords
               ? isRTL
-                ? "افتح خرائط جوجل لعرض النتائج بالقرب منك مع الاتجاهات"
-                : "Open Google Maps to see results near you with directions"
+                ? "الخريطة تظهر داخل التطبيق — لا حاجة للخروج"
+                : "Map shows inside the app — no need to leave"
               : isRTL
               ? "حدّد موقعك أولاً للبحث"
               : "Detect your location first to search"}
           </p>
-          <button
-            onClick={() => openSingle(active)}
-            disabled={!coords}
-            className="mt-4 w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            <Navigation className="w-5 h-5" />
-            {isRTL ? "افتح في خرائط جوجل" : "Open in Google Maps"}
-          </button>
         </div>
+
+        {/* Embedded map (in-app, no leaving) */}
+        {coords && (
+          <div className="bg-card rounded-2xl border border-border overflow-hidden">
+            <iframe
+              key={`${active}-${coords.lat}-${coords.lng}`}
+              title="map"
+              src={`https://www.google.com/maps?q=${encodeURIComponent(activeType.query)}&ll=${coords.lat},${coords.lng}&z=15&output=embed`}
+              className="w-full h-[60vh] border-0"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            <button
+              onClick={() => openSingle(active)}
+              className="w-full py-3 text-sm font-bold text-primary flex items-center justify-center gap-2 border-t border-border"
+            >
+              <ExternalLink className="w-4 h-4" />
+              {isRTL ? "فتح في خرائط جوجل للاتجاهات" : "Open in Google Maps for directions"}
+            </button>
+          </div>
+        )}
 
         {/* Quick links (only when multiple types) */}
         {types.length > 1 && (
-          <div className={`grid gap-2 grid-cols-${types.length}`} style={{ gridTemplateColumns: `repeat(${types.length}, minmax(0, 1fr))` }}>
+          <div className="grid gap-2" style={{ gridTemplateColumns: `repeat(${types.length}, minmax(0, 1fr))` }}>
             {types.map((tp) => (
               <button
                 key={tp.key}
-                onClick={() => openSingle(tp.key)}
+                onClick={() => setActive(tp.key)}
                 disabled={!coords}
-                className="bg-card rounded-2xl border border-border p-3 flex flex-col items-center gap-2 disabled:opacity-50 hover:border-primary/40 transition-colors"
+                className={`bg-card rounded-2xl border p-3 flex flex-col items-center gap-2 disabled:opacity-50 transition-colors ${
+                  active === tp.key ? "border-primary" : "border-border hover:border-primary/40"
+                }`}
               >
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tp.color}`}>
                   <tp.icon className="w-5 h-5" />
@@ -203,8 +218,8 @@ const NearbyPlacesPage = () => {
 
         <p className="text-xs text-muted-foreground text-center px-4">
           {isRTL
-            ? "🔒 لا يتم تخزين أو مشاركة موقعك. يُستخدم فقط لفتح خرائط جوجل."
-            : "🔒 Your location is not stored or shared. Used only to open Google Maps."}
+            ? "🔒 لا يتم تخزين أو مشاركة موقعك."
+            : "🔒 Your location is not stored or shared."}
         </p>
       </div>
     </div>
