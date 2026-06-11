@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, MapPin } from "lucide-react";
+import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import { format } from "date-fns";
@@ -76,8 +76,6 @@ const HomePage = () => {
     { label: t.bloodPressure, icon: Heart, path: "/blood-pressure", color: "text-heart" },
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "text-warning" },
     { label: t.labTests, icon: FlaskConical, path: "/lab-tests", color: "text-primary" },
-    { label: isRTL ? "أقرب صيدلية" : "Nearest Pharmacy", icon: MapPin, path: "/nearby?type=pharmacy", color: "text-primary" },
-    { label: isRTL ? "مستشفى ومركز صحي" : "Hospital & Clinic", icon: MapPin, path: "/nearby?type=hospital", color: "text-heart" },
   ];
 
   // Group doses by scheduled time

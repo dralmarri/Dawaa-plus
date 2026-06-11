@@ -42,16 +42,6 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "بيانات الموقع",
-          body: (
-            <p>
-              عند استخدام ميزة "أقرب صيدلية / مستشفى"، يطلب التطبيق الإذن للوصول إلى موقعك الجغرافي
-              <strong> مرة واحدة فقط </strong>عند الضغط على الزر، ويُستخدم الموقع فوراً لفتح خرائط جوجل
-              لعرض النتائج القريبة. <strong>لا يتم تخزين موقعك أو إرساله إلى خوادمنا أو مشاركته مع أي طرف ثالث.</strong>
-            </p>
-          ),
-        },
-        {
           h: "الكاميرا ومكتبة الصور",
           body: (
             <p>
@@ -79,7 +69,7 @@ export default function PrivacyPolicyPage() {
           body: (
             <ul className="list-disc ps-6 space-y-1">
               <li><strong>Supabase</strong>: مزوّد قاعدة البيانات السحابية والمصادقة. يلتزم بمعايير حماية البيانات الدولية (GDPR/SOC2).</li>
-              <li><strong>Google Maps</strong>: يُفتح فقط عند طلب البحث عن أقرب منشأة صحية، ويمرّر إحداثياتك إلى تطبيق خرائط جوجل (دون تخزينها لدينا). يخضع لسياسة خصوصية Google.</li>
+              
               <li><strong>Apple Push Notifications</strong>: لتسليم تنبيهات الأدوية على iOS.</li>
             </ul>
           ),
@@ -179,17 +169,6 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "Location data",
-          body: (
-            <p>
-              When you use the "Nearest Pharmacy / Hospital" feature, the app requests permission to access
-              your location <strong>once, only when you tap the button</strong>. The location is used immediately
-              to open Google Maps showing nearby results.
-              <strong> Your location is never stored on our servers, never logged, and never shared with any third party.</strong>
-            </p>
-          ),
-        },
-        {
           h: "Camera & photo library",
           body: (
             <p>
@@ -219,7 +198,7 @@ export default function PrivacyPolicyPage() {
           body: (
             <ul className="list-disc ps-6 space-y-1">
               <li><strong>Supabase</strong>: cloud database and authentication provider, compliant with GDPR/SOC2 standards.</li>
-              <li><strong>Google Maps</strong>: opened only when you tap the nearby-facilities button; your coordinates are passed to Google Maps (not stored by us) and subject to Google's privacy policy.</li>
+              
               <li><strong>Apple Push Notifications</strong>: used to deliver medication reminders on iOS.</li>
             </ul>
           ),
