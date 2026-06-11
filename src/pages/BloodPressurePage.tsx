@@ -210,6 +210,8 @@ const BloodPressurePage = () => {
           </div>
         )}
 
+        <BPChart readings={readings} />
+
         {readings.length > 0 && (
           <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
             🖨️ {t.printReport}
@@ -268,6 +270,19 @@ const BloodPressurePage = () => {
               options={[t.morning, t.evening]}
               value={periodLabels[period]}
               onChange={(v) => setPeriod(v === t.morning ? "Morning" : "Evening")}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-foreground block mb-1">
+              {isRTL ? "ملاحظات (اختياري)" : "Notes (optional)"}
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={isRTL ? "مثال: قبل التمرين، بعد الدواء..." : "e.g. before exercise, after medication..."}
+              rows={2}
+              className="w-full px-3 py-2 rounded-xl bg-accent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
             />
           </div>
 
