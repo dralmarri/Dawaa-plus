@@ -159,24 +159,26 @@ const NearbyPlacesPage = () => {
           </button>
         </div>
 
-        {/* Quick links */}
-        <div className="grid grid-cols-3 gap-2">
-          {types.map((tp) => (
-            <button
-              key={tp.key}
-              onClick={() => openSingle(tp.key)}
-              disabled={!coords}
-              className="bg-card rounded-2xl border border-border p-3 flex flex-col items-center gap-2 disabled:opacity-50 hover:border-primary/40 transition-colors"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tp.color}`}>
-                <tp.icon className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-bold text-foreground text-center leading-tight">
-                {isRTL ? tp.labelAr : tp.labelEn}
-              </span>
-            </button>
-          ))}
-        </div>
+        {/* Quick links (only when multiple types) */}
+        {types.length > 1 && (
+          <div className={`grid gap-2 grid-cols-${types.length}`} style={{ gridTemplateColumns: `repeat(${types.length}, minmax(0, 1fr))` }}>
+            {types.map((tp) => (
+              <button
+                key={tp.key}
+                onClick={() => openSingle(tp.key)}
+                disabled={!coords}
+                className="bg-card rounded-2xl border border-border p-3 flex flex-col items-center gap-2 disabled:opacity-50 hover:border-primary/40 transition-colors"
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tp.color}`}>
+                  <tp.icon className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-bold text-foreground text-center leading-tight">
+                  {isRTL ? tp.labelAr : tp.labelEn}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground text-center px-4">
           {isRTL
