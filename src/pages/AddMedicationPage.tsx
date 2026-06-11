@@ -139,6 +139,7 @@ const AddMedicationPage = () => {
   const [stock, setStock] = useState(30);
   const [concentration, setConcentration] = useState("");
   const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
+  const [expiryDate, setExpiryDate] = useState<string>("");
   const [startDate, setStartDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [isChronic, setIsChronic] = useState(true);
   const [durationDays, setDurationDays] = useState(7);
@@ -157,6 +158,7 @@ const AddMedicationPage = () => {
     setNotes(editingMedication.notes);
     setStock(editingMedication.stock);
     setImageUrl(editingMedication.imageUrl);
+    setExpiryDate(editingMedication.expiryDate || "");
     setIsChronic(editingMedication.isChronic ?? true);
     if (editingMedication.durationDays) {
       if (editingMedication.durationDays % 30 === 0) {
@@ -231,6 +233,7 @@ const AddMedicationPage = () => {
       stock,
       initialStock: editingMedication?.initialStock || stock,
       imageUrl,
+      expiryDate: expiryDate || undefined,
       createdAt: editingMedication?.createdAt || new Date().toISOString(),
     };
     await store.saveMedication(med);
@@ -312,6 +315,20 @@ const AddMedicationPage = () => {
               </div>
             </div>
             <MedicationImageUpload imageUrl={imageUrl} onChange={setImageUrl} />
+            <div>
+              <label className="text-base font-bold text-foreground block mb-2">
+                {isRTL ? "تاريخ انتهاء الصلاحية (اختياري)" : "Expiry Date (optional)"}
+              </label>
+              <p className="text-sm text-muted-foreground mb-2">
+                {isRTL ? "سيتم تنبيهك قبل 30 يوماً من الانتهاء" : "You'll be alerted 30 days before expiry"}
+              </p>
+              <input
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
           </div>
         )}
 

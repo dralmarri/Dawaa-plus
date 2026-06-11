@@ -11,6 +11,7 @@ function toMedRow(uid: string, m: Medication) {
     is_chronic: m.isChronic, duration_days: m.durationDays || null,
     meal_relation: m.mealRelation, notes: m.notes, stock: m.stock,
     initial_stock: m.initialStock || null, image_url: m.imageUrl || null,
+    expiry_date: m.expiryDate || null,
     created_at: m.createdAt,
   };
 }
@@ -24,7 +25,9 @@ function fromMedRow(r: any): Medication {
     durationDays: r.duration_days || undefined, mealRelation: r.meal_relation,
     notes: r.notes || "", stock: Number(r.stock),
     initialStock: r.initial_stock ? Number(r.initial_stock) : undefined,
-    imageUrl: r.image_url || undefined, createdAt: r.created_at,
+    imageUrl: r.image_url || undefined,
+    expiryDate: r.expiry_date || undefined,
+    createdAt: r.created_at,
   };
 }
 

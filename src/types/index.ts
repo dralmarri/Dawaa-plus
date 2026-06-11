@@ -14,6 +14,7 @@ export interface Medication {
   stock: number;
   initialStock?: number;
   imageUrl?: string;
+  expiryDate?: string;
   createdAt: string;
 }
 
