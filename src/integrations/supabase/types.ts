@@ -63,6 +63,7 @@ export type Database = {
           diastolic: number
           heart_rate: number
           id: string
+          notes: string | null
           period: string
           systolic: number
           time: string
@@ -74,6 +75,7 @@ export type Database = {
           diastolic: number
           heart_rate?: number
           id: string
+          notes?: string | null
           period?: string
           systolic: number
           time: string
@@ -85,6 +87,7 @@ export type Database = {
           diastolic?: number
           heart_rate?: number
           id?: string
+          notes?: string | null
           period?: string
           systolic?: number
           time?: string
