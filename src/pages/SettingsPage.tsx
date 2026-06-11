@@ -106,7 +106,6 @@ const SettingsPage = () => {
 
   const menuItems = [
     { icon: FileText, label: isRTL ? "التقارير الصحية" : "Health Reports", action: () => navigate("/reports") },
-    { icon: MapPin, label: isRTL ? "أقرب المنشآت الصحية" : "Nearby Health Facilities", action: () => navigate("/nearby") },
     { icon: Share2, label: t.shareApp, action: handleShareApp },
   ];
 
