@@ -198,7 +198,7 @@ export default function PrivacyPolicyPage() {
           body: (
             <ul className="list-disc ps-6 space-y-1">
               <li><strong>Supabase</strong>: cloud database and authentication provider, compliant with GDPR/SOC2 standards.</li>
-              <li><strong>Google Maps</strong>: opened only when you tap the nearby-facilities button; your coordinates are passed to Google Maps (not stored by us) and subject to Google's privacy policy.</li>
+              
               <li><strong>Apple Push Notifications</strong>: used to deliver medication reminders on iOS.</li>
             </ul>
           ),
