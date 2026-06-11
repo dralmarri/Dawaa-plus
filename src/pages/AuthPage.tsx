@@ -47,7 +47,7 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
         <div className="w-20 h-20 rounded-3xl overflow-hidden mx-auto mb-4 shadow-lg">
           <img src={appIcon} alt="Dawaa+" className="w-full h-full object-cover" />
         </div>
-        <h1 className="text-2xl font-bold text-foreground">دواء</h1>
+        <h1 className="text-2xl font-bold text-foreground">دواء+</h1>
         <p className="text-sm text-muted-foreground mt-1">رفيقك الصحي</p>
       </div>
 
