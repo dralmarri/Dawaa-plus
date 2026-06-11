@@ -2,9 +2,6 @@ import { useState } from "react";
 import { FileText, Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import { format, subDays, isAfter, parseISO } from "date-fns";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -204,6 +201,10 @@ const ReportsPage = () => {
       // wait a tick so image loads
       await new Promise((r) => setTimeout(r, 300));
 
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
       const canvas = await html2canvas(tempDiv.firstElementChild as HTMLElement, {
         scale: 2,
         useCORS: true,
@@ -243,6 +244,7 @@ const ReportsPage = () => {
           directory: Directory.Cache,
           recursive: true,
         });
+        const { Share } = await import("@capacitor/share");
         await Share.share({
           title: isRTL ? "تقرير Dawaa+" : "Dawaa+ Report",
           dialogTitle: isRTL ? "مشاركة التقرير" : "Share Report",
