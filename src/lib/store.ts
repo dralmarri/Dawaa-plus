@@ -12,23 +12,8 @@ const KEYS = {
 };
 
 // AuthPage UI is in Arabic, so default the app language to Arabic
-// to keep the experience consistent (especially after "continue as guest").
-const detectDefaultLanguage = (): 'ar' | 'en' => {
-  try {
-    const langs: string[] = [];
-    if (typeof navigator !== 'undefined') {
-      if (Array.isArray(navigator.languages)) langs.push(...navigator.languages);
-      if (navigator.language) langs.push(navigator.language);
-    }
-    // Only switch to English if device explicitly prefers English and not Arabic.
-    const hasAr = langs.some((l) => l?.toLowerCase().startsWith('ar'));
-    if (hasAr) return 'ar';
-    const prefersEn = langs.some((l) => l?.toLowerCase().startsWith('en'));
-    return prefersEn ? 'en' : 'ar';
-  } catch {
-    return 'ar';
-  }
-};
+// to match the main interface (especially after "continue as guest").
+const detectDefaultLanguage = (): 'ar' | 'en' => 'ar';
 
 const defaultSettings: AppSettings = {
   language: detectDefaultLanguage(),
