@@ -21,6 +21,12 @@ const SettingsPage = () => {
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
+
+  const SHARE_URL = "https://dawaa-plus-buddy.lovable.app";
+  const SHARE_TEXT = isRTL
+    ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك"
+    : "Try dawaa+ app to manage your medications and health";
 
   const handleDeleteAccount = async () => {
     setDeleting(true);
