@@ -73,7 +73,7 @@ const NearbyPlacesPage = () => {
 
   return (
     <div className="pb-28">
-      <PageHeader title={isRTL ? "أقرب المنشآت الصحية" : "Nearby Health Facilities"} showBack />
+      <PageHeader title={pageTitle} showBack />
 
       <div className="px-4 space-y-4">
         {/* Location card */}
