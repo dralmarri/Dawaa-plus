@@ -190,6 +190,27 @@ export default function TermsOfUsePage() {
           ),
         },
         {
+          h: "Disclaimer of warranties & limitation of liability",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>The app is provided "AS IS" without any warranties, express or implied, regarding accuracy or fitness for a particular purpose</li>
+              <li>We do not warrant that the app will be error-free or uninterrupted, nor guarantee delivery of every notification</li>
+              <li>To the maximum extent permitted by law, we are not liable for any direct, indirect, incidental, or consequential damages arising from use of the app</li>
+              <li>Our total aggregate liability shall not exceed the amount paid (if any) for use of the app</li>
+            </ul>
+          ),
+        },
+        {
+          h: "Governing law & dispute resolution",
+          body: (
+            <p>
+              These terms are governed by the laws of the <strong>Kingdom of Saudi Arabia</strong>, and the courts
+              of the Kingdom shall have exclusive jurisdiction over any dispute arising from use of the app
+              or relating to these terms.
+            </p>
+          ),
+        },
+        {
           h: "Intellectual property",
           body: (
             <p>
