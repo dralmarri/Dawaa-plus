@@ -9,6 +9,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import PageHeader from "@/components/PageHeader";
 import ChipSelector from "@/components/ChipSelector";
+import BPChart from "@/components/BPChart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { BloodPressureReading } from "@/types";
 
@@ -18,6 +19,7 @@ const BloodPressurePage = () => {
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
   const [heartRate, setHeartRate] = useState("");
+  const [notes, setNotes] = useState("");
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ const BloodPressurePage = () => {
     setSystolic(String(r.systolic));
     setDiastolic(String(r.diastolic));
     setHeartRate(String(r.heartRate));
+    setNotes(r.notes || "");
     setPeriod(r.period);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -55,16 +58,17 @@ const BloodPressurePage = () => {
       period,
       date: editingId ? (readings.find(r => r.id === editingId)?.date || format(new Date(), "yyyy-MM-dd")) : format(new Date(), "yyyy-MM-dd"),
       time: editingId ? (readings.find(r => r.id === editingId)?.time || format(new Date(), "HH:mm")) : format(new Date(), "HH:mm"),
+      notes: notes.trim() || undefined,
     };
     await store.saveReading(reading);
     setReadings(store.getReadings());
-    setSystolic(""); setDiastolic(""); setHeartRate("");
+    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
     setEditingId(null);
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setSystolic(""); setDiastolic(""); setHeartRate("");
+    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
   };
 
   const handleDelete = async (id: string) => {
