@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin } from "lucide-react";
 import { store } from "@/lib/store";
 import ChipSelector from "@/components/ChipSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -106,6 +106,7 @@ const SettingsPage = () => {
 
   const menuItems = [
     { icon: FileText, label: isRTL ? "التقارير الصحية" : "Health Reports", action: () => navigate("/reports") },
+    { icon: MapPin, label: isRTL ? "أقرب المنشآت الصحية" : "Nearby Health Facilities", action: () => navigate("/nearby") },
     { icon: Share2, label: t.shareApp, action: handleShareApp },
   ];
 
