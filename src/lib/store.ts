@@ -11,8 +11,21 @@ const KEYS = {
   settings: 'dawaa_settings',
 };
 
+const detectDefaultLanguage = (): 'ar' | 'en' => {
+  try {
+    const langs: string[] = [];
+    if (typeof navigator !== 'undefined') {
+      if (Array.isArray(navigator.languages)) langs.push(...navigator.languages);
+      if (navigator.language) langs.push(navigator.language);
+    }
+    return langs.some((l) => l?.toLowerCase().startsWith('ar')) ? 'ar' : 'en';
+  } catch {
+    return 'ar';
+  }
+};
+
 const defaultSettings: AppSettings = {
-  language: 'en',
+  language: detectDefaultLanguage(),
   userName: '',
   notifications: true,
   voiceNotifications: false,
