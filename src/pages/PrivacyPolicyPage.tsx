@@ -69,7 +69,7 @@ export default function PrivacyPolicyPage() {
           body: (
             <ul className="list-disc ps-6 space-y-1">
               <li><strong>Supabase</strong>: مزوّد قاعدة البيانات السحابية والمصادقة. يلتزم بمعايير حماية البيانات الدولية (GDPR/SOC2).</li>
-              <li><strong>Google Maps</strong>: يُفتح فقط عند طلب البحث عن أقرب منشأة صحية، ويمرّر إحداثياتك إلى تطبيق خرائط جوجل (دون تخزينها لدينا). يخضع لسياسة خصوصية Google.</li>
+              
               <li><strong>Apple Push Notifications</strong>: لتسليم تنبيهات الأدوية على iOS.</li>
             </ul>
           ),
