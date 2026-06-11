@@ -5,7 +5,7 @@ type Lang = "en" | "ar";
 
 const translations = {
   en: {
-    appName: "dawaa+",
+    appName: "Dawaa+",
     home: "Home",
     medications: "Medications",
     history: "History",
