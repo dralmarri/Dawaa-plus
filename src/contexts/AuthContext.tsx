@@ -130,18 +130,20 @@ export const useAuth = () => {
 };
 
 function getErrorMessage(message: string): string {
-  const lower = message.toLowerCase();
-  if (lower.includes("already registered") || lower.includes("already in use"))
-    return "البريد الإلكتروني مستخدم بالفعل";
+  const lower = (message || "").toLowerCase();
+  if (lower.includes("already registered") || lower.includes("already in use") || lower.includes("user_already_exists") || lower.includes("user already") || lower.includes("422"))
+    return "البريد الإلكتروني مستخدم بالفعل — جرّب تسجيل الدخول";
   if (lower.includes("invalid email"))
     return "البريد الإلكتروني غير صحيح";
-  if (lower.includes("weak password") || lower.includes("at least"))
+  if (lower.includes("weak password") || lower.includes("at least") || lower.includes("password should"))
     return "كلمة المرور ضعيفة جداً (6 أحرف على الأقل)";
   if (lower.includes("invalid login") || lower.includes("invalid credentials"))
     return "البريد الإلكتروني أو كلمة المرور غير صحيحة";
   if (lower.includes("rate limit") || lower.includes("too many"))
     return "تم تجاوز عدد المحاولات، حاول لاحقاً";
-  if (lower.includes("not found"))
+  if (lower.includes("not found") || lower.includes("user not found"))
     return "لا يوجد حساب بهذا البريد الإلكتروني";
+  if (lower.includes("email not confirmed"))
+    return "يرجى تأكيد البريد الإلكتروني أولاً";
   return "حدث خطأ، حاول مرة أخرى";
 }
