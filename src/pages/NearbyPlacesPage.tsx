@@ -9,19 +9,30 @@ type PlaceType = "pharmacy" | "hospital" | "clinic";
 const NearbyPlacesPage = () => {
   const { isRTL } = useLanguage();
   const [searchParams] = useSearchParams();
-  const initial = (searchParams.get("type") as PlaceType) || "pharmacy";
-  const [active, setActive] = useState<PlaceType>(initial === "hospital" || initial === "clinic" || initial === "pharmacy" ? initial : "pharmacy");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const mode: "pharmacy" | "hospital" = searchParams.get("type") === "pharmacy" ? "pharmacy" : "hospital";
 
-  const types: { key: PlaceType; labelAr: string; labelEn: string; query: string; icon: any; color: string }[] = [
+  const allTypes: { key: PlaceType; labelAr: string; labelEn: string; query: string; icon: any; color: string }[] = [
     { key: "pharmacy", labelAr: "صيدلية", labelEn: "Pharmacy", query: isRTL ? "صيدلية" : "pharmacy", icon: Pill, color: "text-green-600 bg-green-500/10" },
     { key: "clinic", labelAr: "مركز صحي", labelEn: "Health Center", query: isRTL ? "مركز صحي" : "health clinic", icon: Stethoscope, color: "text-blue-600 bg-blue-500/10" },
     { key: "hospital", labelAr: "مستشفى", labelEn: "Hospital", query: isRTL ? "مستشفى" : "hospital", icon: Hospital, color: "text-red-600 bg-red-500/10" },
   ];
 
-  const activeType = types.find((t) => t.key === active)!;
+  // Filter types based on mode
+  const types = mode === "pharmacy"
+    ? allTypes.filter((t) => t.key === "pharmacy")
+    : allTypes.filter((t) => t.key === "hospital" || t.key === "clinic");
+
+  const [active, setActive] = useState<PlaceType>(types[0].key);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const activeType = types.find((t) => t.key === active) ?? types[0];
+
+  const pageTitle = mode === "pharmacy"
+    ? (isRTL ? "أقرب صيدلية" : "Nearest Pharmacy")
+    : (isRTL ? "مستشفى ومركز صحي" : "Hospital & Health Center");
+
 
   const getLocation = () => {
     setError(null);
