@@ -73,36 +73,35 @@ const SettingsPage = () => {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   const handleShareApp = async () => {
-    const url = "https://dawaa-plus-buddy.lovable.app";
-    const title = "dawaa+";
-    const text = isRTL
-      ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك"
-      : "Try dawaa+ app to manage your medications and health";
+    // Try Capacitor native share first (iOS/Android app)
     try {
       const { Share } = await import("@capacitor/share");
       const can = await Share.canShare();
       if (can.value) {
-        await Share.share({ title, text, url, dialogTitle: title });
+        await Share.share({
+          title: "dawaa+",
+          text: SHARE_TEXT,
+          url: SHARE_URL,
+          dialogTitle: "dawaa+",
+        });
         return;
       }
     } catch {
-      /* fall through to web */
+      /* not in native app */
     }
+    // Fallback: open in-app share modal with multiple options
+    setShareOpen(true);
+  };
+
+  const copyLink = async () => {
     try {
-      if (navigator.share) {
-        await navigator.share({ title, text, url });
-        return;
-      }
-    } catch {
-      /* user cancelled or unsupported */
-    }
-    try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(SHARE_URL);
       toast.success(isRTL ? "تم نسخ الرابط" : "Link copied!");
     } catch {
-      toast.error(isRTL ? "تعذر المشاركة" : "Unable to share");
+      toast.error(isRTL ? "تعذر النسخ" : "Copy failed");
     }
   };
+
 
 
   const menuItems = [
