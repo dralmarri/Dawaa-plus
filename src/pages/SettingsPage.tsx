@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { requestNotificationPermission, scheduleMedicationNotifications, getPermissionStatus } from "@/lib/notifications";
-import { speak, isSpeechSupported } from "@/lib/voice";
+
 import { toast } from "sonner";
 import type { AppSettings } from "@/types";
 
