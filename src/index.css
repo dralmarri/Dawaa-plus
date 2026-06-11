@@ -194,7 +194,7 @@
 }
 
 /* Hide Lovable badge */
-[data-lovable-badge], .lovable-badge, iframe[src*="lovable"] {
+[data-lovable-badge], .lovable-badge, iframe[src*="lovable"], a[href*="lovable.dev"] {
   display: none !important;
 }
 
