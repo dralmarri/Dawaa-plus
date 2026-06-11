@@ -169,17 +169,6 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "Location data",
-          body: (
-            <p>
-              When you use the "Nearest Pharmacy / Hospital" feature, the app requests permission to access
-              your location <strong>once, only when you tap the button</strong>. The location is used immediately
-              to open Google Maps showing nearby results.
-              <strong> Your location is never stored on our servers, never logged, and never shared with any third party.</strong>
-            </p>
-          ),
-        },
-        {
           h: "Camera & photo library",
           body: (
             <p>
