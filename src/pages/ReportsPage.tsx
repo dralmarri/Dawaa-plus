@@ -266,7 +266,7 @@ const ReportsPage = () => {
 
   return (
     <div className="pb-28">
-      <PageHeader title={isRTL ? "التقارير" : "Reports"} />
+      <PageHeader title={isRTL ? "التقارير" : "Reports"} showBack />
 
       <div className="px-4 space-y-4">
         <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
