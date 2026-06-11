@@ -8,12 +8,26 @@ import {
 import { store } from '@/lib/store';
 import { App as CapApp } from '@capacitor/app';
 
+const FIRST_RUN_KEY = 'dawaa_notif_prompted_v1';
+
 export function useNotifications() {
   useEffect(() => {
-    const settings = store.getSettings();
-    if (!settings.notifications) return;
-
     const init = async () => {
+      const settings = store.getSettings();
+      const alreadyPrompted = localStorage.getItem(FIRST_RUN_KEY) === '1';
+
+      // First launch: auto-request permission and enable notifications if granted
+      if (!alreadyPrompted) {
+        localStorage.setItem(FIRST_RUN_KEY, '1');
+        const granted = await requestNotificationPermission();
+        if (granted) {
+          store.saveSettings({ ...settings, notifications: true });
+          await startNotificationLoop();
+        }
+        return;
+      }
+
+      if (!settings.notifications) return;
       const granted = await requestNotificationPermission();
       if (granted) {
         await startNotificationLoop();
