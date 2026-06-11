@@ -195,7 +195,7 @@ const translations = {
     typeDeleteToConfirm: "Type DELETE to confirm",
   },
   ar: {
-    appName: "دواء\u200E+",
+    appName: "دواء+",
     home: "الرئيسية",
     medications: "الأدوية",
     history: "السجل",

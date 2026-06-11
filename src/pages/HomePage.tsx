@@ -107,7 +107,7 @@ const HomePage = () => {
     <div className="pb-28 px-4">
       <div className="pt-6 pb-4">
         <h1 className="text-3xl font-bold text-foreground">
-          {t.appName} <span className="text-2xl">💊</span>
+          <bdi>{t.appName}</bdi> <span className="text-2xl">💊</span>
         </h1>
         <p className="text-muted-foreground">
           {format(new Date(), "EEEE, MMMM d, yyyy")}
