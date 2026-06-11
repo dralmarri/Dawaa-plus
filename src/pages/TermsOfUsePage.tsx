@@ -86,15 +86,6 @@ export default function TermsOfUsePage() {
           ),
         },
         {
-          h: "القانون الحاكم وتسوية النزاعات",
-          body: (
-            <p>
-              تخضع هذه الشروط لقوانين <strong>المملكة العربية السعودية</strong>، وتختص محاكم المملكة بالنظر في أي نزاع
-              ينشأ عن استخدام التطبيق أو يتعلق بهذه الشروط.
-            </p>
-          ),
-        },
-        {
           h: "الملكية الفكرية",
           body: (
             <p>
@@ -198,16 +189,6 @@ export default function TermsOfUsePage() {
               <li>To the maximum extent permitted by law, we are not liable for any direct, indirect, incidental, or consequential damages arising from use of the app</li>
               <li>Our total aggregate liability shall not exceed the amount paid (if any) for use of the app</li>
             </ul>
-          ),
-        },
-        {
-          h: "Governing law & dispute resolution",
-          body: (
-            <p>
-              These terms are governed by the laws of the <strong>Kingdom of Saudi Arabia</strong>, and the courts
-              of the Kingdom shall have exclusive jurisdiction over any dispute arising from use of the app
-              or relating to these terms.
-            </p>
           ),
         },
         {
