@@ -154,6 +154,26 @@ const LabTestsPage = () => {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [attachedImageName, setAttachedImageName] = useState("");
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [listSearch, setListSearch] = useState("");
+
+  const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
+    try { return JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}"); } catch { return {}; }
+  })();
+
+  const totalAbnormal = Object.values(allStoredResults).reduce(
+    (sum, arr) => sum + (Array.isArray(arr) ? arr.filter((r) => r.status !== "normal").length : 0),
+    0
+  );
+
+  const filteredList = tests.filter((tst) => {
+    if (!listSearch.trim()) return true;
+    const q = listSearch.toLowerCase();
+    if (tst.name.toLowerCase().includes(q)) return true;
+    if (tst.notes?.toLowerCase().includes(q)) return true;
+    const res = allStoredResults[tst.id];
+    if (Array.isArray(res) && res.some((r) => r.testName.toLowerCase().includes(q))) return true;
+    return false;
+  });
 
   const [manualEntries, setManualEntries] = useState<ManualEntry[]>([]);
   const [showTestPicker, setShowTestPicker] = useState(false);
