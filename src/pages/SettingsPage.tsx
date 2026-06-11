@@ -118,6 +118,21 @@ const SettingsPage = () => {
           </div>
         </div>
 
+        {/* Theme */}
+        <div className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {theme === "dark" ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
+            <div>
+              <h3 className="font-bold text-foreground">{t.theme}</h3>
+              <p className="text-sm text-muted-foreground">{theme === "dark" ? t.darkMode : t.lightMode}</p>
+            </div>
+          </div>
+          <button onClick={toggleTheme}
+            className={`w-12 h-7 rounded-full transition-colors relative ${theme === "dark" ? "bg-primary" : "bg-border"}`}>
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${theme === "dark" ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+          </button>
+        </div>
+
         {/* User Name */}
         <div className="bg-card rounded-2xl border border-border p-5">
           <label className="text-base font-bold text-foreground block mb-2">{t.userName}</label>
@@ -235,7 +250,57 @@ const SettingsPage = () => {
             <Chevron className="w-5 h-5 text-muted-foreground" />
           </button>
         )}
+
+        {/* Delete account (required by Apple App Store guideline 5.1.1(v)) */}
+        {user && (
+          <button onClick={() => { setDeleteConfirm(true); setDeleteInput(""); }}
+            className="bg-card rounded-2xl border border-destructive/30 w-full flex items-center justify-between px-5 py-4 mb-4">
+            <div className="flex items-center gap-3">
+              <Trash2 className="w-5 h-5 text-destructive" />
+              <span className="text-destructive font-medium">{t.deleteAccount}</span>
+            </div>
+            <Chevron className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
       </div>
+
+      {/* Delete account confirmation modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4" dir={isRTL ? "rtl" : "ltr"}>
+          <div className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-destructive" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">{t.deleteAccountConfirmTitle}</h2>
+            </div>
+            <p className="text-sm text-muted-foreground">{t.deleteAccountConfirmBody}</p>
+            <input
+              type="text"
+              value={deleteInput}
+              onChange={(e) => setDeleteInput(e.target.value)}
+              placeholder={t.typeDeleteToConfirm}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(false)}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-2xl bg-muted text-foreground font-bold disabled:opacity-50"
+              >
+                {t.cancel}
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleting || !(deleteInput.trim().toUpperCase() === "DELETE" || deleteInput.trim() === "حذف")}
+                className="flex-1 py-3 rounded-2xl bg-destructive text-destructive-foreground font-bold disabled:opacity-50 flex items-center justify-center"
+              >
+                {deleting ? <div className="w-5 h-5 border-2 border-destructive-foreground/30 border-t-destructive-foreground rounded-full animate-spin" /> : t.deleteAccount}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
