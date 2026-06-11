@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { MapPin, Navigation, Pill, Hospital, Stethoscope, Loader2, AlertCircle } from "lucide-react";
+import { MapPin, Navigation, Pill, Hospital, Stethoscope, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 
