@@ -1,0 +1,1 @@
+ALTER TABLE public.medications ADD COLUMN IF NOT EXISTS expiry_date TEXT;
