@@ -1,0 +1,1 @@
+ALTER TABLE public.blood_pressure_readings ADD COLUMN IF NOT EXISTS notes TEXT DEFAULT '';

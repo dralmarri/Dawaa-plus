@@ -9,6 +9,7 @@ import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import PageHeader from "@/components/PageHeader";
 import ChipSelector from "@/components/ChipSelector";
+import BPChart from "@/components/BPChart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import type { BloodPressureReading } from "@/types";
 
@@ -18,6 +19,7 @@ const BloodPressurePage = () => {
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
   const [heartRate, setHeartRate] = useState("");
+  const [notes, setNotes] = useState("");
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -43,6 +45,7 @@ const BloodPressurePage = () => {
     setSystolic(String(r.systolic));
     setDiastolic(String(r.diastolic));
     setHeartRate(String(r.heartRate));
+    setNotes(r.notes || "");
     setPeriod(r.period);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -55,16 +58,17 @@ const BloodPressurePage = () => {
       period,
       date: editingId ? (readings.find(r => r.id === editingId)?.date || format(new Date(), "yyyy-MM-dd")) : format(new Date(), "yyyy-MM-dd"),
       time: editingId ? (readings.find(r => r.id === editingId)?.time || format(new Date(), "HH:mm")) : format(new Date(), "HH:mm"),
+      notes: notes.trim() || undefined,
     };
     await store.saveReading(reading);
     setReadings(store.getReadings());
-    setSystolic(""); setDiastolic(""); setHeartRate("");
+    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
     setEditingId(null);
   };
 
   const handleCancel = () => {
     setEditingId(null);
-    setSystolic(""); setDiastolic(""); setHeartRate("");
+    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
   };
 
   const handleDelete = async (id: string) => {
@@ -206,6 +210,8 @@ const BloodPressurePage = () => {
           </div>
         )}
 
+        <BPChart readings={readings} />
+
         {readings.length > 0 && (
           <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
             🖨️ {t.printReport}
@@ -264,6 +270,19 @@ const BloodPressurePage = () => {
               options={[t.morning, t.evening]}
               value={periodLabels[period]}
               onChange={(v) => setPeriod(v === t.morning ? "Morning" : "Evening")}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-bold text-foreground block mb-1">
+              {isRTL ? "ملاحظات (اختياري)" : "Notes (optional)"}
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder={isRTL ? "مثال: قبل التمرين، بعد الدواء..." : "e.g. before exercise, after medication..."}
+              rows={2}
+              className="w-full px-3 py-2 rounded-xl bg-accent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm resize-none"
             />
           </div>
 

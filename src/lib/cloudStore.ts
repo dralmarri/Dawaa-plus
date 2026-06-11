@@ -32,6 +32,7 @@ function toReadingRow(uid: string, r: BloodPressureReading) {
   return {
     id: r.id, user_id: uid, systolic: r.systolic, diastolic: r.diastolic,
     heart_rate: r.heartRate, period: r.period, date: r.date, time: r.time,
+    notes: r.notes || '',
   };
 }
 
@@ -39,6 +40,7 @@ function fromReadingRow(r: any): BloodPressureReading {
   return {
     id: r.id, systolic: r.systolic, diastolic: r.diastolic,
     heartRate: r.heart_rate, period: r.period, date: r.date, time: r.time,
+    notes: r.notes || '',
   };
 }
 
