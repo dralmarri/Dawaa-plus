@@ -92,6 +92,7 @@ const AppRoutes = () => {
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isLoggedIn && <BottomNav />}
