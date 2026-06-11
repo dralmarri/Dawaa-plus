@@ -92,7 +92,7 @@ const AppRoutes = () => {
         <Route path="/lab-tests" element={<ProtectedRoute guestMode={guestMode}><LabTestsPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute guestMode={guestMode}><ReportsPage /></ProtectedRoute>} />
         <Route path="/emergency-contact" element={<ProtectedRoute guestMode={guestMode}><EmergencyContactPage /></ProtectedRoute>} />
-        <Route path="/nearby" element={<ProtectedRoute guestMode={guestMode}><NearbyPlacesPage /></ProtectedRoute>} />
+        
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
