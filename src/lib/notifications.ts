@@ -27,7 +27,7 @@ async function registerListeners() {
   await LocalNotifications.addListener('localNotificationReceived', (notification) => {
     console.log('[Notifications] Received in foreground:', notification.title);
     try {
-      const s = store.get();
+      const s = store.getSettings();
       if (s.notifications && s.voiceNotifications) {
         const isArabic = s.language === 'ar';
         const text = `${notification.title ?? ''}. ${notification.body ?? ''}`.trim();
