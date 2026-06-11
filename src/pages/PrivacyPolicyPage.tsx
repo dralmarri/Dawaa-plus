@@ -36,8 +36,28 @@ export default function PrivacyPolicyPage() {
               <li>قائمة الأدوية والجرعات والمواعيد والمخزون</li>
               <li>قراءات ضغط الدم ونبض القلب</li>
               <li>المواعيد الطبية والتحاليل المُدخلة يدوياً</li>
+              <li>صور الأدوية (اختيارية، تُحفظ مشفّرة)</li>
               <li>إعدادات التطبيق والتفضيلات (اللغة، التنبيهات…)</li>
             </ul>
+          ),
+        },
+        {
+          h: "بيانات الموقع",
+          body: (
+            <p>
+              عند استخدام ميزة "أقرب صيدلية / مستشفى"، يطلب التطبيق الإذن للوصول إلى موقعك الجغرافي
+              <strong> مرة واحدة فقط </strong>عند الضغط على الزر، ويُستخدم الموقع فوراً لفتح خرائط جوجل
+              لعرض النتائج القريبة. <strong>لا يتم تخزين موقعك أو إرساله إلى خوادمنا أو مشاركته مع أي طرف ثالث.</strong>
+            </p>
+          ),
+        },
+        {
+          h: "الكاميرا ومكتبة الصور",
+          body: (
+            <p>
+              يستخدم التطبيق الكاميرا أو مكتبة الصور (باختياركم فقط) لإضافة صورة للدواء بهدف التعرف عليه بسهولة.
+              تُحفظ الصور بشكل مشفّر ضمن بيانات حسابك، ولا تُستخدم لأي غرض آخر.
+            </p>
           ),
         },
         {
@@ -55,6 +75,16 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
+          h: "الخدمات الخارجية (أطراف ثالثة)",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li><strong>Supabase</strong>: مزوّد قاعدة البيانات السحابية والمصادقة. يلتزم بمعايير حماية البيانات الدولية (GDPR/SOC2).</li>
+              <li><strong>Google Maps</strong>: يُفتح فقط عند طلب البحث عن أقرب منشأة صحية، ويمرّر إحداثياتك إلى تطبيق خرائط جوجل (دون تخزينها لدينا). يخضع لسياسة خصوصية Google.</li>
+              <li><strong>Apple Push Notifications</strong>: لتسليم تنبيهات الأدوية على iOS.</li>
+            </ul>
+          ),
+        },
+        {
           h: "التنبيهات",
           body: (
             <p>
@@ -67,7 +97,7 @@ export default function PrivacyPolicyPage() {
           h: "حماية البيانات",
           body: (
             <ul className="list-disc ps-6 space-y-1">
-              <li>تشفير الاتصال بين التطبيق والخادم (HTTPS)</li>
+              <li>تشفير الاتصال بين التطبيق والخادم (HTTPS / TLS 1.3)</li>
               <li>عزل بيانات كل مستخدم عبر سياسات أمان على مستوى الصف (RLS)</li>
               <li>عدم مشاركة البيانات مع أي طرف ثالث لأغراض تسويقية أو إعلانية</li>
               <li>إمكانية حذف بياناتكم أو حسابكم بالكامل في أي وقت</li>
@@ -80,7 +110,9 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc ps-6 space-y-1">
               <li>الوصول إلى بياناتكم ومراجعتها داخل التطبيق</li>
               <li>تعديل أو حذف أي بيانات مُخزّنة</li>
+              <li><strong>تصدير بياناتكم</strong> كملف PDF (التقارير، الأدوية، ضغط الدم، التحاليل) من شاشة التقارير</li>
               <li>طلب حذف الحساب وجميع البيانات المرتبطة به نهائياً من الإعدادات</li>
+              <li>سحب الموافقة على أي إذن (الموقع، الكاميرا، التنبيهات) من إعدادات الجهاز</li>
             </ul>
           ),
         },
@@ -141,8 +173,30 @@ export default function PrivacyPolicyPage() {
               <li>Medication list, doses, schedules, and stock</li>
               <li>Blood pressure and heart rate readings</li>
               <li>Medical appointments and manually entered lab results</li>
+              <li>Optional medication photos (stored encrypted)</li>
               <li>App settings and preferences (language, notifications…)</li>
             </ul>
+          ),
+        },
+        {
+          h: "Location data",
+          body: (
+            <p>
+              When you use the "Nearest Pharmacy / Hospital" feature, the app requests permission to access
+              your location <strong>once, only when you tap the button</strong>. The location is used immediately
+              to open Google Maps showing nearby results.
+              <strong> Your location is never stored on our servers, never logged, and never shared with any third party.</strong>
+            </p>
+          ),
+        },
+        {
+          h: "Camera & photo library",
+          body: (
+            <p>
+              The app uses the camera or photo library (only when you choose) to attach a photo to a medication
+              for easier identification. Photos are stored encrypted within your account data and are never used
+              for any other purpose.
+            </p>
           ),
         },
         {
@@ -161,6 +215,16 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
+          h: "Third-party services",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li><strong>Supabase</strong>: cloud database and authentication provider, compliant with GDPR/SOC2 standards.</li>
+              <li><strong>Google Maps</strong>: opened only when you tap the nearby-facilities button; your coordinates are passed to Google Maps (not stored by us) and subject to Google's privacy policy.</li>
+              <li><strong>Apple Push Notifications</strong>: used to deliver medication reminders on iOS.</li>
+            </ul>
+          ),
+        },
+        {
           h: "Notifications",
           body: (
             <p>
@@ -174,7 +238,7 @@ export default function PrivacyPolicyPage() {
           h: "Data protection",
           body: (
             <ul className="list-disc ps-6 space-y-1">
-              <li>Encrypted communication between app and server (HTTPS)</li>
+              <li>Encrypted communication between app and server (HTTPS / TLS 1.3)</li>
               <li>Per-user isolation via Row-Level Security policies</li>
               <li>No sharing of data with third parties for marketing or ads</li>
               <li>Ability to delete your data or full account at any time</li>
@@ -187,7 +251,9 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc ps-6 space-y-1">
               <li>Access and review your data inside the app</li>
               <li>Edit or delete any stored data</li>
+              <li><strong>Export your data</strong> as a PDF report (medications, BP, lab results) from the Reports screen</li>
               <li>Request permanent deletion of your account and all related data from Settings</li>
+              <li>Revoke any permission (location, camera, notifications) from your device settings</li>
             </ul>
           ),
         },

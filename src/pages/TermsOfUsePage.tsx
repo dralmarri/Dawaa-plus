@@ -75,6 +75,26 @@ export default function TermsOfUsePage() {
           ),
         },
         {
+          h: "إخلاء الضمانات وحدود المسؤولية",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>يُقدَّم التطبيق "كما هو" دون أي ضمانات صريحة أو ضمنية بشأن الدقة أو الملاءمة لأي غرض معين</li>
+              <li>لا نضمن خلو التطبيق من الأخطاء أو الانقطاع، ولا نضمن تسليم التنبيهات في جميع الظروف</li>
+              <li>في أقصى حد يسمح به القانون، لا نتحمل المسؤولية عن أي أضرار مباشرة أو غير مباشرة أو عرضية أو تبعية ناتجة عن استخدام التطبيق</li>
+              <li>الحد الأقصى لمسؤوليتنا الإجمالية في أي حال لا يتجاوز المبلغ المدفوع (إن وُجد) لاستخدام التطبيق</li>
+            </ul>
+          ),
+        },
+        {
+          h: "القانون الحاكم وتسوية النزاعات",
+          body: (
+            <p>
+              تخضع هذه الشروط لقوانين <strong>المملكة العربية السعودية</strong>، وتختص محاكم المملكة بالنظر في أي نزاع
+              ينشأ عن استخدام التطبيق أو يتعلق بهذه الشروط.
+            </p>
+          ),
+        },
+        {
           h: "الملكية الفكرية",
           body: (
             <p>
@@ -166,6 +186,27 @@ export default function TermsOfUsePage() {
             <p>
               You can permanently delete your account and all data at any time from the Settings screen. This
               action cannot be undone.
+            </p>
+          ),
+        },
+        {
+          h: "Disclaimer of warranties & limitation of liability",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>The app is provided "AS IS" without any warranties, express or implied, regarding accuracy or fitness for a particular purpose</li>
+              <li>We do not warrant that the app will be error-free or uninterrupted, nor guarantee delivery of every notification</li>
+              <li>To the maximum extent permitted by law, we are not liable for any direct, indirect, incidental, or consequential damages arising from use of the app</li>
+              <li>Our total aggregate liability shall not exceed the amount paid (if any) for use of the app</li>
+            </ul>
+          ),
+        },
+        {
+          h: "Governing law & dispute resolution",
+          body: (
+            <p>
+              These terms are governed by the laws of the <strong>Kingdom of Saudi Arabia</strong>, and the courts
+              of the Kingdom shall have exclusive jurisdiction over any dispute arising from use of the app
+              or relating to these terms.
             </p>
           ),
         },

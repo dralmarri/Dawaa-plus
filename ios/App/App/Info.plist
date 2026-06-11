@@ -51,5 +51,15 @@
 	<string>يحتاج التطبيق للوصول إلى الكاميرا لتصوير الوصفات الطبية والأدوية</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>يحتاج التطبيق للوصول إلى مكتبة الصور لاختيار صور الأدوية</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>يحتاج التطبيق لحفظ التقارير الطبية وصور الأدوية في مكتبة الصور</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>يحتاج التطبيق لمعرفة موقعك لعرض أقرب صيدلية ومستشفى ومركز صحي في خرائط جوجل. لا يتم تخزين موقعك أو مشاركته.</string>
+	<key>NSUserNotificationsUsageDescription</key>
+	<string>يحتاج التطبيق لإرسال تنبيهات لتذكيرك بمواعيد الأدوية وقياسات الضغط والمواعيد الطبية</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>remote-notification</string>
+	</array>
 </dict>
 </plist>
