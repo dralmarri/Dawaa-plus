@@ -369,6 +369,7 @@ export async function scheduleMedicationNotifications() {
       sound: 'default',
       smallIcon: 'ic_stat_icon_config_sample',
     });
+  }
 
   // === Appointment Reminders (1 day before + 2 hours before) ===
   const appointments: Appointment[] = store.getAppointments?.() || [];
