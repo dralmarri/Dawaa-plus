@@ -23,6 +23,7 @@ import EmergencyContactPage from "@/pages/EmergencyContactPage";
 import TermsOfUsePage from "@/pages/TermsOfUsePage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import ContactUsPage from "@/pages/ContactUsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -91,6 +92,7 @@ const AppRoutes = () => {
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {isLoggedIn && <BottomNav />}

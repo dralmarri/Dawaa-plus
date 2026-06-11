@@ -87,7 +87,7 @@ const SettingsPage = () => {
   const aboutItems = [
     { icon: FileText, label: t.termsOfUse, path: "/terms-of-use" },
     { icon: Shield, label: t.privacyPolicy, path: "/privacy-policy" },
-    { icon: Mail, label: t.contactUs, action: () => window.open("mailto:dralmarri@gmail.com", "_blank") },
+    { icon: Mail, label: t.contactUs, action: () => navigate("/contact") },
     { icon: Info, label: t.version, value: "1.0.5" },
   ];
 
