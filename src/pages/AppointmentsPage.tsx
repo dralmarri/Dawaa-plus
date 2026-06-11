@@ -1,7 +1,7 @@
-import { useState } from "react";
-import { CalendarDays, X, Pencil } from "lucide-react";
+import { useState, useMemo } from "react";
+import { CalendarDays, X, Pencil, Clock, MapPin, StickyNote, User } from "lucide-react";
 import { store } from "@/lib/store";
-import { format } from "date-fns";
+import { format, differenceInCalendarDays, isPast } from "date-fns";
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import ChipSelector from "@/components/ChipSelector";
@@ -12,7 +12,7 @@ const AppointmentsPage = () => {
   const { t, isRTL } = useLanguage();
   const [appointments, setAppointments] = useState(store.getAppointments());
   const [showForm, setShowForm] = useState(false);
-  const [tab, setTab] = useState<"all" | "upcoming" | "completed">("all");
+  const [tab, setTab] = useState<"all" | "upcoming" | "completed">("upcoming");
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const specialtyMap: Record<string, string> = {
@@ -31,6 +31,7 @@ const AppointmentsPage = () => {
   const reminderKeys = Object.keys(reminderMap);
   const reminderLabels = Object.values(reminderMap);
 
+  const [doctorName, setDoctorName] = useState("");
   const [specialty, setSpecialty] = useState("General Practitioner");
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [time, setTime] = useState("09:00");
@@ -40,14 +41,38 @@ const AppointmentsPage = () => {
 
   const tabLabels = { all: t.all, upcoming: t.upcoming, completed: t.completed };
 
-  const filtered = appointments.filter((a) => {
-    if (tab === "upcoming") return !a.completed && a.date >= format(new Date(), "yyyy-MM-dd");
-    if (tab === "completed") return a.completed;
-    return true;
-  });
+  const sorted = useMemo(() => {
+    const todayStr = format(new Date(), "yyyy-MM-dd");
+    return [...appointments]
+      .filter((a) => {
+        if (tab === "upcoming") return !a.completed && a.date >= todayStr;
+        if (tab === "completed") return a.completed;
+        return true;
+      })
+      .sort((a, b) => {
+        const ak = `${a.date} ${a.time}`;
+        const bk = `${b.date} ${b.time}`;
+        return tab === "completed" ? bk.localeCompare(ak) : ak.localeCompare(bk);
+      });
+  }, [appointments, tab]);
+
+  const getCountdown = (apt: Appointment) => {
+    const [h, m] = apt.time.split(":").map(Number);
+    const dt = new Date(apt.date);
+    if (!isNaN(h)) dt.setHours(h, m || 0, 0, 0);
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days = differenceInCalendarDays(dt, today);
+    if (apt.completed) return null;
+    if (isPast(dt) && days < 0) return { label: isRTL ? "فات الموعد" : "Past due", tone: "bg-destructive/10 text-destructive" };
+    if (days === 0) return { label: isRTL ? "اليوم" : "Today", tone: "bg-primary/15 text-primary" };
+    if (days === 1) return { label: isRTL ? "غداً" : "Tomorrow", tone: "bg-primary/10 text-primary" };
+    if (days <= 7) return { label: isRTL ? `بعد ${days} أيام` : `In ${days} days`, tone: "bg-accent text-accent-foreground" };
+    return { label: isRTL ? `بعد ${days} يوم` : `In ${days} days`, tone: "bg-muted text-muted-foreground" };
+  };
 
   const openEdit = (apt: Appointment) => {
     setEditingId(apt.id);
+    setDoctorName(apt.doctorName || "");
     setSpecialty(apt.specialty);
     setDate(apt.date);
     setTime(apt.time);
@@ -59,6 +84,7 @@ const AppointmentsPage = () => {
 
   const openAdd = () => {
     setEditingId(null);
+    setDoctorName("");
     setSpecialty("General Practitioner");
     setDate(format(new Date(), "yyyy-MM-dd"));
     setTime("09:00");
@@ -70,7 +96,8 @@ const AppointmentsPage = () => {
 
   const handleSave = () => {
     const apt: Appointment = {
-      id: editingId || crypto.randomUUID(), specialty, date, time, location,
+      id: editingId || crypto.randomUUID(), doctorName: doctorName.trim() || undefined,
+      specialty, date, time, location,
       reminderBefore: reminder, notes, completed: editingId ? (appointments.find(a => a.id === editingId)?.completed || false) : false,
     };
     store.saveAppointment(apt);
@@ -100,7 +127,7 @@ const AppointmentsPage = () => {
       <PageHeader title={t.appointments} showBack onAdd={openAdd} />
 
       <div className="px-4 flex gap-2 mb-4">
-        {(["all", "upcoming", "completed"] as const).map((tKey) => (
+        {(["upcoming", "all", "completed"] as const).map((tKey) => (
           <button key={tKey} onClick={() => setTab(tKey)}
             className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
               tab === tKey ? "bg-chip-active text-chip-active-foreground border-chip-active" : "bg-chip text-chip-foreground border-border"
@@ -110,33 +137,62 @@ const AppointmentsPage = () => {
         ))}
       </div>
 
-      {filtered.length === 0 && !showForm ? (
+      {sorted.length === 0 && !showForm ? (
         <EmptyState icon={<CalendarDays className="w-16 h-16" />} title={t.noAppointments} subtitle={t.addFirstAppointment}
           actionLabel={t.addAppointment} onAction={openAdd} />
       ) : (
         <div className="px-4 space-y-3">
-          {filtered.map((apt) => (
-            <div key={apt.id} className="bg-card rounded-2xl border border-border p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-bold text-foreground">{specialtyMap[apt.specialty] || apt.specialty}</h3>
-                  <p className="text-sm text-muted-foreground">{format(new Date(apt.date), "MMM d, yyyy")} · {apt.time}</p>
-                  {apt.location && <p className="text-sm text-muted-foreground">📍 {apt.location}</p>}
-                </div>
-                <div className="flex gap-2">
-                  <button onClick={() => openEdit(apt)}
-                    className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button onClick={() => toggleComplete(apt.id)}
-                    className={`text-xs px-2 py-1 rounded-full ${apt.completed ? "bg-summary-taken text-summary-taken-foreground" : "bg-accent text-accent-foreground"}`}>
-                    {apt.completed ? `✓ ${t.done}` : t.markDone}
-                  </button>
-                  <button onClick={() => handleDelete(apt.id)} className="text-destructive/60 hover:text-destructive">🗑️</button>
+          {sorted.map((apt) => {
+            const countdown = getCountdown(apt);
+            return (
+              <div key={apt.id} className="bg-card rounded-2xl border border-border p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-bold text-foreground">{specialtyMap[apt.specialty] || apt.specialty}</h3>
+                      {countdown && (
+                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${countdown.tone}`}>
+                          {countdown.label}
+                        </span>
+                      )}
+                    </div>
+                    {apt.doctorName && (
+                      <p className="text-sm text-foreground mt-1 flex items-center gap-1">
+                        <User className="w-3.5 h-3.5 text-muted-foreground" />
+                        {isRTL ? `د. ${apt.doctorName}` : `Dr. ${apt.doctorName}`}
+                      </p>
+                    )}
+                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {format(new Date(apt.date), "MMM d, yyyy")} · {apt.time}
+                    </p>
+                    {apt.location && (
+                      <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5" /> {apt.location}
+                      </p>
+                    )}
+                    {apt.notes && (
+                      <p className="text-sm text-muted-foreground mt-1 flex items-start gap-1">
+                        <StickyNote className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                        <span className="break-words">{apt.notes}</span>
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col gap-2 items-end shrink-0">
+                    <button onClick={() => openEdit(apt)}
+                      className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button onClick={() => toggleComplete(apt.id)}
+                      className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${apt.completed ? "bg-summary-taken text-summary-taken-foreground" : "bg-accent text-accent-foreground"}`}>
+                      {apt.completed ? `✓ ${t.done}` : t.markDone}
+                    </button>
+                    <button onClick={() => handleDelete(apt.id)} className="text-destructive/60 hover:text-destructive text-lg">🗑️</button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -148,6 +204,11 @@ const AppointmentsPage = () => {
               <button onClick={() => { setShowForm(false); setEditingId(null); }}><X className="w-6 h-6 text-foreground" /></button>
             </div>
             <div className="space-y-4">
+              <div>
+                <label className="text-base font-bold text-foreground block mb-2">{isRTL ? "اسم الطبيب" : "Doctor Name"}</label>
+                <input value={doctorName} onChange={(e) => setDoctorName(e.target.value)} placeholder={isRTL ? "اختياري" : "Optional"}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
               <div>
                 <label className="text-base font-bold text-foreground block mb-2">{t.specialty}</label>
                 <ChipSelector options={specialtyLabels} value={specialtyMap[specialty]}
