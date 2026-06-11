@@ -599,14 +599,35 @@ const LabTestsPage = () => {
       ) : (
         <div className="px-4 space-y-3 mt-4">
           {tests.length > 0 && !showForm && (
-            <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-              📋 {isRTL ? "التحاليل السابقة" : "Previous Tests"} ({tests.length})
-            </h2>
+            <>
+              {totalAbnormal > 0 && (
+                <div className="rounded-2xl border border-destructive/30 bg-destructive/10 p-3 flex items-center gap-3">
+                  <AlertTriangle className="w-5 h-5 text-destructive shrink-0" />
+                  <p className="text-sm text-foreground">
+                    <span className="font-bold text-destructive">{totalAbnormal}</span>{" "}
+                    {isRTL ? "نتيجة غير طبيعية عبر جميع التحاليل" : `abnormal result${totalAbnormal === 1 ? "" : "s"} across all tests`}
+                  </p>
+                </div>
+              )}
+              <div className="relative">
+                <Search className="w-4 h-4 absolute top-3 text-muted-foreground" style={{ [isRTL ? "right" : "left"]: "12px" }} />
+                <input
+                  value={listSearch}
+                  onChange={(e) => setListSearch(e.target.value)}
+                  placeholder={isRTL ? "ابحث عن تحليل أو فحص..." : "Search tests or results..."}
+                  className="w-full px-4 py-2.5 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                  style={{ [isRTL ? "paddingRight" : "paddingLeft"]: "36px" }}
+                />
+              </div>
+              <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+                📋 {isRTL ? "التحاليل السابقة" : "Previous Tests"} ({filteredList.length}/{tests.length})
+              </h2>
+            </>
           )}
 
-          {tests.map((test, index) => {
-            const hasResults = savedResults[test.id] || JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}")[test.id];
-            const testNumber = tests.length - index;
+          {filteredList.map((test, index) => {
+            const hasResults = savedResults[test.id] || allStoredResults[test.id];
+            const testNumber = filteredList.length - index;
             const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:");
             const hasPdf = test.fileUrl && test.fileUrl.startsWith("pdf:");
 
