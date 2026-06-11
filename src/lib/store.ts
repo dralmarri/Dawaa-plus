@@ -176,7 +176,16 @@ export async function syncFromCloud(uid: string) {
     if (appointments.length) await setCache(KEYS.appointments, appointments);
     if (labTests.length) await setCache(KEYS.labTests, labTests.sort((a, b) => b.date.localeCompare(a.date)));
     if (doseRecords.length) await setCache(KEYS.doseRecords, doseRecords);
-    if (settings) await setCache(KEYS.settings, settings);
+    if (settings) {
+      // Preserve the language the user had selected before sign-in/up
+      // so the UI doesn't unexpectedly switch after login.
+      const localSettings = getCache<AppSettings>(KEYS.settings, defaultSettings);
+      const merged: AppSettings = { ...settings, language: localSettings.language };
+      await setCache(KEYS.settings, merged);
+      if (settings.language !== localSettings.language) {
+        await cloudStore.saveSettings(uid, merged);
+      }
+    }
   } catch (err) {
     console.error("Cloud sync error:", err);
   }
