@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { MapPin, Navigation, Pill, Hospital, Stethoscope, Loader2, AlertCircle } from "lucide-react";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -7,7 +8,9 @@ type PlaceType = "pharmacy" | "hospital" | "clinic";
 
 const NearbyPlacesPage = () => {
   const { isRTL } = useLanguage();
-  const [active, setActive] = useState<PlaceType>("pharmacy");
+  const [searchParams] = useSearchParams();
+  const initial = (searchParams.get("type") as PlaceType) || "pharmacy";
+  const [active, setActive] = useState<PlaceType>(initial === "hospital" || initial === "clinic" || initial === "pharmacy" ? initial : "pharmacy");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
