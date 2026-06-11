@@ -25,7 +25,7 @@ import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import ContactUsPage from "@/pages/ContactUsPage";
 import ReportsPage from "@/pages/ReportsPage";
-import NearbyPlacesPage from "@/pages/NearbyPlacesPage";
+
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
