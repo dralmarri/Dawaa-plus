@@ -67,18 +67,37 @@ const SettingsPage = () => {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   const handleShareApp = async () => {
-    const shareData = {
-      title: "dawaa+",
-      text: isRTL ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك" : "Try dawaa+ app to manage your medications and health",
-      url: "https://dawaa-plus-buddy.lovable.app",
-    };
-    if (navigator.share) {
-      try { await navigator.share(shareData); } catch {}
-    } else {
-      await navigator.clipboard.writeText(shareData.url);
+    const url = "https://dawaa-plus-buddy.lovable.app";
+    const title = "dawaa+";
+    const text = isRTL
+      ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك"
+      : "Try dawaa+ app to manage your medications and health";
+    try {
+      const { Share } = await import("@capacitor/share");
+      const can = await Share.canShare();
+      if (can.value) {
+        await Share.share({ title, text, url, dialogTitle: title });
+        return;
+      }
+    } catch {
+      /* fall through to web */
+    }
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, text, url });
+        return;
+      }
+    } catch {
+      /* user cancelled or unsupported */
+    }
+    try {
+      await navigator.clipboard.writeText(url);
       toast.success(isRTL ? "تم نسخ الرابط" : "Link copied!");
+    } catch {
+      toast.error(isRTL ? "تعذر المشاركة" : "Unable to share");
     }
   };
+
 
   const menuItems = [
     { icon: Share2, label: t.shareApp, action: handleShareApp },
