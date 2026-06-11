@@ -9,19 +9,30 @@ type PlaceType = "pharmacy" | "hospital" | "clinic";
 const NearbyPlacesPage = () => {
   const { isRTL } = useLanguage();
   const [searchParams] = useSearchParams();
-  const initial = (searchParams.get("type") as PlaceType) || "pharmacy";
-  const [active, setActive] = useState<PlaceType>(initial === "hospital" || initial === "clinic" || initial === "pharmacy" ? initial : "pharmacy");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const mode: "pharmacy" | "hospital" = searchParams.get("type") === "pharmacy" ? "pharmacy" : "hospital";
 
-  const types: { key: PlaceType; labelAr: string; labelEn: string; query: string; icon: any; color: string }[] = [
+  const allTypes: { key: PlaceType; labelAr: string; labelEn: string; query: string; icon: any; color: string }[] = [
     { key: "pharmacy", labelAr: "صيدلية", labelEn: "Pharmacy", query: isRTL ? "صيدلية" : "pharmacy", icon: Pill, color: "text-green-600 bg-green-500/10" },
     { key: "clinic", labelAr: "مركز صحي", labelEn: "Health Center", query: isRTL ? "مركز صحي" : "health clinic", icon: Stethoscope, color: "text-blue-600 bg-blue-500/10" },
     { key: "hospital", labelAr: "مستشفى", labelEn: "Hospital", query: isRTL ? "مستشفى" : "hospital", icon: Hospital, color: "text-red-600 bg-red-500/10" },
   ];
 
-  const activeType = types.find((t) => t.key === active)!;
+  // Filter types based on mode
+  const types = mode === "pharmacy"
+    ? allTypes.filter((t) => t.key === "pharmacy")
+    : allTypes.filter((t) => t.key === "hospital" || t.key === "clinic");
+
+  const [active, setActive] = useState<PlaceType>(types[0].key);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+
+  const activeType = types.find((t) => t.key === active) ?? types[0];
+
+  const pageTitle = mode === "pharmacy"
+    ? (isRTL ? "أقرب صيدلية" : "Nearest Pharmacy")
+    : (isRTL ? "مستشفى ومركز صحي" : "Hospital & Health Center");
+
 
   const getLocation = () => {
     setError(null);
@@ -62,7 +73,7 @@ const NearbyPlacesPage = () => {
 
   return (
     <div className="pb-28">
-      <PageHeader title={isRTL ? "أقرب المنشآت الصحية" : "Nearby Health Facilities"} showBack />
+      <PageHeader title={pageTitle} showBack />
 
       <div className="px-4 space-y-4">
         {/* Location card */}
@@ -102,22 +113,24 @@ const NearbyPlacesPage = () => {
           )}
         </div>
 
-        {/* Type chips */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {types.map((tp) => (
-            <button
-              key={tp.key}
-              onClick={() => setActive(tp.key)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
-                active === tp.key
-                  ? "bg-chip-active text-chip-active-foreground border-chip-active"
-                  : "bg-chip text-chip-foreground border-border"
-              }`}
-            >
-              {isRTL ? tp.labelAr : tp.labelEn}
-            </button>
-          ))}
-        </div>
+        {/* Type chips (only when multiple types) */}
+        {types.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {types.map((tp) => (
+              <button
+                key={tp.key}
+                onClick={() => setActive(tp.key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
+                  active === tp.key
+                    ? "bg-chip-active text-chip-active-foreground border-chip-active"
+                    : "bg-chip text-chip-foreground border-border"
+                }`}
+              >
+                {isRTL ? tp.labelAr : tp.labelEn}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Active type action */}
         <div className="bg-card rounded-2xl border border-border p-5 text-center">
@@ -146,24 +159,26 @@ const NearbyPlacesPage = () => {
           </button>
         </div>
 
-        {/* Quick links */}
-        <div className="grid grid-cols-3 gap-2">
-          {types.map((tp) => (
-            <button
-              key={tp.key}
-              onClick={() => openSingle(tp.key)}
-              disabled={!coords}
-              className="bg-card rounded-2xl border border-border p-3 flex flex-col items-center gap-2 disabled:opacity-50 hover:border-primary/40 transition-colors"
-            >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tp.color}`}>
-                <tp.icon className="w-5 h-5" />
-              </div>
-              <span className="text-xs font-bold text-foreground text-center leading-tight">
-                {isRTL ? tp.labelAr : tp.labelEn}
-              </span>
-            </button>
-          ))}
-        </div>
+        {/* Quick links (only when multiple types) */}
+        {types.length > 1 && (
+          <div className={`grid gap-2 grid-cols-${types.length}`} style={{ gridTemplateColumns: `repeat(${types.length}, minmax(0, 1fr))` }}>
+            {types.map((tp) => (
+              <button
+                key={tp.key}
+                onClick={() => openSingle(tp.key)}
+                disabled={!coords}
+                className="bg-card rounded-2xl border border-border p-3 flex flex-col items-center gap-2 disabled:opacity-50 hover:border-primary/40 transition-colors"
+              >
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tp.color}`}>
+                  <tp.icon className="w-5 h-5" />
+                </div>
+                <span className="text-xs font-bold text-foreground text-center leading-tight">
+                  {isRTL ? tp.labelAr : tp.labelEn}
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
 
         <p className="text-xs text-muted-foreground text-center px-4">
           {isRTL
