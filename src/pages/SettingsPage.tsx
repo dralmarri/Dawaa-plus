@@ -280,6 +280,91 @@ const SettingsPage = () => {
         )}
       </div>
 
+      {/* Share app modal */}
+      {shareOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4"
+          dir={isRTL ? "rtl" : "ltr"}
+          onClick={() => setShareOpen(false)}
+        >
+          <div
+            className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-foreground">{t.shareApp}</h2>
+              <button
+                onClick={() => setShareOpen(false)}
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-border"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-muted-foreground">{SHARE_TEXT}</p>
+
+            <div className="grid grid-cols-4 gap-3">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShareOpen(false)}
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-muted hover:bg-border transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-500 flex items-center justify-center">
+                  <MessageCircle className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-xs font-medium text-foreground">WhatsApp</span>
+              </a>
+
+              <a
+                href={`https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setShareOpen(false)}
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-muted hover:bg-border transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-sky-500 flex items-center justify-center">
+                  <Send className="w-6 h-6 text-white" />
+                </div>
+                <span className="text-xs font-medium text-foreground">Telegram</span>
+              </a>
+
+              <a
+                href={`mailto:?subject=${encodeURIComponent("dawaa+")}&body=${encodeURIComponent(SHARE_TEXT + "\n\n" + SHARE_URL)}`}
+                onClick={() => setShareOpen(false)}
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-muted hover:bg-border transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                  <Mail className="w-6 h-6 text-primary-foreground" />
+                </div>
+                <span className="text-xs font-medium text-foreground">{isRTL ? "بريد" : "Email"}</span>
+              </a>
+
+              <button
+                onClick={() => { copyLink(); setShareOpen(false); }}
+                className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-muted hover:bg-border transition-colors"
+              >
+                <div className="w-12 h-12 rounded-full bg-foreground/80 flex items-center justify-center">
+                  <Copy className="w-6 h-6 text-background" />
+                </div>
+                <span className="text-xs font-medium text-foreground">{isRTL ? "نسخ" : "Copy"}</span>
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 p-3 rounded-xl bg-muted">
+              <span className="text-xs text-muted-foreground flex-1 truncate" dir="ltr">{SHARE_URL}</span>
+              <button
+                onClick={copyLink}
+                className="text-xs font-bold text-primary px-2 py-1 rounded-lg hover:bg-primary/10"
+              >
+                {isRTL ? "نسخ" : "Copy"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete account confirmation modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4" dir={isRTL ? "rtl" : "ltr"}>
