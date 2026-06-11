@@ -23,6 +23,7 @@ import EmergencyContactPage from "@/pages/EmergencyContactPage";
 import TermsOfUsePage from "@/pages/TermsOfUsePage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
+import ContactUsPage from "@/pages/ContactUsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
