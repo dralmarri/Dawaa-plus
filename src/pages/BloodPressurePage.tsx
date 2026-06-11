@@ -2,11 +2,8 @@ import { useState } from "react";
 import { Heart, Save, Pencil } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
 import { store } from "@/lib/store";
 import { format } from "date-fns";
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import PageHeader from "@/components/PageHeader";
 import ChipSelector from "@/components/ChipSelector";
 import BPChart from "@/components/BPChart";
@@ -125,6 +122,10 @@ const BloodPressurePage = () => {
     document.body.appendChild(tempDiv);
 
     try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
       const canvas = await html2canvas(tempDiv, {
         scale: 2,
         useCORS: true,
@@ -169,6 +170,7 @@ const BloodPressurePage = () => {
           recursive: true,
         });
 
+        const { Share } = await import("@capacitor/share");
         await Share.share({
           title: header,
           dialogTitle: header,

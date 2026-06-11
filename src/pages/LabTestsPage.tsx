@@ -8,7 +8,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { analyzeValue, labReferences, type AnalyzedResult } from "@/lib/lab-references";
 import type { LabTest } from "@/types";
 import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
 
 interface ManualEntry {
   id: string;
@@ -484,6 +483,7 @@ const LabTestsPage = () => {
         data: base64,
         directory: Directory.Cache,
       });
+      const { Share } = await import("@capacitor/share");
       await Share.share({
         title: test.name,
         url: file.uri,
