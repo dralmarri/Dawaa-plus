@@ -59,10 +59,31 @@ const NearbyPlacesPage = () => {
     );
   };
 
-  const openInMaps = (query: string) => {
+  const openInMaps = async (query: string) => {
     if (!coords) return;
-    const url = `https://www.google.com/maps/search/${encodeURIComponent(query)}/@${coords.lat},${coords.lng},15z`;
-    window.open(url, "_blank");
+    // Use the official Maps "search" deep-link with explicit lat/lng for precise centering.
+    // `api=1` is the documented stable schema; including the coords as part of the query
+    // biases results strongly to the user's exact location.
+    const url =
+      `https://www.google.com/maps/search/?api=1` +
+      `&query=${encodeURIComponent(query)}` +
+      `&query_place_id=` +
+      `&center=${coords.lat},${coords.lng}` +
+      `&zoom=16`;
+
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      if (Capacitor.isNativePlatform()) {
+        // In-app browser (SFSafariViewController on iOS) keeps the app in memory,
+        // so the user taps "Done" and returns instantly without a refresh.
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url, presentationStyle: "popover" });
+        return;
+      }
+    } catch {
+      // fall through to web behavior
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   const openSingle = (type: PlaceType) => {
