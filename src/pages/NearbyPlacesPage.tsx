@@ -113,22 +113,24 @@ const NearbyPlacesPage = () => {
           )}
         </div>
 
-        {/* Type chips */}
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {types.map((tp) => (
-            <button
-              key={tp.key}
-              onClick={() => setActive(tp.key)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
-                active === tp.key
-                  ? "bg-chip-active text-chip-active-foreground border-chip-active"
-                  : "bg-chip text-chip-foreground border-border"
-              }`}
-            >
-              {isRTL ? tp.labelAr : tp.labelEn}
-            </button>
-          ))}
-        </div>
+        {/* Type chips (only when multiple types) */}
+        {types.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {types.map((tp) => (
+              <button
+                key={tp.key}
+                onClick={() => setActive(tp.key)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors whitespace-nowrap ${
+                  active === tp.key
+                    ? "bg-chip-active text-chip-active-foreground border-chip-active"
+                    : "bg-chip text-chip-foreground border-border"
+                }`}
+              >
+                {isRTL ? tp.labelAr : tp.labelEn}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Active type action */}
         <div className="bg-card rounded-2xl border border-border p-5 text-center">
