@@ -87,6 +87,28 @@ const MedicationsPage = () => {
                         );
                       })()}
                       {(() => {
+                        if (!med.expiryDate) return null;
+                        const exp = parseISO(med.expiryDate);
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const daysLeft = differenceInDays(exp, today);
+                        if (daysLeft < 0) {
+                          return (
+                            <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold bg-destructive/15 text-destructive px-2.5 py-1 rounded-full">
+                              ⚠️ {isRTL ? `منتهي الصلاحية منذ ${-daysLeft} يوم` : `Expired ${-daysLeft}d ago`}
+                            </div>
+                          );
+                        }
+                        if (daysLeft <= 30) {
+                          return (
+                            <div className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold bg-warning/15 text-warning px-2.5 py-1 rounded-full">
+                              ⏳ {isRTL ? `ينتهي خلال ${daysLeft} يوم` : `Expires in ${daysLeft}d`}
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+                      {(() => {
                         // Show next dose date for non-daily medications
                         const nonDaily = ['Every week', 'Every 2 weeks', 'Every month'];
                         if (!nonDaily.includes(med.frequency) || !med.startDate) return null;
