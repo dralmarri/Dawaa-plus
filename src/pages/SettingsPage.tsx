@@ -8,7 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { supabase } from "@/integrations/supabase/client";
 import { requestNotificationPermission, scheduleMedicationNotifications, getPermissionStatus } from "@/lib/notifications";
-import { speak, isSpeechSupported } from "@/lib/voice";
+
 import { toast } from "sonner";
 import type { AppSettings } from "@/types";
 
@@ -156,36 +156,8 @@ const SettingsPage = () => {
           </button>
         </div>
 
-        {/* Voice Notifications */}
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <h3 className="font-bold text-foreground flex items-center gap-2">🔊 {t.voiceNotifications}</h3>
-              <p className="text-sm text-muted-foreground">{t.voiceNotificationsDesc}</p>
-            </div>
-            <button onClick={() => update({ voiceNotifications: !settings.voiceNotifications })}
-              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.voiceNotifications ? "bg-primary" : "bg-border"}`}>
-              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.voiceNotifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-            </button>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              if (!isSpeechSupported()) {
-                toast.error(lang === "ar" ? "المتصفح لا يدعم النطق الصوتي" : "Speech not supported on this device");
-                return;
-              }
-              const sample = lang === "ar"
-                ? "هذا اختبار للإشعار الصوتي. حان موعد الدواء."
-                : "This is a voice alert test. Time to take your medication.";
-              speak(sample, { lang: lang === "ar" ? "ar" : "en" });
-              toast.success(lang === "ar" ? "جارٍ تشغيل العينة الصوتية…" : "Playing voice sample…");
-            }}
-            className="w-full py-2.5 rounded-xl bg-primary/10 text-primary font-semibold text-sm hover:bg-primary/20 transition-colors"
-          >
-            {lang === "ar" ? "🔈 تجربة الصوت" : "🔈 Test voice"}
-          </button>
-        </div>
+        {/* Voice notifications removed due to poor speech synthesis quality */}
+
 
         {/* Daily Summary */}
         <div className="bg-card rounded-2xl border border-border p-5 space-y-3">

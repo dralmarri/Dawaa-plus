@@ -1,6 +1,5 @@
 import { LocalNotifications, PermissionStatus } from '@capacitor/local-notifications';
 import { store } from './store';
-import { speak } from './voice';
 import type { Medication, Appointment } from '@/types';
 
 let scheduledIds: number[] = [];
@@ -23,19 +22,9 @@ async function registerListeners() {
   if (listenersRegistered) return;
   listenersRegistered = true;
 
-  // Show a toast when a notification fires while the app is in the foreground
+  // Log when a notification fires while the app is in the foreground
   await LocalNotifications.addListener('localNotificationReceived', (notification) => {
     console.log('[Notifications] Received in foreground:', notification.title);
-    try {
-      const s = store.getSettings();
-      if (s.notifications && s.voiceNotifications) {
-        const isArabic = s.language === 'ar';
-        const text = `${notification.title ?? ''}. ${notification.body ?? ''}`.trim();
-        if (text) speak(text, { lang: isArabic ? 'ar' : 'en' });
-      }
-    } catch (e) {
-      console.warn('[Notifications] voice alert failed:', e);
-    }
   });
 
   await LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
