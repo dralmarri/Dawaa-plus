@@ -3,6 +3,7 @@ import { CalendarDays, Check, X, Clock } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
+import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -15,6 +16,7 @@ const HistoryPage = () => {
 
   const records = store.getDoseRecords();
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
+  const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
 
   // Group records by date
   const grouped = useMemo(() => {
@@ -61,6 +63,14 @@ const HistoryPage = () => {
     <div className="pb-28">
       <div className="px-4 pt-6 pb-4">
         <h1 className="text-3xl font-bold text-foreground">{t.doseHistory}</h1>
+      </div>
+
+      {/* Adherence stats */}
+      <div className="px-4 mb-4">
+        <AdherenceStats
+          period={adherencePeriod}
+          onTogglePeriod={() => setAdherencePeriod((p) => (p === "week" ? "month" : "week"))}
+        />
       </div>
 
       {/* Summary bar */}
