@@ -76,7 +76,8 @@ const HomePage = () => {
     { label: t.bloodPressure, icon: Heart, path: "/blood-pressure", color: "text-heart" },
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "text-warning" },
     { label: t.labTests, icon: FlaskConical, path: "/lab-tests", color: "text-primary" },
-    { label: isRTL ? "أقرب صيدلية ومستشفى" : "Nearest Pharmacy & Hospital", icon: MapPin, path: "/nearby", color: "text-heart" },
+    { label: isRTL ? "أقرب صيدلية" : "Nearest Pharmacy", icon: MapPin, path: "/nearby?type=pharmacy", color: "text-primary" },
+    { label: isRTL ? "مستشفى ومركز صحي" : "Hospital & Clinic", icon: MapPin, path: "/nearby?type=hospital", color: "text-heart" },
   ];
 
   // Group doses by scheduled time
