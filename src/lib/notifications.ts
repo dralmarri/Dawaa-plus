@@ -339,6 +339,37 @@ export async function scheduleMedicationNotifications() {
     });
   }
 
+  // === Expiry Date Alert (≤30 days remaining) — daily at 9:05 AM ===
+  const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+  const expiringMeds = medications.filter(med => {
+    if (!med.expiryDate) return false;
+    const exp = new Date(med.expiryDate);
+    exp.setHours(0, 0, 0, 0);
+    const days = Math.floor((exp.getTime() - today0.getTime()) / 86400000);
+    return days >= 0 && days <= 30;
+  });
+  const expiredMeds = medications.filter(med => {
+    if (!med.expiryDate) return false;
+    const exp = new Date(med.expiryDate);
+    exp.setHours(0, 0, 0, 0);
+    return exp.getTime() < today0.getTime();
+  });
+
+  if (expiringMeds.length > 0 || expiredMeds.length > 0) {
+    const expId = 9998;
+    scheduledIds.push(expId);
+    const all = [...expiredMeds, ...expiringMeds].map(m => m.name).join(isArabic ? '، ' : ', ');
+    notifications.push({
+      id: expId,
+      title: isArabic ? '⏳ تنبيه انتهاء صلاحية' : '⏳ Expiry Alert',
+      body: isArabic
+        ? `أدوية قاربت على الانتهاء أو منتهية: ${all}`
+        : `Medications expiring soon or expired: ${all}`,
+      schedule: { on: { hour: 9, minute: 5 }, allowWhileIdle: true },
+      sound: 'default',
+      smallIcon: 'ic_stat_icon_config_sample',
+    });
+
   // === Appointment Reminders (1 day before + 2 hours before) ===
   const appointments: Appointment[] = store.getAppointments?.() || [];
   const upcomingAppts = appointments.filter(a => !a.completed);
