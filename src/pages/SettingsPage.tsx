@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2 } from "lucide-react";
 import { store } from "@/lib/store";
 import ChipSelector from "@/components/ChipSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTheme } from "@/contexts/ThemeContext";
+import { supabase } from "@/integrations/supabase/client";
 import { requestNotificationPermission, scheduleMedicationNotifications, getPermissionStatus } from "@/lib/notifications";
 import { toast } from "sonner";
 import type { AppSettings } from "@/types";
@@ -13,7 +15,32 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const { t, lang, setLang, isRTL } = useLanguage();
   const { logOut, user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [settings, setSettings] = useState<AppSettings>(store.getSettings());
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [deleteInput, setDeleteInput] = useState("");
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      const { error } = await supabase.functions.invoke("delete-account");
+      if (error) throw error;
+      // Clear local data
+      try {
+        const { Preferences } = await import("@capacitor/preferences");
+        await Preferences.clear();
+      } catch {
+        localStorage.clear();
+      }
+      toast.success(t.deleteAccountSuccess);
+      await logOut().catch(() => {});
+      window.location.href = "/auth";
+    } catch (e) {
+      toast.error(t.deleteAccountError);
+      setDeleting(false);
+    }
+  };
 
   const update = async (partial: Partial<AppSettings>) => {
     const next = { ...settings, ...partial };
