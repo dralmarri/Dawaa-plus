@@ -81,7 +81,7 @@ const AppRoutes = () => {
   return (
     <div className="min-h-[100dvh] bg-background pb-20">
       <Routes>
-        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage onSkip={() => setGuestMode(true)} />} />
+        <Route path="/auth" element={(user || guestMode) ? <Navigate to="/" replace /> : <AuthPage onSkip={() => setGuestMode(true)} />} />
         <Route path="/" element={<ProtectedRoute guestMode={guestMode}><HomePage /></ProtectedRoute>} />
         <Route path="/medications" element={<ProtectedRoute guestMode={guestMode}><MedicationsPage /></ProtectedRoute>} />
         <Route path="/medications/add" element={<ProtectedRoute guestMode={guestMode}><AddMedicationPage /></ProtectedRoute>} />
