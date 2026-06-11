@@ -14,7 +14,13 @@ const render = () => {
 
 const timeout = new Promise<void>((resolve) => setTimeout(resolve, 3000));
 
-Promise.race([initStore(), timeout]).then(render).catch(render);
+// Always render the app — never block on initStore. Catch any init error silently.
+Promise.race([initStore().catch((e) => console.error("initStore failed:", e)), timeout])
+  .then(render)
+  .catch((e) => {
+    console.error("Bootstrap error:", e);
+    render();
+  });
 
 // Remove any Lovable badge elements injected into the DOM
 const removeLovableElements = (root: ParentNode) => {
