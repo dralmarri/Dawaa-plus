@@ -5,7 +5,7 @@ type Lang = "en" | "ar";
 
 const translations = {
   en: {
-    appName: "dawaa+",
+    appName: "دواء+",
     home: "Home",
     medications: "Medications",
     history: "History",
@@ -195,7 +195,7 @@ const translations = {
     typeDeleteToConfirm: "Type DELETE to confirm",
   },
   ar: {
-    appName: "+دواء",
+    appName: "دواء+",
     home: "الرئيسية",
     medications: "الأدوية",
     history: "السجل",
