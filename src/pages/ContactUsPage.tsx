@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/mbdeyvrp";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xbdeawdv";
 
 export default function ContactUsPage() {
   const navigate = useNavigate();
