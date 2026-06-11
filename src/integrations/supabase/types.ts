@@ -167,6 +167,7 @@ export type Database = {
           created_at: string
           dosage: number
           duration_days: number | null
+          expiry_date: string | null
           form: string
           frequency: string
           id: string
@@ -186,6 +187,7 @@ export type Database = {
           created_at?: string
           dosage?: number
           duration_days?: number | null
+          expiry_date?: string | null
           form: string
           frequency?: string
           id: string
@@ -205,6 +207,7 @@ export type Database = {
           created_at?: string
           dosage?: number
           duration_days?: number | null
+          expiry_date?: string | null
           form?: string
           frequency?: string
           id?: string
