@@ -1,69 +1,256 @@
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useNavigate, Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
-import PageHeader from "@/components/PageHeader";
 
-const PrivacyPolicyPage = () => {
-  const { isRTL } = useLanguage();
+export default function PrivacyPolicyPage() {
+  const navigate = useNavigate();
+  const { lang, isRTL } = useLanguage();
+  const ar = lang === "ar";
+  const Back = isRTL ? ChevronRight : ChevronLeft;
+
+  const sections = ar
+    ? [
+        {
+          h: "مقدمة",
+          body: (
+            <p>
+              مرحباً بكم في تطبيق <strong>دواء+</strong>. نحن نحترم خصوصيتكم ونلتزم بحماية بياناتكم الصحية والشخصية.
+              توضح هذه السياسة كيف نجمع ونستخدم ونحمي معلوماتكم.
+            </p>
+          ),
+        },
+        {
+          h: "الحساب وتسجيل الدخول",
+          body: (
+            <p>
+              يدعم التطبيق الاستخدام كزائر دون حساب، أو إنشاء حساب وتسجيل الدخول لمزامنة بياناتكم بين أجهزتكم.
+              نقوم بجمع بريدكم الإلكتروني وكلمة المرور (مُشفّرة) لأغراض المصادقة فقط.
+            </p>
+          ),
+        },
+        {
+          h: "البيانات التي نجمعها",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>بيانات الحساب: البريد الإلكتروني</li>
+              <li>قائمة الأدوية والجرعات والمواعيد والمخزون</li>
+              <li>قراءات ضغط الدم ونبض القلب</li>
+              <li>المواعيد الطبية والتحاليل المُدخلة يدوياً</li>
+              <li>إعدادات التطبيق والتفضيلات (اللغة، التنبيهات…)</li>
+            </ul>
+          ),
+        },
+        {
+          h: "كيفية تخزين البيانات",
+          body: (
+            <>
+              <p>
+                عند تسجيل الدخول، تُخزَّن بياناتكم بشكل آمن في قاعدة بيانات سحابية لتمكين المزامنة الفورية بين أجهزتكم.
+                لا يستطيع أي مستخدم الوصول إلا إلى بياناته الخاصة فقط عبر سياسات أمان صارمة (Row-Level Security).
+              </p>
+              <p>
+                في وضع الزائر، تُخزَّن جميع البيانات محلياً على جهازكم فقط، ويمكن ترحيلها لاحقاً إلى الحساب عند تسجيل الدخول.
+              </p>
+            </>
+          ),
+        },
+        {
+          h: "التنبيهات",
+          body: (
+            <p>
+              يستخدم التطبيق التنبيهات المحلية فقط لتذكيركم بمواعيد الأدوية وقياسات الضغط والمواعيد الطبية.
+              لا تُرسَل أي بيانات صحية مع التنبيهات، ويمكن إيقاف التنبيهات من شاشة الإعدادات في أي وقت.
+            </p>
+          ),
+        },
+        {
+          h: "حماية البيانات",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>تشفير الاتصال بين التطبيق والخادم (HTTPS)</li>
+              <li>عزل بيانات كل مستخدم عبر سياسات أمان على مستوى الصف (RLS)</li>
+              <li>عدم مشاركة البيانات مع أي طرف ثالث لأغراض تسويقية أو إعلانية</li>
+              <li>إمكانية حذف بياناتكم أو حسابكم بالكامل في أي وقت</li>
+            </ul>
+          ),
+        },
+        {
+          h: "حقوقكم",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>الوصول إلى بياناتكم ومراجعتها داخل التطبيق</li>
+              <li>تعديل أو حذف أي بيانات مُخزّنة</li>
+              <li>طلب حذف الحساب وجميع البيانات المرتبطة به نهائياً من الإعدادات</li>
+            </ul>
+          ),
+        },
+        {
+          h: "إخلاء المسؤولية الطبية",
+          body: (
+            <p>
+              تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
+              الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
+            </p>
+          ),
+        },
+        {
+          h: "التواصل",
+          body: (
+            <p>
+              لأي استفسارات حول سياسة الخصوصية، يرجى التواصل عبر{" "}
+              <Link to="/contact" className="font-medium text-primary hover:underline">
+                صفحة تواصل معنا
+              </Link>
+              .
+            </p>
+          ),
+        },
+        {
+          h: "تحديثات السياسة",
+          body: (
+            <p>
+              قد نقوم بتحديث هذه السياسة من وقت لآخر. سيتم نشر أي تغييرات على هذه الصفحة مع تحديث تاريخ آخر تعديل.
+            </p>
+          ),
+        },
+      ]
+    : [
+        {
+          h: "Introduction",
+          body: (
+            <p>
+              Welcome to <strong>Dawaa+</strong>. We respect your privacy and are committed to protecting your
+              health and personal data. This policy explains how we collect, use, and safeguard your information.
+            </p>
+          ),
+        },
+        {
+          h: "Account & sign-in",
+          body: (
+            <p>
+              The app supports guest use without an account, or creating an account to sync your data across
+              devices. We collect your email and password (hashed) for authentication only.
+            </p>
+          ),
+        },
+        {
+          h: "Data we collect",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>Account data: email address</li>
+              <li>Medication list, doses, schedules, and stock</li>
+              <li>Blood pressure and heart rate readings</li>
+              <li>Medical appointments and manually entered lab results</li>
+              <li>App settings and preferences (language, notifications…)</li>
+            </ul>
+          ),
+        },
+        {
+          h: "How data is stored",
+          body: (
+            <>
+              <p>
+                When signed in, your data is securely stored in a cloud database to enable instant sync across
+                your devices. Each user can only access their own data via strict Row-Level Security policies.
+              </p>
+              <p>
+                In guest mode, all data stays local on your device and can later be migrated to your account on
+                sign-in.
+              </p>
+            </>
+          ),
+        },
+        {
+          h: "Notifications",
+          body: (
+            <p>
+              The app uses local notifications only to remind you about medications, blood pressure
+              measurements, and appointments. No health data is sent with the notifications, and notifications
+              can be disabled from Settings at any time.
+            </p>
+          ),
+        },
+        {
+          h: "Data protection",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>Encrypted communication between app and server (HTTPS)</li>
+              <li>Per-user isolation via Row-Level Security policies</li>
+              <li>No sharing of data with third parties for marketing or ads</li>
+              <li>Ability to delete your data or full account at any time</li>
+            </ul>
+          ),
+        },
+        {
+          h: "Your rights",
+          body: (
+            <ul className="list-disc ps-6 space-y-1">
+              <li>Access and review your data inside the app</li>
+              <li>Edit or delete any stored data</li>
+              <li>Request permanent deletion of your account and all related data from Settings</li>
+            </ul>
+          ),
+        },
+        {
+          h: "Medical disclaimer",
+          body: (
+            <p>
+              Dawaa+ is an aid for organizing medications and measurements only and is not a substitute for
+              consultation with your doctor or pharmacist. Always consult a qualified professional before making
+              any decision about your health or treatment.
+            </p>
+          ),
+        },
+        {
+          h: "Contact",
+          body: (
+            <p>
+              For any questions about this privacy policy, please reach us via the{" "}
+              <Link to="/contact" className="font-medium text-primary hover:underline">
+                contact page
+              </Link>
+              .
+            </p>
+          ),
+        },
+        {
+          h: "Policy updates",
+          body: (
+            <p>
+              We may update this policy from time to time. Any changes will be posted on this page along with an
+              updated last-modified date.
+            </p>
+          ),
+        },
+      ];
 
   return (
-    <div className="pb-24">
-      <PageHeader title={isRTL ? "سياسة الخصوصية" : "Privacy Policy"} showBack />
-      <div className="px-4 space-y-4">
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-4 text-foreground text-sm leading-relaxed">
-          <section>
-            <h2 className="text-lg font-bold mb-2">{isRTL ? "مقدمة" : "Introduction"}</h2>
-            <p>{isRTL
-              ? "تطبيق Dawaa+ (دواء بلس) يحترم خصوصيتك بشكل كامل. هذا التطبيق لا يجمع أي بيانات ولا يرسلها لأي جهة خارجية. جميع بياناتك تبقى على جهازك فقط."
-              : "Dawaa+ fully respects your privacy. This app does not collect any data and does not send it to any external party. All your data stays on your device only."
-            }</p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-2">{isRTL ? "تخزين البيانات" : "Data Storage"}</h2>
-            <p>{isRTL
-              ? "جميع البيانات التي تدخلها في التطبيق (الأدوية، قراءات ضغط الدم، المواعيد، التحاليل، الإعدادات) تُحفظ محلياً على جهازك فقط باستخدام ذاكرة المتصفح. لا يوجد خادم أو قاعدة بيانات سحابية. التطبيق لا يتصل بالإنترنت لإرسال أو استقبال بياناتك الشخصية."
-              : "All data you enter in the app (medications, blood pressure readings, appointments, lab tests, settings) is stored locally on your device only using browser storage. There is no server or cloud database. The app does not connect to the internet to send or receive your personal data."
-            }</p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-2">{isRTL ? "لا نجمع بيانات" : "We Do Not Collect Data"}</h2>
-            <p>{isRTL
-              ? "التطبيق لا يجمع أي معلومات شخصية أو صحية أو تحليلات استخدام. لا نستخدم أي أدوات تتبع أو تحليلات أو إعلانات. خصوصيتك مضمونة بالكامل."
-              : "The app does not collect any personal information, health data, or usage analytics. We do not use any tracking tools, analytics, or advertisements. Your privacy is fully guaranteed."
-            }</p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-2">{isRTL ? "الإشعارات" : "Notifications"}</h2>
-            <p>{isRTL
-              ? "يستخدم التطبيق الإشعارات المحلية فقط لتذكيرك بمواعيد أدويتك. هذه الإشعارات تعمل على جهازك ولا تمر عبر أي خادم خارجي. يمكنك تفعيلها أو تعطيلها في أي وقت."
-              : "The app uses local notifications only to remind you of your medication schedules. These notifications run on your device and do not pass through any external server. You can enable or disable them at any time."
-            }</p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-2">{isRTL ? "حذف البيانات" : "Data Deletion"}</h2>
-            <p>{isRTL
-              ? "يمكنك حذف جميع بياناتك في أي وقت من خلال خيار 'حذف الحساب وجميع البيانات' في الإعدادات، أو بحذف التطبيق من جهازك. عند الحذف تُمسح جميع البيانات نهائياً ولا يمكن استرجاعها."
-              : "You can delete all your data at any time through 'Delete Account & All Data' in Settings, or by deleting the app from your device. All data is permanently erased and cannot be recovered."
-            }</p>
-          </section>
-
-          <section>
-            <h2 className="text-lg font-bold mb-2">{isRTL ? "التواصل معنا" : "Contact Us"}</h2>
-            <p>{isRTL
-              ? "إذا كان لديك أي استفسار حول سياسة الخصوصية، يرجى التواصل معنا عبر صفحة \"تواصل معنا\" داخل التطبيق."
-              : "If you have any questions about this privacy policy, please reach us via the \"Contact us\" page inside the app."
-            }</p>
-          </section>
-
-          <p className="text-muted-foreground text-xs pt-2">
-            {isRTL ? "آخر تحديث: مارس 2026" : "Last updated: March 2026"}
-          </p>
+    <div className="min-h-[100dvh] bg-background pb-28">
+      <header className="border-b border-border bg-card/80 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-5">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+          >
+            <Back size={20} />
+          </button>
+          <h1 className="text-xl font-bold text-foreground">
+            {ar ? "سياسة الخصوصية" : "Privacy Policy"}
+          </h1>
         </div>
-      </div>
+      </header>
+
+      <main className="mx-auto max-w-3xl px-4 py-6 space-y-6 text-sm leading-relaxed text-foreground">
+        <p className="text-muted-foreground">
+          {ar ? "آخر تحديث: يونيو 2026" : "Last updated: June 2026"}
+        </p>
+        {sections.map((s) => (
+          <section key={s.h} className="space-y-2">
+            <h2 className="text-lg font-bold">{s.h}</h2>
+            {s.body}
+          </section>
+        ))}
+      </main>
     </div>
   );
-};
-
-export default PrivacyPolicyPage;
+}
