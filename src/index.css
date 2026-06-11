@@ -193,6 +193,11 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Hide Lovable badge */
+[data-lovable-badge], .lovable-badge, iframe[src*="lovable"] {
+  display: none !important;
+}
+
 /* Capacitor / iOS specific */
 body {
   -webkit-tap-highlight-color: transparent;
