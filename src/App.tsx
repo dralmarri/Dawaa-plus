@@ -24,6 +24,7 @@ import TermsOfUsePage from "@/pages/TermsOfUsePage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import ContactUsPage from "@/pages/ContactUsPage";
+import ReportsPage from "@/pages/ReportsPage";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -88,6 +89,7 @@ const AppRoutes = () => {
         <Route path="/blood-pressure" element={<ProtectedRoute guestMode={guestMode}><BloodPressurePage /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute guestMode={guestMode}><AppointmentsPage /></ProtectedRoute>} />
         <Route path="/lab-tests" element={<ProtectedRoute guestMode={guestMode}><LabTestsPage /></ProtectedRoute>} />
+        <Route path="/reports" element={<ProtectedRoute guestMode={guestMode}><ReportsPage /></ProtectedRoute>} />
         <Route path="/emergency-contact" element={<ProtectedRoute guestMode={guestMode}><EmergencyContactPage /></ProtectedRoute>} />
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
