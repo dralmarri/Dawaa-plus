@@ -6,7 +6,8 @@ import { initStore } from "@/lib/store";
 import { Preferences } from "@capacitor/preferences";
 
 // Dev-only screenshot seeder: ?seed=appstore
-if (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("seed") === "appstore") {
+if (typeof window !== "undefined" && (new URLSearchParams(window.location.search).get("seed") === "appstore" || sessionStorage.getItem("__demo_seed__") === "1")) {
+  sessionStorage.setItem("__demo_seed__", "1");
   (async () => {
     const today = new Date().toISOString().slice(0, 10);
     const nowIso = new Date().toISOString();
