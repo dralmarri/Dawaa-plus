@@ -3,7 +3,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import App from "./App.tsx";
 import "./index.css";
 import { initStore } from "@/lib/store";
-import { Preferences } from "@capacitor/preferences";
+
 
 // Dev-only screenshot seeder: ?seed=appstore (persists via sessionStorage for nav)
 const isDemoSeed = typeof window !== "undefined" && (new URLSearchParams(window.location.search).get("seed") === "appstore" || sessionStorage.getItem("__demo_seed__") === "1");
