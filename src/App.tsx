@@ -54,8 +54,7 @@ const AppRoutes = () => {
   }, []);
 
   useEffect(() => {
-    const demoMode = typeof window !== "undefined" && sessionStorage.getItem("__demo_seed__") === "1";
-    if (user && !demoMode) {
+    if (user) {
       setStoreUid(user.id);
       // Migrate local data then sync from cloud
       migrateLocalToCloud(user.id).then((count) => {
