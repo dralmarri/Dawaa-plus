@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -45,6 +45,12 @@ const ProtectedRoute = ({ children, guestMode }: { children: React.ReactNode; gu
   }
   if (!user && !guestMode) return <Navigate to="/auth" replace />;
   return <>{children}</>;
+};
+
+const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolean) => void }) => {
+  const location = useLocation();
+  if (user && !(location.state as any)?.fromSettings) return <Navigate to="/" replace />;
+  return <AuthPage onSkip={() => setGuestMode(true)} />;
 };
 
 const AppRoutes = () => {
@@ -124,7 +130,7 @@ const AppRoutes = () => {
     </AlertDialog>
     <div className="min-h-[100dvh] bg-background pb-20">
       <Routes>
-        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage onSkip={() => setGuestMode(true)} />} />
+        <Route path="/auth" element={<AuthRoute user={user} setGuestMode={setGuestMode} />} />
         <Route path="/" element={<ProtectedRoute guestMode={guestMode}><HomePage /></ProtectedRoute>} />
         <Route path="/medications" element={<ProtectedRoute guestMode={guestMode}><MedicationsPage /></ProtectedRoute>} />
         <Route path="/medications/add" element={<ProtectedRoute guestMode={guestMode}><AddMedicationPage /></ProtectedRoute>} />
