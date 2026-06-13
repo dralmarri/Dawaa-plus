@@ -148,6 +148,29 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
           </div>
         )}
 
+        {/* Confirm Password (register only) */}
+        {mode === "register" && (
+          <div>
+            <label className="text-sm font-bold text-foreground block mb-1.5">تأكيد كلمة المرور</label>
+            <div className="relative">
+              <Lock className="w-4 h-4 absolute top-3.5 text-muted-foreground" style={{ [isRTL ? "right" : "left"]: "12px" }} />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="أعد كتابة كلمة المرور"
+                className="w-full px-4 py-3 rounded-xl bg-accent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                style={{ [isRTL ? "paddingRight" : "paddingLeft"]: "36px" }}
+                dir="ltr"
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              />
+            </div>
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-xs text-destructive mt-1">كلمتا المرور غير متطابقتين</p>
+            )}
+          </div>
+        )}
+
         {/* Forgot password */}
         {mode === "login" && (
           <button
