@@ -682,8 +682,10 @@ const LabTestsPage = () => {
           {filteredList.map((test, index) => {
             const hasResults = savedResults[test.id] || allStoredResults[test.id];
             const testNumber = filteredList.length - index;
-            const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:");
+            const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:") && !test.fileUrl.startsWith("pdfdata:");
             const hasPdf = test.fileUrl && test.fileUrl.startsWith("pdf:");
+            const hasPdfData = test.fileUrl && test.fileUrl.startsWith("pdfdata:");
+            const pdfDataName = hasPdfData ? (test.fileUrl!.slice("pdfdata:".length).split("|||")[0] || "PDF") : "";
 
             return (
               <div key={test.id} className="bg-card rounded-2xl border border-border overflow-hidden">
