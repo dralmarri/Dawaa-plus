@@ -638,6 +638,36 @@ const LabTestsPage = () => {
         />
       )}
 
+      {pdfViewer && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          <div className="flex items-center justify-between gap-2 p-3 bg-background border-b">
+            <span className="text-sm font-medium truncate flex-1">{pdfViewer.name}</span>
+            <a
+              href={pdfViewer.url}
+              download={pdfViewer.name}
+              className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground"
+            >
+              {isRTL ? "تحميل" : "Download"}
+            </a>
+            <button
+              onClick={() => {
+                URL.revokeObjectURL(pdfViewer.url);
+                setPdfViewer(null);
+              }}
+              className="p-2 rounded-md hover:bg-muted"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <iframe
+            src={pdfViewer.url}
+            title={pdfViewer.name}
+            className="flex-1 w-full bg-white"
+          />
+        </div>
+      )}
+
       {tests.length === 0 && !showForm ? (
         <EmptyState
           icon={<FlaskConical className="w-16 h-16" />}
