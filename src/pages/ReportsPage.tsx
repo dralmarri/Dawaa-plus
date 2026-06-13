@@ -141,13 +141,11 @@ const ReportsPage = () => {
 
     const renderLabAttachment = (fileUrl?: string) => {
       if (!fileUrl) return "";
-      // Image data URL → embed visually
       if (fileUrl.startsWith("data:image") || fileUrl.startsWith("http")) {
-        return `<div style="margin-top:8px;text-align:center;">
-          <img src="${fileUrl}" alt="lab" crossorigin="anonymous" style="max-width:100%;max-height:420px;border:1px solid #d1d5db;border-radius:8px;"/>
+        return `<div style="margin-top:8px;padding:8px 12px;background:#ecfdf5;border:1px dashed #14532d;border-radius:8px;font-size:12px;color:#14532d;">
+          🖼️ ${isRTL ? "صورة التحليل مرفقة في صفحة منفصلة" : "Lab image attached on a separate page"}
         </div>`;
       }
-      // PDF stored as pdfdata:name|||dataurl
       if (fileUrl.startsWith("pdfdata:")) {
         const name = fileUrl.slice(8).split("|||")[0] || "PDF";
         return `<div style="margin-top:8px;padding:8px 12px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-size:12px;color:#374151;">
