@@ -8,23 +8,28 @@ import { cancelMedicationNotifications, rescheduleAllNotifications } from "@/lib
 import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Medication } from "@/types";
 
 const MedicationsPage = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
   const [medications, setMedications] = useState<Medication[]>(store.getMedications());
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(isRTL ? "هل أنت متأكد من حذف هذا الدواء؟" : "Are you sure you want to delete this medication?");
-    if (!confirmed) return;
-    const med = store.getMedications().find(m => m.id === id);
-    await store.deleteMedication(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    const med = store.getMedications().find(m => m.id === deleteId);
+    await store.deleteMedication(deleteId);
     if (med) {
       await cancelMedicationNotifications(med.id, med.times || []);
     }
     await rescheduleAllNotifications();
     setMedications(store.getMedications());
+    setDeleteId(null);
   };
 
   return (
@@ -153,7 +158,7 @@ const MedicationsPage = () => {
                         <Pencil className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDelete(med.id)}
+                        onClick={() => setDeleteId(med.id)}
                         className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20"
                         aria-label={isRTL ? "حذف الدواء" : "Delete medication"}
                       >
@@ -167,6 +172,22 @@ const MedicationsPage = () => {
           ))}
         </div>
       )}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isRTL ? "حذف الدواء" : "Delete Medication"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isRTL ? "هل أنت متأكد من حذف هذا الدواء؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this medication? This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isRTL ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isRTL ? "حذف" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

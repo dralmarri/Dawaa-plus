@@ -6,6 +6,10 @@ import PageHeader from "@/components/PageHeader";
 import EmptyState from "@/components/EmptyState";
 import ChipSelector from "@/components/ChipSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { Appointment } from "@/types";
 
 const AppointmentsPage = () => {
@@ -14,6 +18,7 @@ const AppointmentsPage = () => {
   const [showForm, setShowForm] = useState(false);
   const [tab, setTab] = useState<"all" | "upcoming" | "completed">("upcoming");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const specialtyMap: Record<string, string> = {
     "General Practitioner": t.generalPractitioner, "Dentist": t.dentist,
@@ -106,11 +111,11 @@ const AppointmentsPage = () => {
     setEditingId(null);
   };
 
-  const handleDelete = (id: string) => {
-    const confirmed = window.confirm(isRTL ? "هل أنت متأكد من حذف هذا الموعد؟" : "Are you sure you want to delete this appointment?");
-    if (!confirmed) return;
-    store.deleteAppointment(id);
+  const confirmDelete = () => {
+    if (!deleteId) return;
+    store.deleteAppointment(deleteId);
     setAppointments(store.getAppointments());
+    setDeleteId(null);
   };
 
   const toggleComplete = (id: string) => {
@@ -187,7 +192,7 @@ const AppointmentsPage = () => {
                       className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${apt.completed ? "bg-summary-taken text-summary-taken-foreground" : "bg-accent text-accent-foreground"}`}>
                       {apt.completed ? `✓ ${t.done}` : t.markDone}
                     </button>
-                    <button onClick={() => handleDelete(apt.id)} className="text-destructive/60 hover:text-destructive text-lg">🗑️</button>
+                    <button onClick={() => setDeleteId(apt.id)} className="text-destructive/60 hover:text-destructive text-lg">🗑️</button>
                   </div>
                 </div>
               </div>
@@ -244,6 +249,22 @@ const AppointmentsPage = () => {
           </div>
         </div>
       )}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isRTL ? "حذف الموعد" : "Delete Appointment"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isRTL ? "هل أنت متأكد من حذف هذا الموعد؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this appointment? This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isRTL ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isRTL ? "حذف" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

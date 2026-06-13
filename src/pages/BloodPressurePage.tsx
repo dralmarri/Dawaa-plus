@@ -8,6 +8,11 @@ import PageHeader from "@/components/PageHeader";
 import ChipSelector from "@/components/ChipSelector";
 import BPChart from "@/components/BPChart";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { BloodPressureReading } from "@/types";
 
 const BloodPressurePage = () => {
@@ -19,6 +24,7 @@ const BloodPressurePage = () => {
   const [notes, setNotes] = useState("");
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const latestReading = readings[0];
   const last7 = readings.slice(0, 7);
@@ -68,11 +74,11 @@ const BloodPressurePage = () => {
     setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
   };
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(isRTL ? "هل أنت متأكد من حذف هذه القراءة؟" : "Are you sure you want to delete this reading?");
-    if (!confirmed) return;
-    await store.deleteReading(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await store.deleteReading(deleteId);
     setReadings(store.getReadings());
+    setDeleteId(null);
   };
 
   const handlePrintReport = async () => {
@@ -181,13 +187,14 @@ const BloodPressurePage = () => {
       }
     } catch (error) {
       console.error("Failed to export blood pressure report", error);
-      window.alert(isRTL ? "تعذر إنشاء ملف التقرير الآن. حاول مرة أخرى." : "Unable to generate the report right now. Please try again.");
+      toast.error(isRTL ? "تعذر إنشاء ملف التقرير الآن. حاول مرة أخرى." : "Unable to generate the report right now. Please try again.");
     } finally {
       document.body.removeChild(tempDiv);
     }
   };
 
   return (
+    <>
     <div className="pb-28 overflow-x-hidden">
       <PageHeader title={t.bloodPressureMonitoring} showBack />
       <div className="px-3 sm:px-4 space-y-4 max-w-lg mx-auto">
@@ -337,7 +344,7 @@ const BloodPressurePage = () => {
                     <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
-                    <button onClick={() => handleDelete(r.id)} className="text-destructive/60 hover:text-destructive p-1">🗑️</button>
+                    <button onClick={() => setDeleteId(r.id)} className="text-destructive/60 hover:text-destructive p-1">🗑️</button>
                   </div>
                 </div>
               ))}
@@ -346,6 +353,23 @@ const BloodPressurePage = () => {
         )}
       </div>
     </div>
+    <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{isRTL ? "حذف القراءة" : "Delete Reading"}</AlertDialogTitle>
+          <AlertDialogDescription>
+            {isRTL ? "هل أنت متأكد من حذف هذه القراءة؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this reading? This action cannot be undone."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{isRTL ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+          <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            {isRTL ? "حذف" : "Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 };
 

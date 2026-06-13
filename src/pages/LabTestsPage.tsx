@@ -8,6 +8,11 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { analyzeValue, labReferences, type AnalyzedResult } from "@/lib/lab-references";
 import type { LabTest } from "@/types";
 import { Filesystem, Directory } from "@capacitor/filesystem";
+import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ManualEntry {
   id: string;
@@ -156,6 +161,7 @@ const LabTestsPage = () => {
   const [pdfViewer, setPdfViewer] = useState<{ pages: string[]; name: string; downloadUrl: string } | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [listSearch, setListSearch] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
     try { return JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}"); } catch { return {}; }
@@ -285,31 +291,13 @@ const LabTestsPage = () => {
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
-  // Open a stored PDF for viewing (native share on iOS/Android, new tab on web)
+  // Open a stored PDF for viewing — renders pages as images inside the app on all platforms
   const openPdf = async (fileUrl: string) => {
     if (!fileUrl.startsWith("pdfdata:")) return;
     const sep = fileUrl.indexOf("|||");
     if (sep < 0) return;
     const filename = fileUrl.slice("pdfdata:".length, sep) || "lab-test.pdf";
     const dataUrl = fileUrl.slice(sep + 3);
-    try {
-      const { Capacitor } = await import("@capacitor/core");
-      if (Capacitor.isNativePlatform()) {
-        const base64 = dataUrl.split(",")[1] || "";
-        const safeName = filename.replace(/[^\w.\-]/g, "_");
-        const written = await Filesystem.writeFile({
-          path: safeName,
-          data: base64,
-          directory: Directory.Cache,
-        });
-        const { Share } = await import("@capacitor/share");
-        await Share.share({ title: filename, url: written.uri });
-        return;
-      }
-    } catch (err) {
-      console.warn("Native PDF open failed, falling back:", err);
-    }
-    // Web fallback: render PDF pages as images using pdf.js (iOS Safari doesn't show PDFs in iframes/blob tabs)
     try {
       setPdfLoading(true);
       const res = await fetch(dataUrl);
@@ -331,9 +319,8 @@ const LabTestsPage = () => {
         pages.push(canvas.toDataURL("image/jpeg", 0.85));
       }
       setPdfViewer({ pages, name: filename, downloadUrl });
-    } catch (err) {
-      console.error("Open PDF failed:", err);
-      alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
+    } catch {
+      toast.error(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
     } finally {
       setPdfLoading(false);
     }
@@ -369,8 +356,7 @@ const LabTestsPage = () => {
       }
       setTests(store.getLabTests());
       resetForm();
-    } catch (err) {
-      console.error("Save error:", err);
+    } catch {
       if (attachedImage && attachedImage.length > 1000) {
         test.fileUrl = undefined;
         try {
@@ -383,12 +369,12 @@ const LabTestsPage = () => {
           }
           setTests(store.getLabTests());
           resetForm();
-          alert(isRTL ? "تم الحفظ بدون الصورة (المساحة ممتلئة)" : "Saved without image (storage full)");
+          toast.warning(isRTL ? "تم الحفظ بدون الصورة (المساحة ممتلئة)" : "Saved without image (storage full)");
         } catch {
-          alert(isRTL ? "فشل الحفظ - المساحة ممتلئة" : "Save failed - storage full");
+          toast.error(isRTL ? "فشل الحفظ - المساحة ممتلئة" : "Save failed - storage full");
         }
       } else {
-        alert(isRTL ? "فشل الحفظ" : "Save failed");
+        toast.error(isRTL ? "فشل الحفظ" : "Save failed");
       }
     }
   };
@@ -426,14 +412,14 @@ const LabTestsPage = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(isRTL ? "هل أنت متأكد من حذف هذا التحليل؟" : "Are you sure you want to delete this lab test?");
-    if (!confirmed) return;
-    await store.deleteLabTest(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await store.deleteLabTest(deleteId);
     const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
-    delete allResults[id];
+    delete allResults[deleteId];
     localStorage.setItem("dawaa_lab_results", JSON.stringify(allResults));
     setTests(store.getLabTests());
+    setDeleteId(null);
   };
 
   const loadSavedResults = (testId: string) => {
@@ -668,23 +654,47 @@ const LabTestsPage = () => {
       {pdfViewer && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
           <div className="flex items-center justify-between gap-2 p-3 bg-background border-b">
-            <span className="text-sm font-medium truncate flex-1">{pdfViewer.name}</span>
-            <a
-              href={pdfViewer.downloadUrl}
-              download={pdfViewer.name}
-              className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground"
-            >
-              {isRTL ? "تحميل" : "Download"}
-            </a>
             <button
               onClick={() => {
                 URL.revokeObjectURL(pdfViewer.downloadUrl);
                 setPdfViewer(null);
               }}
-              className="p-2 rounded-md hover:bg-muted"
+              className="p-2 rounded-md hover:bg-muted flex-shrink-0"
               aria-label="Close"
             >
               <X className="w-5 h-5" />
+            </button>
+            <span className="text-sm font-medium truncate flex-1 text-center">{pdfViewer.name}</span>
+            <button
+              onClick={async () => {
+                try {
+                  const { Capacitor } = await import("@capacitor/core");
+                  if (Capacitor.isNativePlatform()) {
+                    const base64 = pdfViewer.downloadUrl;
+                    const res = await fetch(base64);
+                    const blob = await res.blob();
+                    const reader = new FileReader();
+                    reader.onload = async () => {
+                      const b64 = (reader.result as string).split(",")[1];
+                      const safeName = pdfViewer.name.replace(/[^\w.\-]/g, "_");
+                      const written = await Filesystem.writeFile({ path: safeName, data: b64, directory: Directory.Cache });
+                      const { Share } = await import("@capacitor/share");
+                      await Share.share({ title: pdfViewer.name, url: written.uri });
+                    };
+                    reader.readAsDataURL(blob);
+                  } else {
+                    const a = document.createElement("a");
+                    a.href = pdfViewer.downloadUrl;
+                    a.download = pdfViewer.name;
+                    a.click();
+                  }
+                } catch {
+                  toast.error(isRTL ? "تعذر مشاركة الملف" : "Could not share file");
+                }
+              }}
+              className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground flex-shrink-0"
+            >
+              {isRTL ? "مشاركة" : "Share"}
             </button>
           </div>
           <div className="flex-1 overflow-auto bg-neutral-900 p-2 space-y-2">
@@ -692,10 +702,13 @@ const LabTestsPage = () => {
               <img
                 key={i}
                 src={src}
-                alt={`Page ${i + 1}`}
+                alt={`${isRTL ? "صفحة" : "Page"} ${i + 1}`}
                 className="w-full h-auto bg-white rounded shadow"
               />
             ))}
+          </div>
+          <div className="bg-background border-t px-4 py-2 text-center text-xs text-muted-foreground">
+            {isRTL ? `${pdfViewer.pages.length} صفحة` : `${pdfViewer.pages.length} page${pdfViewer.pages.length !== 1 ? "s" : ""}`}
           </div>
         </div>
       )}
@@ -765,7 +778,7 @@ const LabTestsPage = () => {
                       <button onClick={() => openEdit(test)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(test.id)} className="text-destructive/60 hover:text-destructive p-1">
+                      <button onClick={() => setDeleteId(test.id)} className="text-destructive/60 hover:text-destructive p-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -783,9 +796,9 @@ const LabTestsPage = () => {
                     )}
                     {hasPdf && (
                       <button
-                        onClick={() => alert(isRTL
-                          ? "هذا الملف محفوظ بالاسم فقط. اضغط (تعديل) ثم أعد إرفاق الملف لتتمكن من فتحه."
-                          : "Only the filename was saved. Tap (edit) and re-attach the file to open it.")}
+                        onClick={() => toast.info(isRTL
+                          ? "اضغط (تعديل) ثم أعد إرفاق الملف لتتمكن من فتحه"
+                          : "Tap edit and re-attach the file to open it")}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-bold hover:bg-accent transition-colors"
                       >
                         📄 {test.fileUrl!.replace("pdf:", "")}
@@ -1074,6 +1087,22 @@ const LabTestsPage = () => {
           </div>
         </div>
       )}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isRTL ? "حذف التحليل" : "Delete Lab Test"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isRTL ? "هل أنت متأكد من حذف هذا التحليل؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this lab test? This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isRTL ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isRTL ? "حذف" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

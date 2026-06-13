@@ -22,13 +22,12 @@ async function registerListeners() {
   if (listenersRegistered) return;
   listenersRegistered = true;
 
-  // Log when a notification fires while the app is in the foreground
-  await LocalNotifications.addListener('localNotificationReceived', (notification) => {
-    console.log('[Notifications] Received in foreground:', notification.title);
+  await LocalNotifications.addListener('localNotificationReceived', (_notification) => {
+    // foreground notification received
   });
 
-  await LocalNotifications.addListener('localNotificationActionPerformed', (action) => {
-    console.log('[Notifications] Action performed:', action.notification.title);
+  await LocalNotifications.addListener('localNotificationActionPerformed', (_action) => {
+    // notification action performed
   });
 }
 
@@ -167,8 +166,8 @@ export async function scheduleMedicationNotifications() {
         notifications: pending.notifications.map(n => ({ id: n.id })),
       });
     }
-  } catch (e) {
-    console.warn('[Notifications] Failed to cancel pending notifications', e);
+  } catch {
+    // ignore cancel errors
   }
   scheduledIds = [];
 
@@ -423,7 +422,6 @@ export async function scheduleMedicationNotifications() {
 
   if (notifications.length > 0) {
     await LocalNotifications.schedule({ notifications });
-    console.log(`[Notifications] Scheduled ${notifications.length} notifications`);
   }
 
   return scheduledIds.length;
@@ -442,9 +440,8 @@ export async function startNotificationLoop() {
 export async function cancelDoseNotification(medicationId: string, timeStr: string) {
   try {
     await scheduleMedicationNotifications();
-    console.log(`[Notifications] Canceled dose reminder for ${medicationId} @ ${timeStr}`);
-  } catch (e) {
-    console.warn('[Notifications] Failed to cancel dose notification', e);
+  } catch {
+    // ignore
   }
 }
 
@@ -460,9 +457,8 @@ export async function cancelMedicationNotifications(medicationId: string, times:
     }
     const idSet = new Set(ids.map(i => i.id));
     scheduledIds = scheduledIds.filter(x => !idSet.has(x));
-    console.log(`[Notifications] Canceled all reminders for medication ${medicationId}`);
-  } catch (e) {
-    console.warn('[Notifications] Failed to cancel medication notifications', e);
+  } catch {
+    // ignore
   }
 }
 
