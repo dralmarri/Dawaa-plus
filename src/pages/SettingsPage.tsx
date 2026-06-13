@@ -162,6 +162,21 @@ const SettingsPage = () => {
           </button>
         </div>
 
+        {/* Account info */}
+        <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <Mail className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-muted-foreground">{isRTL ? "الحساب الحالي" : "Current account"}</p>
+            {user ? (
+              <p className="text-sm font-bold text-foreground truncate" dir="ltr">{user.email}</p>
+            ) : (
+              <p className="text-sm font-bold text-muted-foreground">{isRTL ? "وضع الضيف (بدون حساب)" : "Guest mode (no account)"}</p>
+            )}
+          </div>
+        </div>
+
         {/* User Name */}
         <div className="bg-card rounded-2xl border border-border p-5">
           <label className="text-base font-bold text-foreground block mb-2">{t.userName}</label>
