@@ -141,13 +141,11 @@ const ReportsPage = () => {
 
     const renderLabAttachment = (fileUrl?: string) => {
       if (!fileUrl) return "";
-      // Image data URL → embed visually
       if (fileUrl.startsWith("data:image") || fileUrl.startsWith("http")) {
-        return `<div style="margin-top:8px;text-align:center;">
-          <img src="${fileUrl}" alt="lab" crossorigin="anonymous" style="max-width:100%;max-height:420px;border:1px solid #d1d5db;border-radius:8px;"/>
+        return `<div style="margin-top:8px;padding:8px 12px;background:#ecfdf5;border:1px dashed #14532d;border-radius:8px;font-size:12px;color:#14532d;">
+          🖼️ ${isRTL ? "صورة التحليل مرفقة في صفحة منفصلة" : "Lab image attached on a separate page"}
         </div>`;
       }
-      // PDF stored as pdfdata:name|||dataurl
       if (fileUrl.startsWith("pdfdata:")) {
         const name = fileUrl.slice(8).split("|||")[0] || "PDF";
         return `<div style="margin-top:8px;padding:8px 12px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-size:12px;color:#374151;">
@@ -253,6 +251,52 @@ const ReportsPage = () => {
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
+
+      // Append a separate page for each lab image at natural fit
+      const imageLabs = labs.filter(
+        (l) => l.fileUrl && (l.fileUrl.startsWith("data:image") || l.fileUrl.startsWith("http"))
+      );
+
+      const loadImg = (src: string) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+
+      const marginMm = 10;
+      const headerH = 14;
+      const maxW = pageWidth - marginMm * 2;
+      const maxH = pageHeight - marginMm * 2 - headerH;
+
+      for (const lab of imageLabs) {
+        try {
+          const img = await loadImg(lab.fileUrl!);
+          // fit while preserving aspect ratio
+          const ratio = Math.min(maxW / (img.width / 3.7795), maxH / (img.height / 3.7795));
+          // convert px → mm using 96dpi (1mm = 3.7795 px)
+          const wMm = Math.min((img.width / 3.7795) * ratio, maxW);
+          const hMm = Math.min((img.height / 3.7795) * ratio, maxH);
+          const x = (pageWidth - wMm) / 2;
+          const y = marginMm + headerH + (maxH - hMm) / 2;
+
+          pdf.addPage();
+          // Header for the attachment page
+          pdf.setFontSize(11);
+          pdf.setTextColor(20, 83, 45);
+          const label = `${lab.name}  •  ${lab.date}`;
+          pdf.text(label, pageWidth / 2, marginMm + 8, { align: "center" });
+
+          const fmt = lab.fileUrl!.startsWith("data:image/png") ? "PNG" : "JPEG";
+          pdf.addImage(lab.fileUrl!, fmt, x, y, wMm, hMm);
+        } catch (err) {
+          console.warn("Failed to attach lab image", lab.id, err);
+        }
+      }
+
+
 
       const fileName = `dawaa-plus-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
 
