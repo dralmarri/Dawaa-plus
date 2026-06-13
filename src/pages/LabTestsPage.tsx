@@ -153,6 +153,7 @@ const LabTestsPage = () => {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [attachedImageName, setAttachedImageName] = useState("");
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [pdfViewer, setPdfViewer] = useState<{ url: string; name: string } | null>(null);
   const [listSearch, setListSearch] = useState("");
 
   const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
@@ -307,17 +308,12 @@ const LabTestsPage = () => {
     } catch (err) {
       console.warn("Native PDF open failed, falling back:", err);
     }
-    // Web fallback: open blob in a new tab so the browser renders the PDF
+    // Web fallback: render PDF inline in an in-app viewer (works on iOS Safari where window.open(blob) shows blank)
     try {
       const res = await fetch(dataUrl);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      const win = window.open(url, "_blank");
-      if (!win) {
-        // Popup blocked — force navigation
-        window.location.href = url;
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setPdfViewer({ url, name: filename });
     } catch (err) {
       console.error("Open PDF failed:", err);
       alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
@@ -640,6 +636,36 @@ const LabTestsPage = () => {
           onClose={() => setFullscreenImage(null)}
           isRTL={isRTL}
         />
+      )}
+
+      {pdfViewer && (
+        <div className="fixed inset-0 z-[100] bg-black flex flex-col">
+          <div className="flex items-center justify-between gap-2 p-3 bg-background border-b">
+            <span className="text-sm font-medium truncate flex-1">{pdfViewer.name}</span>
+            <a
+              href={pdfViewer.url}
+              download={pdfViewer.name}
+              className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground"
+            >
+              {isRTL ? "تحميل" : "Download"}
+            </a>
+            <button
+              onClick={() => {
+                URL.revokeObjectURL(pdfViewer.url);
+                setPdfViewer(null);
+              }}
+              className="p-2 rounded-md hover:bg-muted"
+              aria-label="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+          <iframe
+            src={pdfViewer.url}
+            title={pdfViewer.name}
+            className="flex-1 w-full bg-white"
+          />
+        </div>
       )}
 
       {tests.length === 0 && !showForm ? (
