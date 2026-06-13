@@ -728,6 +728,14 @@ const LabTestsPage = () => {
                         📄 {test.fileUrl!.replace("pdf:", "")}
                       </span>
                     )}
+                    {hasPdfData && (
+                      <button
+                        onClick={() => openPdf(test.fileUrl!)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
+                      >
+                        📄 {isRTL ? "فتح" : "Open"} {pdfDataName}
+                      </button>
+                    )}
                     {hasResults && (
                       <button
                         onClick={() => loadSavedResults(test.id)}
