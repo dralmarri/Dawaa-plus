@@ -290,24 +290,19 @@ const HomePage = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {groupedDoses.map(({ time, doses }, groupIndex) => {
-              const groupColors = [
-                { border: "border-primary/30", headerBg: "bg-primary/10", headerText: "text-primary", icon: "text-primary" },
-                { border: "border-warning/30", headerBg: "bg-warning/10", headerText: "text-warning", icon: "text-warning" },
-                { border: "border-heart/30", headerBg: "bg-heart/10", headerText: "text-heart", icon: "text-heart" },
-                { border: "border-summary-taken-foreground/30", headerBg: "bg-summary-taken", headerText: "text-summary-taken-foreground", icon: "text-summary-taken-foreground" },
-                { border: "border-accent-foreground/20", headerBg: "bg-accent", headerText: "text-accent-foreground", icon: "text-accent-foreground" },
-              ];
-              const color = groupColors[groupIndex % groupColors.length];
+            {groupedDoses.map(({ time, doses }) => {
+              const tod = getTimeOfDay(time, isRTL);
+              const TodIcon = tod.icon;
               return (
-              <div key={time} className={`bg-card rounded-2xl border ${color.border} overflow-hidden`}>
+              <div key={time} className={`bg-card rounded-2xl border ${tod.border} overflow-hidden`}>
                 {/* Time header */}
-                <div className={`flex items-center gap-2 px-4 py-2.5 ${color.headerBg}`}>
-                  <Clock className={`w-4 h-4 ${color.icon}`} />
-                  <span className={`text-sm font-bold ${color.headerText}`}>{time}</span>
+                <div className={`flex items-center gap-2 px-4 py-2.5 ${tod.bg}`}>
+                  <TodIcon className={`w-4 h-4 ${tod.tint}`} />
+                  <span className={`text-sm font-bold ${tod.tint}`}>{time}</span>
+                  <span className={`text-xs font-medium ${tod.tint} opacity-80`}>· {tod.label}</span>
                   {doses.length > 1 && (
-                    <span className="text-xs text-muted-foreground">
-                      ({doses.length} {isRTL ? "أدوية" : "meds"})
+                    <span className="text-xs text-muted-foreground ml-auto rtl:ml-0 rtl:mr-auto">
+                      {doses.length} {isRTL ? "أدوية" : "meds"}
                     </span>
                   )}
                 </div>
