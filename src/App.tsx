@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import BottomNav from "@/components/BottomNav";
-import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore } from "@/lib/store";
+import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData } from "@/lib/store";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 
@@ -56,13 +56,26 @@ const AppRoutes = () => {
   useEffect(() => {
     if (user) {
       setStoreUid(user.id);
-      // Migrate local data then sync from cloud
-      migrateLocalToCloud(user.id).then((count) => {
-        if (count > 0) {
-          toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
+      const MIGRATED_KEY = `dawaa_migrated_${user.id}`;
+      const alreadyHandled = localStorage.getItem(MIGRATED_KEY);
+      const guestDataExists = !alreadyHandled && hasLocalData();
+
+      const proceed = async () => {
+        if (guestDataExists) {
+          const importIt = window.confirm(
+            "تم العثور على بيانات محفوظة من وضع الضيف.\n\nهل تريد استيرادها إلى هذا الحساب؟\n\n• اضغط (موافق) للاستيراد\n• اضغط (إلغاء) لبدء حساب جديد فارغ"
+          );
+          if (importIt) {
+            const count = await migrateLocalToCloud(user.id);
+            if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
+          } else {
+            await clearLocalData();
+            localStorage.setItem(MIGRATED_KEY, "skipped");
+          }
         }
-        return syncFromCloud(user.id);
-      });
+        await syncFromCloud(user.id);
+      };
+      proceed();
     } else {
       setStoreUid(null);
     }
