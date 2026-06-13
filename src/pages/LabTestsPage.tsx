@@ -657,12 +657,20 @@ const LabTestsPage = () => {
         />
       )}
 
+      {pdfLoading && (
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center">
+          <div className="bg-background rounded-lg px-4 py-3 text-sm">
+            {isRTL ? "جاري تحميل الملف..." : "Loading PDF..."}
+          </div>
+        </div>
+      )}
+
       {pdfViewer && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
           <div className="flex items-center justify-between gap-2 p-3 bg-background border-b">
             <span className="text-sm font-medium truncate flex-1">{pdfViewer.name}</span>
             <a
-              href={pdfViewer.url}
+              href={pdfViewer.downloadUrl}
               download={pdfViewer.name}
               className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground"
             >
@@ -670,7 +678,7 @@ const LabTestsPage = () => {
             </a>
             <button
               onClick={() => {
-                URL.revokeObjectURL(pdfViewer.url);
+                URL.revokeObjectURL(pdfViewer.downloadUrl);
                 setPdfViewer(null);
               }}
               className="p-2 rounded-md hover:bg-muted"
@@ -679,11 +687,16 @@ const LabTestsPage = () => {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <iframe
-            src={pdfViewer.url}
-            title={pdfViewer.name}
-            className="flex-1 w-full bg-white"
-          />
+          <div className="flex-1 overflow-auto bg-neutral-900 p-2 space-y-2">
+            {pdfViewer.pages.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={`Page ${i + 1}`}
+                className="w-full h-auto bg-white rounded shadow"
+              />
+            ))}
+          </div>
         </div>
       )}
 
