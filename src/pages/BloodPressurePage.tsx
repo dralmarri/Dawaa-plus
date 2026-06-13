@@ -52,6 +52,49 @@ const BloodPressurePage = () => {
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageScan = async (file: File) => {
+    if (!file) return;
+    setScanning(true);
+    try {
+      const { base64, mimeType } = await fileToCompressedBase64(file);
+      const { data, error } = await supabase.functions.invoke("read-bp-image", {
+        body: { imageBase64: base64, mimeType },
+      });
+      if (error) throw error;
+      if (data?.error === "rate_limited") {
+        toast.error(isRTL ? "تم تجاوز الحد المؤقت، حاول بعد قليل" : "Rate limit reached, try again shortly");
+        return;
+      }
+      const { systolic: sys, diastolic: dia, heartRate: hr } = data || {};
+      if (sys == null && dia == null && hr == null) {
+        toast.error(isRTL ? "تعذّر قراءة الأرقام، حاول بصورة أوضح" : "Could not read numbers, try a clearer photo");
+        return;
+      }
+      if (sys != null) setSystolic(String(sys));
+      if (dia != null) setDiastolic(String(dia));
+      if (hr != null) setHeartRate(String(hr));
+      const parts: string[] = [];
+      if (sys != null) parts.push(`${sys}`);
+      if (dia != null) parts.push(`/${dia}`);
+      if (hr != null) parts.push(` ♥${hr}`);
+      toast.success(
+        (isRTL ? "تمت القراءة: " : "Scanned: ") + parts.join(""),
+        { description: isRTL ? "راجع الأرقام قبل الحفظ" : "Please verify before saving" }
+      );
+    } catch (e: any) {
+      console.error(e);
+      toast.error(isRTL ? "تعذّر تحليل الصورة" : "Failed to analyze image");
+    } finally {
+      setScanning(false);
+      if (cameraInputRef.current) cameraInputRef.current.value = "";
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    }
+  };
+
 
   const latestReading = readings[0];
   const last7 = readings.slice(0, 7);
