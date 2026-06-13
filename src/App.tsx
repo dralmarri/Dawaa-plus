@@ -51,7 +51,7 @@ const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolea
   const location = useLocation();
   const fromSettings = (location.state as any)?.fromSettings;
   if (user && !fromSettings) return <Navigate to="/" replace />;
-  return <AuthPage onSkip={() => setGuestMode(true)} onSignedIn={() => setGuestMode(false)} />;
+  return <AuthPage onSkip={() => { setGuestMode(true); window.location.replace("/"); }} onSignedIn={() => setGuestMode(false)} />;
 };
 
 const AppRoutes = () => {
