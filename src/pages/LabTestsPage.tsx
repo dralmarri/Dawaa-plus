@@ -724,9 +724,14 @@ const LabTestsPage = () => {
                       </button>
                     )}
                     {hasPdf && (
-                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-bold">
+                      <button
+                        onClick={() => alert(isRTL
+                          ? "هذا الملف محفوظ بالاسم فقط. اضغط (تعديل) ثم أعد إرفاق الملف لتتمكن من فتحه."
+                          : "Only the filename was saved. Tap (edit) and re-attach the file to open it.")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-bold hover:bg-accent transition-colors"
+                      >
                         📄 {test.fileUrl!.replace("pdf:", "")}
-                      </span>
+                      </button>
                     )}
                     {hasPdfData && (
                       <button
