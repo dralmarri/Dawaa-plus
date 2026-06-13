@@ -308,17 +308,12 @@ const LabTestsPage = () => {
     } catch (err) {
       console.warn("Native PDF open failed, falling back:", err);
     }
-    // Web fallback: open blob in a new tab so the browser renders the PDF
+    // Web fallback: render PDF inline in an in-app viewer (works on iOS Safari where window.open(blob) shows blank)
     try {
       const res = await fetch(dataUrl);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      const win = window.open(url, "_blank");
-      if (!win) {
-        // Popup blocked — force navigation
-        window.location.href = url;
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setPdfViewer({ url, name: filename });
     } catch (err) {
       console.error("Open PDF failed:", err);
       alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
