@@ -25,6 +25,17 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
 
   const handleSubmit = async () => {
     if (!email.trim()) return;
+    setLocalError(null);
+    if (mode === "register") {
+      if (password.length < 6) {
+        setLocalError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError("كلمتا المرور غير متطابقتين");
+        return;
+      }
+    }
     setLoading(true);
     clearError();
     try {
@@ -32,6 +43,7 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
         await signIn(email.trim(), password);
       } else if (mode === "register") {
         await signUp(email.trim(), password);
+        setSignupSent(true);
       } else {
         await resetPassword(email.trim());
         setResetSent(true);
