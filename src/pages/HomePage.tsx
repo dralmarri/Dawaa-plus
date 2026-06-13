@@ -148,13 +148,6 @@ const HomePage = () => {
               {isRTL ? `${taken} من ${scheduled} جرعات اليوم` : `${taken} of ${scheduled} doses today`}
             </p>
           </div>
-          <button
-            onClick={() => navigate("/history")}
-            className="w-10 h-10 rounded-full bg-white/15 backdrop-blur flex items-center justify-center flex-shrink-0 hover:bg-white/25 transition-colors"
-            aria-label={isRTL ? "السجل" : "History"}
-          >
-            <Bell className="w-5 h-5" />
-          </button>
         </div>
         {/* Progress bar */}
         <div className="mt-4 h-2 rounded-full bg-white/20 overflow-hidden">
