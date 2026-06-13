@@ -266,10 +266,64 @@ const LabTestsPage = () => {
         reader.readAsDataURL(file);
       }
     } else if (file.type === "application/pdf") {
-      setAttachedImage("pdf:" + file.name);
+      // Store actual PDF data URL so it can be opened later.
+      // Format: pdfdata:<filename>|||<dataUrl>
+      try {
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        setAttachedImage(`pdfdata:${file.name}|||${dataUrl}`);
+      } catch {
+        setAttachedImage("pdf:" + file.name);
+      }
     }
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
+
+  // Open a stored PDF for viewing (native share on iOS/Android, new tab on web)
+  const openPdf = async (fileUrl: string) => {
+    if (!fileUrl.startsWith("pdfdata:")) return;
+    const sep = fileUrl.indexOf("|||");
+    if (sep < 0) return;
+    const filename = fileUrl.slice("pdfdata:".length, sep) || "lab-test.pdf";
+    const dataUrl = fileUrl.slice(sep + 3);
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      if (Capacitor.isNativePlatform()) {
+        const base64 = dataUrl.split(",")[1] || "";
+        const safeName = filename.replace(/[^\w.\-]/g, "_");
+        const written = await Filesystem.writeFile({
+          path: safeName,
+          data: base64,
+          directory: Directory.Cache,
+        });
+        const { Share } = await import("@capacitor/share");
+        await Share.share({ title: filename, url: written.uri });
+        return;
+      }
+    } catch (err) {
+      console.warn("Native PDF open failed, falling back:", err);
+    }
+    // Web fallback: open blob in a new tab so the browser renders the PDF
+    try {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, "_blank");
+      if (!win) {
+        // Popup blocked — force navigation
+        window.location.href = url;
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      console.error("Open PDF failed:", err);
+      alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
+    }
+  };
+
 
   const handleSave = async () => {
     const hasManualValues = manualEntries.some((entry) => entry.value.trim() !== "");
@@ -628,8 +682,10 @@ const LabTestsPage = () => {
           {filteredList.map((test, index) => {
             const hasResults = savedResults[test.id] || allStoredResults[test.id];
             const testNumber = filteredList.length - index;
-            const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:");
+            const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:") && !test.fileUrl.startsWith("pdfdata:");
             const hasPdf = test.fileUrl && test.fileUrl.startsWith("pdf:");
+            const hasPdfData = test.fileUrl && test.fileUrl.startsWith("pdfdata:");
+            const pdfDataName = hasPdfData ? (test.fileUrl!.slice("pdfdata:".length).split("|||")[0] || "PDF") : "";
 
             return (
               <div key={test.id} className="bg-card rounded-2xl border border-border overflow-hidden">
@@ -668,9 +724,22 @@ const LabTestsPage = () => {
                       </button>
                     )}
                     {hasPdf && (
-                      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-bold">
+                      <button
+                        onClick={() => alert(isRTL
+                          ? "هذا الملف محفوظ بالاسم فقط. اضغط (تعديل) ثم أعد إرفاق الملف لتتمكن من فتحه."
+                          : "Only the filename was saved. Tap (edit) and re-attach the file to open it.")}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-bold hover:bg-accent transition-colors"
+                      >
                         📄 {test.fileUrl!.replace("pdf:", "")}
-                      </span>
+                      </button>
+                    )}
+                    {hasPdfData && (
+                      <button
+                        onClick={() => openPdf(test.fileUrl!)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
+                      >
+                        📄 {isRTL ? "فتح" : "Open"} {pdfDataName}
+                      </button>
                     )}
                     {hasResults && (
                       <button
@@ -744,7 +813,18 @@ const LabTestsPage = () => {
               <label className="text-base font-bold text-foreground block mb-2">📷 {isRTL ? "إرفاق صورة التحليل" : "Attach Lab Image"}</label>
               {attachedImage ? (
                 <div className="relative rounded-xl border border-border overflow-hidden">
-                  {attachedImage.startsWith("pdf:") ? (
+                  {attachedImage.startsWith("pdfdata:") ? (
+                    <button
+                      onClick={() => openPdf(attachedImage)}
+                      className="w-full p-4 flex items-center gap-2 bg-muted/50 hover:bg-muted text-start"
+                    >
+                      <span className="text-2xl">📄</span>
+                      <span className="text-sm font-medium text-foreground flex-1 truncate">
+                        {attachedImage.slice("pdfdata:".length).split("|||")[0]}
+                      </span>
+                      <span className="text-xs text-primary font-bold">{isRTL ? "فتح" : "Open"}</span>
+                    </button>
+                  ) : attachedImage.startsWith("pdf:") ? (
                     <div className="p-4 flex items-center gap-2 bg-muted/50">
                       <span className="text-2xl">📄</span>
                       <span className="text-sm font-medium text-foreground">{attachedImage.replace("pdf:", "")}</span>
