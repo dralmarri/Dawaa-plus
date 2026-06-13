@@ -293,7 +293,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             <Chevron className="w-5 h-5 text-muted-foreground" />
           </button>
         ) : (
-          <button onClick={() => setShowAuthOverlay(true)}
+          <button onClick={() => navigate("/auth", { state: { fromSettings: true } })}
             className="bg-card rounded-2xl border border-primary w-full flex items-center justify-between px-5 py-4 mb-4">
             <div className="flex items-center gap-3">
               <LogIn className="w-5 h-5 text-primary" />
