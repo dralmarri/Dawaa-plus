@@ -153,6 +153,7 @@ const LabTestsPage = () => {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [attachedImageName, setAttachedImageName] = useState("");
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [pdfViewer, setPdfViewer] = useState<{ url: string; name: string } | null>(null);
   const [listSearch, setListSearch] = useState("");
 
   const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
