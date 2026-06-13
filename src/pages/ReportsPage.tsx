@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
@@ -6,19 +6,37 @@ import { format, subDays, isAfter, parseISO } from "date-fns";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { store } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import appIcon from "@/assets/app-icon.png";
 import { toast } from "sonner";
 
 const ReportsPage = () => {
   const { isRTL } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [authName, setAuthName] = useState<string>("");
 
   const meds = store.getMedications();
   const readings = store.getReadings();
   const appointments = store.getAppointments?.() || [];
   const labs = store.getLabTests?.() || [];
   const settings = store.getSettings();
-  const patientName = settings.userName || (isRTL ? "غير محدد" : "Not specified");
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      if (!u) return;
+      const meta: any = u.user_metadata || {};
+      const name =
+        meta.full_name ||
+        meta.name ||
+        meta.display_name ||
+        (u.email ? u.email.split("@")[0] : "");
+      setAuthName(name || "");
+    });
+  }, []);
+
+  const patientName =
+    settings.userName || authName || (isRTL ? "غير محدد" : "Not specified");
 
   // last 30 days of BP readings
   const cutoff = subDays(new Date(), 30);
