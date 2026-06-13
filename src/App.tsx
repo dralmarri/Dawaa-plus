@@ -87,18 +87,26 @@ const AppRoutes = () => {
     }
   }, [user]);
 
+  const handlingRef = useRef(false);
+
   const handleImportConfirm = async () => {
+    if (handlingRef.current) return;
+    handlingRef.current = true;
     const uid = pendingUserId.current;
-    if (!uid) return;
+    if (!uid) { handlingRef.current = false; return; }
     setImportDialogOpen(false);
     const count = await migrateLocalToCloud(uid);
     if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
+    localStorage.setItem(`dawaa_migrated_${uid}`, "imported");
     await syncFromCloud(uid);
     setGuestMode(false);
     navigate("/", { replace: true });
+    handlingRef.current = false;
   };
 
   const handleImportCancel = async () => {
+    if (handlingRef.current) return;
+    handlingRef.current = true;
     const uid = pendingUserId.current;
     setImportDialogOpen(false);
     if (uid) {
@@ -108,7 +116,9 @@ const AppRoutes = () => {
     }
     setGuestMode(false);
     navigate("/", { replace: true });
+    handlingRef.current = false;
   };
+
 
 
   const isLoggedIn = !!user || guestMode;
