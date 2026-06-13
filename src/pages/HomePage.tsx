@@ -1,12 +1,29 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText } from "lucide-react";
+import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, ChevronLeft, ChevronRight } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import type { DoseRecord } from "@/types";
+
+// Helper: classify a HH:mm time into morning/noon/evening with icon + label
+function getTimeOfDay(time: string, isRTL: boolean) {
+  const h = parseInt(time.split(":")[0] || "0", 10);
+  if (h < 12) return { icon: Sunrise, label: isRTL ? "صباحاً" : "Morning", tint: "text-warning", bg: "bg-warning/10", border: "border-warning/30" };
+  if (h < 17) return { icon: Sun, label: isRTL ? "ظهراً" : "Noon", tint: "text-summary-missed-foreground", bg: "bg-summary-missed", border: "border-summary-missed-foreground/30" };
+  return { icon: Moon, label: isRTL ? "مساءً" : "Evening", tint: "text-primary", bg: "bg-primary/10", border: "border-primary/30" };
+}
+
+// Helper: time until next pending dose (in minutes)
+function minutesUntil(time: string): number {
+  const [h, m] = time.split(":").map(Number);
+  const now = new Date();
+  const target = new Date();
+  target.setHours(h || 0, m || 0, 0, 0);
+  return Math.round((target.getTime() - now.getTime()) / 60000);
+}
 
 const HomePage = () => {
   const navigate = useNavigate();
