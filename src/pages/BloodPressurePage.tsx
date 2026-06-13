@@ -465,6 +465,14 @@ const BloodPressurePage = () => {
             </div>
           </div>
         )}
+
+        <BPChart readings={readings} />
+
+        {readings.length > 0 && (
+          <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
+            🖨️ {t.printReport}
+          </button>
+        )}
       </div>
     </div>
     <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
