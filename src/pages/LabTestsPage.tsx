@@ -153,7 +153,8 @@ const LabTestsPage = () => {
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [attachedImageName, setAttachedImageName] = useState("");
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [pdfViewer, setPdfViewer] = useState<{ url: string; name: string } | null>(null);
+  const [pdfViewer, setPdfViewer] = useState<{ pages: string[]; name: string; downloadUrl: string } | null>(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
   const [listSearch, setListSearch] = useState("");
 
   const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
@@ -308,15 +309,33 @@ const LabTestsPage = () => {
     } catch (err) {
       console.warn("Native PDF open failed, falling back:", err);
     }
-    // Web fallback: render PDF inline in an in-app viewer (works on iOS Safari where window.open(blob) shows blank)
+    // Web fallback: render PDF pages as images using pdf.js (iOS Safari doesn't show PDFs in iframes/blob tabs)
     try {
+      setPdfLoading(true);
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setPdfViewer({ url, name: filename });
+      const downloadUrl = URL.createObjectURL(blob);
+      const arrayBuffer = await blob.arrayBuffer();
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, viewport } as any).promise;
+        pages.push(canvas.toDataURL("image/jpeg", 0.85));
+      }
+      setPdfViewer({ pages, name: filename, downloadUrl });
     } catch (err) {
       console.error("Open PDF failed:", err);
       alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
@@ -638,12 +657,20 @@ const LabTestsPage = () => {
         />
       )}
 
+      {pdfLoading && (
+        <div className="fixed inset-0 z-[100] bg-black/60 flex items-center justify-center">
+          <div className="bg-background rounded-lg px-4 py-3 text-sm">
+            {isRTL ? "جاري تحميل الملف..." : "Loading PDF..."}
+          </div>
+        </div>
+      )}
+
       {pdfViewer && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
           <div className="flex items-center justify-between gap-2 p-3 bg-background border-b">
             <span className="text-sm font-medium truncate flex-1">{pdfViewer.name}</span>
             <a
-              href={pdfViewer.url}
+              href={pdfViewer.downloadUrl}
               download={pdfViewer.name}
               className="px-3 py-1.5 text-sm rounded-md bg-primary text-primary-foreground"
             >
@@ -651,7 +678,7 @@ const LabTestsPage = () => {
             </a>
             <button
               onClick={() => {
-                URL.revokeObjectURL(pdfViewer.url);
+                URL.revokeObjectURL(pdfViewer.downloadUrl);
                 setPdfViewer(null);
               }}
               className="p-2 rounded-md hover:bg-muted"
@@ -660,11 +687,16 @@ const LabTestsPage = () => {
               <X className="w-5 h-5" />
             </button>
           </div>
-          <iframe
-            src={pdfViewer.url}
-            title={pdfViewer.name}
-            className="flex-1 w-full bg-white"
-          />
+          <div className="flex-1 overflow-auto bg-neutral-900 p-2 space-y-2">
+            {pdfViewer.pages.map((src, i) => (
+              <img
+                key={i}
+                src={src}
+                alt={`Page ${i + 1}`}
+                className="w-full h-auto bg-white rounded shadow"
+              />
+            ))}
+          </div>
         </div>
       )}
 
