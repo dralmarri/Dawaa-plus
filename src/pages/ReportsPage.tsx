@@ -294,6 +294,9 @@ const ReportsPage = () => {
         } catch (err) {
           console.warn("Failed to attach lab image", lab.id, err);
         }
+      }
+
+
 
       const fileName = `dawaa-plus-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
 
