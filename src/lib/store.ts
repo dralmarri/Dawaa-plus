@@ -51,6 +51,24 @@ export async function initStore() {
   await loadAll();
 }
 
+/** Returns true if there is any guest data stored locally. */
+export function hasLocalData(): boolean {
+  const meds = getCache<unknown[]>(KEYS.medications, []);
+  const readings = getCache<unknown[]>(KEYS.readings, []);
+  const appts = getCache<unknown[]>(KEYS.appointments, []);
+  const labs = getCache<unknown[]>(KEYS.labTests, []);
+  const doses = getCache<unknown[]>(KEYS.doseRecords, []);
+  return (meds.length + readings.length + appts.length + labs.length + doses.length) > 0;
+}
+
+/** Wipe all local cached data (used when user declines to import guest data). */
+export async function clearLocalData() {
+  for (const key of Object.values(KEYS)) {
+    cache[key] = undefined;
+    await Preferences.remove({ key });
+  }
+}
+
 // ── Cloud sync helper ──────────────────────────────────────────────
 let currentUid: string | null = null;
 
