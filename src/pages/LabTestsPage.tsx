@@ -808,7 +808,18 @@ const LabTestsPage = () => {
               <label className="text-base font-bold text-foreground block mb-2">📷 {isRTL ? "إرفاق صورة التحليل" : "Attach Lab Image"}</label>
               {attachedImage ? (
                 <div className="relative rounded-xl border border-border overflow-hidden">
-                  {attachedImage.startsWith("pdf:") ? (
+                  {attachedImage.startsWith("pdfdata:") ? (
+                    <button
+                      onClick={() => openPdf(attachedImage)}
+                      className="w-full p-4 flex items-center gap-2 bg-muted/50 hover:bg-muted text-start"
+                    >
+                      <span className="text-2xl">📄</span>
+                      <span className="text-sm font-medium text-foreground flex-1 truncate">
+                        {attachedImage.slice("pdfdata:".length).split("|||")[0]}
+                      </span>
+                      <span className="text-xs text-primary font-bold">{isRTL ? "فتح" : "Open"}</span>
+                    </button>
+                  ) : attachedImage.startsWith("pdf:") ? (
                     <div className="p-4 flex items-center gap-2 bg-muted/50">
                       <span className="text-2xl">📄</span>
                       <span className="text-sm font-medium text-foreground">{attachedImage.replace("pdf:", "")}</span>
