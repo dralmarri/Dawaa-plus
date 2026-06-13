@@ -252,6 +252,49 @@ const ReportsPage = () => {
         heightLeft -= pageHeight;
       }
 
+      // Append a separate page for each lab image at natural fit
+      const imageLabs = labs.filter(
+        (l) => l.fileUrl && (l.fileUrl.startsWith("data:image") || l.fileUrl.startsWith("http"))
+      );
+
+      const loadImg = (src: string) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+
+      const marginMm = 10;
+      const headerH = 14;
+      const maxW = pageWidth - marginMm * 2;
+      const maxH = pageHeight - marginMm * 2 - headerH;
+
+      for (const lab of imageLabs) {
+        try {
+          const img = await loadImg(lab.fileUrl!);
+          // fit while preserving aspect ratio
+          const ratio = Math.min(maxW / (img.width / 3.7795), maxH / (img.height / 3.7795));
+          // convert px → mm using 96dpi (1mm = 3.7795 px)
+          const wMm = Math.min((img.width / 3.7795) * ratio, maxW);
+          const hMm = Math.min((img.height / 3.7795) * ratio, maxH);
+          const x = (pageWidth - wMm) / 2;
+          const y = marginMm + headerH + (maxH - hMm) / 2;
+
+          pdf.addPage();
+          // Header for the attachment page
+          pdf.setFontSize(11);
+          pdf.setTextColor(20, 83, 45);
+          const label = `${lab.name}  •  ${lab.date}`;
+          pdf.text(label, pageWidth / 2, marginMm + 8, { align: "center" });
+
+          const fmt = lab.fileUrl!.startsWith("data:image/png") ? "PNG" : "JPEG";
+          pdf.addImage(lab.fileUrl!, fmt, x, y, wMm, hMm);
+        } catch (err) {
+          console.warn("Failed to attach lab image", lab.id, err);
+        }
+
       const fileName = `dawaa-plus-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
 
       if (Capacitor.isNativePlatform()) {
