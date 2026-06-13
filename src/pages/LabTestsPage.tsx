@@ -309,15 +309,33 @@ const LabTestsPage = () => {
     } catch (err) {
       console.warn("Native PDF open failed, falling back:", err);
     }
-    // Web fallback: render PDF inline in an in-app viewer (works on iOS Safari where window.open(blob) shows blank)
+    // Web fallback: render PDF pages as images using pdf.js (iOS Safari doesn't show PDFs in iframes/blob tabs)
     try {
+      setPdfLoading(true);
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      setPdfViewer({ url, name: filename });
+      const downloadUrl = URL.createObjectURL(blob);
+      const arrayBuffer = await blob.arrayBuffer();
+      const pdfjsLib = await import("pdfjs-dist");
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages: string[] = [];
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 2 });
+        const canvas = document.createElement("canvas");
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        const ctx = canvas.getContext("2d")!;
+        await page.render({ canvasContext: ctx, viewport, canvas }).promise;
+        pages.push(canvas.toDataURL("image/jpeg", 0.85));
+      }
+      setPdfViewer({ pages, name: filename, downloadUrl });
     } catch (err) {
       console.error("Open PDF failed:", err);
       alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
