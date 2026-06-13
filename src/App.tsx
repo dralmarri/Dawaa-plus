@@ -124,12 +124,12 @@ const AppRoutes = () => {
     </AlertDialog>
     <div className="min-h-[100dvh] bg-background pb-20">
       <Routes>
-        <Route path="/auth" element={(user || guestMode) ? <Navigate to="/" replace /> : <AuthPage onSkip={() => setGuestMode(true)} />} />
+        <Route path="/auth" element={user ? <Navigate to="/" replace /> : <AuthPage onSkip={() => setGuestMode(true)} />} />
         <Route path="/" element={<ProtectedRoute guestMode={guestMode}><HomePage /></ProtectedRoute>} />
         <Route path="/medications" element={<ProtectedRoute guestMode={guestMode}><MedicationsPage /></ProtectedRoute>} />
         <Route path="/medications/add" element={<ProtectedRoute guestMode={guestMode}><AddMedicationPage /></ProtectedRoute>} />
         <Route path="/history" element={<ProtectedRoute guestMode={guestMode}><HistoryPage /></ProtectedRoute>} />
-        <Route path="/settings" element={<ProtectedRoute guestMode={guestMode}><SettingsPage /></ProtectedRoute>} />
+        <Route path="/settings" element={<ProtectedRoute guestMode={guestMode}><SettingsPage onSwitchToAuth={() => setGuestMode(false)} /></ProtectedRoute>} />
         <Route path="/blood-pressure" element={<ProtectedRoute guestMode={guestMode}><BloodPressurePage /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute guestMode={guestMode}><AppointmentsPage /></ProtectedRoute>} />
         <Route path="/lab-tests" element={<ProtectedRoute guestMode={guestMode}><LabTestsPage /></ProtectedRoute>} />
