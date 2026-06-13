@@ -16,12 +16,26 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
+  const [signupSent, setSignupSent] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!email.trim()) return;
+    setLocalError(null);
+    if (mode === "register") {
+      if (password.length < 6) {
+        setLocalError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setLocalError("كلمتا المرور غير متطابقتين");
+        return;
+      }
+    }
     setLoading(true);
     clearError();
     try {
@@ -29,6 +43,7 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
         await signIn(email.trim(), password);
       } else if (mode === "register") {
         await signUp(email.trim(), password);
+        setSignupSent(true);
       } else {
         await resetPassword(email.trim());
         setResetSent(true);
@@ -71,10 +86,17 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
           </div>
         )}
 
+        {/* Signup sent message */}
+        {signupSent && (
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
+            <p className="text-sm text-green-600 font-medium">✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني. افتح الرسالة لتفعيل حسابك.</p>
+          </div>
+        )}
+
         {/* Error */}
-        {error && (
+        {(localError || error) && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3">
-            <p className="text-sm text-destructive text-center">{error}</p>
+            <p className="text-sm text-destructive text-center">{localError || error}</p>
           </div>
         )}
 
@@ -123,6 +145,29 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Confirm Password (register only) */}
+        {mode === "register" && (
+          <div>
+            <label className="text-sm font-bold text-foreground block mb-1.5">تأكيد كلمة المرور</label>
+            <div className="relative">
+              <Lock className="w-4 h-4 absolute top-3.5 text-muted-foreground" style={{ [isRTL ? "right" : "left"]: "12px" }} />
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="أعد كتابة كلمة المرور"
+                className="w-full px-4 py-3 rounded-xl bg-accent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                style={{ [isRTL ? "paddingRight" : "paddingLeft"]: "36px" }}
+                dir="ltr"
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              />
+            </div>
+            {confirmPassword && password !== confirmPassword && (
+              <p className="text-xs text-destructive mt-1">كلمتا المرور غير متطابقتين</p>
+            )}
           </div>
         )}
 
