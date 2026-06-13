@@ -234,16 +234,6 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-          <div className="bg-summary-taken rounded-2xl p-4 text-center">
-            <div className="text-3xl font-bold text-summary-taken-foreground">{taken}</div>
-            <div className="text-sm text-muted-foreground mt-1">{t.taken}</div>
-          </div>
-          <div className="bg-summary-missed rounded-2xl p-4 text-center">
-            <div className="text-3xl font-bold text-summary-missed-foreground">{missed}</div>
-            <div className="text-sm text-muted-foreground mt-1">{t.missed}</div>
-          </div>
-        </div>
-      </div>
 
       {/* Low Stock Alerts */}
       {(() => {
