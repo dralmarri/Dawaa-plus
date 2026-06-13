@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { Heart, Save, Pencil, Camera, Loader2, Sparkles } from "lucide-react";
+import { useState } from "react";
+import { Heart, Save, Pencil } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { store } from "@/lib/store";
@@ -9,38 +9,11 @@ import ChipSelector from "@/components/ChipSelector";
 import BPChart from "@/components/BPChart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { BloodPressureReading } from "@/types";
-
-// Resize + compress an image to keep edge-function payload small
-async function fileToCompressedBase64(file: File, maxDim = 1280, quality = 0.85): Promise<{ base64: string; mimeType: string }> {
-  const dataUrl = await new Promise<string>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const i = new Image();
-    i.onload = () => resolve(i);
-    i.onerror = reject;
-    i.src = dataUrl;
-  });
-  const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
-  const w = Math.round(img.width * scale);
-  const h = Math.round(img.height * scale);
-  const canvas = document.createElement("canvas");
-  canvas.width = w; canvas.height = h;
-  const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0, w, h);
-  const out = canvas.toDataURL("image/jpeg", quality);
-  return { base64: out.split(",")[1], mimeType: "image/jpeg" };
-}
-
 
 const BloodPressurePage = () => {
   const { t, isRTL } = useLanguage();
@@ -52,48 +25,7 @@ const BloodPressurePage = () => {
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageScan = async (file: File) => {
-    if (!file) return;
-    setScanning(true);
-    try {
-      const { base64, mimeType } = await fileToCompressedBase64(file);
-      const { data, error } = await supabase.functions.invoke("read-bp-image", {
-        body: { imageBase64: base64, mimeType },
-      });
-      if (error) throw error;
-      if (data?.error === "rate_limited") {
-        toast.error(isRTL ? "تم تجاوز الحد المؤقت، حاول بعد قليل" : "Rate limit reached, try again shortly");
-        return;
-      }
-      const { systolic: sys, diastolic: dia, heartRate: hr } = data || {};
-      if (sys == null && dia == null && hr == null) {
-        toast.error(isRTL ? "تعذّر قراءة الأرقام، حاول بصورة أوضح" : "Could not read numbers, try a clearer photo");
-        return;
-      }
-      if (sys != null) setSystolic(String(sys));
-      if (dia != null) setDiastolic(String(dia));
-      if (hr != null) setHeartRate(String(hr));
-      const parts: string[] = [];
-      if (sys != null) parts.push(`${sys}`);
-      if (dia != null) parts.push(`/${dia}`);
-      if (hr != null) parts.push(` ♥${hr}`);
-      toast.success(
-        (isRTL ? "تمت القراءة: " : "Scanned: ") + parts.join(""),
-        { description: isRTL ? "راجع الأرقام قبل الحفظ" : "Please verify before saving" }
-      );
-    } catch (e: any) {
-      console.error(e);
-      toast.error(isRTL ? "تعذّر تحليل الصورة" : "Failed to analyze image");
-    } finally {
-      setScanning(false);
-      if (cameraInputRef.current) cameraInputRef.current.value = "";
-      if (galleryInputRef.current) galleryInputRef.current.value = "";
-    }
-  };
 
 
   const latestReading = readings[0];
@@ -301,55 +233,6 @@ const BloodPressurePage = () => {
             </div>
           </div>
 
-          {/* Scan from monitor image (AI) */}
-          <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-foreground">
-                {isRTL ? "تصوير شاشة الجهاز (تعبئة تلقائية)" : "Scan monitor screen (auto-fill)"}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mb-2">
-              {isRTL
-                ? "التقط أو اختر صورة لشاشة جهاز الضغط — سيتم قراءة الأرقام تلقائياً ثم راجِعها قبل الحفظ."
-                : "Take or pick a photo of your BP monitor — numbers will be read automatically; review before saving."}
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                disabled={scanning}
-                onClick={() => cameraInputRef.current?.click()}
-                className="py-2 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
-              >
-                {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
-                {isRTL ? "كاميرا" : "Camera"}
-              </button>
-              <button
-                type="button"
-                disabled={scanning}
-                onClick={() => galleryInputRef.current?.click()}
-                className="py-2 rounded-xl bg-card border border-border text-foreground font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
-              >
-                {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : "🖼️"}
-                {isRTL ? "من المعرض" : "Gallery"}
-              </button>
-            </div>
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleImageScan(e.target.files[0])}
-            />
-            <input
-              ref={galleryInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={(e) => e.target.files?.[0] && handleImageScan(e.target.files[0])}
-            />
-          </div>
 
 
           <div>
