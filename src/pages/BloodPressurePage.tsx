@@ -308,6 +308,57 @@ const BloodPressurePage = () => {
             </div>
           </div>
 
+          {/* Scan from monitor image (AI) */}
+          <div className="rounded-xl border border-dashed border-primary/40 bg-primary/5 p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <Sparkles className="w-4 h-4 text-primary" />
+              <span className="text-sm font-semibold text-foreground">
+                {isRTL ? "تصوير شاشة الجهاز (تعبئة تلقائية)" : "Scan monitor screen (auto-fill)"}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground mb-2">
+              {isRTL
+                ? "التقط أو اختر صورة لشاشة جهاز الضغط — سيتم قراءة الأرقام تلقائياً ثم راجِعها قبل الحفظ."
+                : "Take or pick a photo of your BP monitor — numbers will be read automatically; review before saving."}
+            </p>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                disabled={scanning}
+                onClick={() => cameraInputRef.current?.click()}
+                className="py-2 rounded-xl bg-primary text-primary-foreground font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+              >
+                {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Camera className="w-4 h-4" />}
+                {isRTL ? "كاميرا" : "Camera"}
+              </button>
+              <button
+                type="button"
+                disabled={scanning}
+                onClick={() => galleryInputRef.current?.click()}
+                className="py-2 rounded-xl bg-card border border-border text-foreground font-semibold flex items-center justify-center gap-2 disabled:opacity-50 text-sm"
+              >
+                {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : "🖼️"}
+                {isRTL ? "من المعرض" : "Gallery"}
+              </button>
+            </div>
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleImageScan(e.target.files[0])}
+            />
+            <input
+              ref={galleryInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => e.target.files?.[0] && handleImageScan(e.target.files[0])}
+            />
+          </div>
+
+
           <div>
             <label className="text-sm font-bold text-foreground flex items-center gap-1">
               <span className="w-2 h-2 rounded-full bg-heart" /> {t.systolicUpper}
