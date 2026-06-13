@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
 import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft } from "lucide-react";
@@ -129,6 +128,10 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   };
   const reminderKeys = Object.keys(reminderMap);
   const reminderLabels = Object.values(reminderMap);
+
+  if (showAuthOverlay) {
+    return <AuthPage onSkip={() => setShowAuthOverlay(false)} onSignedIn={() => setShowAuthOverlay(false)} />;
+  }
 
   return (
     <div className="pb-28">
@@ -434,15 +437,6 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             </div>
           </div>
         </div>
-      )}
-      {showAuthOverlay && createPortal(
-        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "var(--background)" }}>
-          <AuthPage
-            onSkip={() => setShowAuthOverlay(false)}
-            onSignedIn={() => setShowAuthOverlay(false)}
-          />
-        </div>,
-        document.body
       )}
 
       <AlertDialog open={signOutConfirm} onOpenChange={setSignOutConfirm}>
