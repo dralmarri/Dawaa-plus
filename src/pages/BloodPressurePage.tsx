@@ -366,8 +366,8 @@ const BloodPressurePage = () => {
         <BPChart readings={readings} />
 
         {readings.length > 0 && (
-          <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
-            🖨️ {t.printReport}
+          <button onClick={handlePrintReport} disabled={printing} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide disabled:opacity-60">
+            🖨️ {printing ? (isRTL ? "جارٍ الإنشاء..." : "Generating...") : t.printReport}
           </button>
         )}
       </div>
