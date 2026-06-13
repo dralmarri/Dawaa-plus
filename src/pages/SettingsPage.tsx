@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthPage from "@/pages/AuthPage";
 import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -27,6 +28,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [deleting, setDeleting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
   const [signOutConfirm, setSignOutConfirm] = useState(false);
+  const [showAuthOverlay, setShowAuthOverlay] = useState(false);
 
   const SHARE_URL = "https://dawaaplus.net";
   const SHARE_TEXT = isRTL
@@ -287,7 +289,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             <Chevron className="w-5 h-5 text-muted-foreground" />
           </button>
         ) : (
-          <button onClick={() => navigate("/auth", { state: { fromSettings: true } })}
+          <button onClick={() => setShowAuthOverlay(true)}
             className="bg-card rounded-2xl border border-primary w-full flex items-center justify-between px-5 py-4 mb-4">
             <div className="flex items-center gap-3">
               <LogIn className="w-5 h-5 text-primary" />
@@ -432,6 +434,15 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           </div>
         </div>
       )}
+      {showAuthOverlay && (
+        <div className="fixed inset-0 z-[200] bg-background">
+          <AuthPage
+            onSkip={() => setShowAuthOverlay(false)}
+            onSignedIn={() => setShowAuthOverlay(false)}
+          />
+        </div>
+      )}
+
       <AlertDialog open={signOutConfirm} onOpenChange={setSignOutConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
