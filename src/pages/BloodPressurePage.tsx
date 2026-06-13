@@ -85,7 +85,14 @@ const BloodPressurePage = () => {
   };
 
   const handlePrintReport = async () => {
-    if (!readings.length) return;
+    if (printing) return;
+    if (!readings.length) {
+      toast.error(isRTL ? "لا توجد قراءات للطباعة" : "No readings to print");
+      return;
+    }
+
+    setPrinting(true);
+    const loadingId = toast.loading(isRTL ? "جارٍ إنشاء التقرير..." : "Generating report...");
 
     const header = isRTL ? "تقرير ضغط الدم" : "Blood Pressure Report";
     const tempDiv = document.createElement("div");
@@ -94,34 +101,34 @@ const BloodPressurePage = () => {
     tempDiv.style.left = "-99999px";
     tempDiv.style.top = "0";
     tempDiv.style.width = "794px";
-    tempDiv.style.background = "white";
+    tempDiv.style.background = "#ffffff";
     tempDiv.style.color = "#111827";
     tempDiv.style.padding = "32px";
     tempDiv.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
     tempDiv.innerHTML = `
-      <h1 style="margin:0 0 8px;font-size:28px;">${header}</h1>
+      <h1 style="margin:0 0 8px;font-size:28px;color:#111827;">${header}</h1>
       <p style="margin:0 0 24px;color:#6b7280;">${isRTL ? "سجل القراءات الطبية لضغط الدم" : "Medical blood pressure readings report"}</p>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#111827;">
         <thead>
           <tr>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "التاريخ" : "Date"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الوقت" : "Time"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الانقباضي" : "Systolic"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الانبساطي" : "Diastolic"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "النبض" : "Heart rate"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الفترة" : "Period"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "التاريخ" : "Date"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الوقت" : "Time"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الانقباضي" : "Systolic"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الانبساطي" : "Diastolic"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "النبض" : "Heart rate"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الفترة" : "Period"}</th>
           </tr>
         </thead>
         <tbody>
           ${readings.map((r) => `
             <tr>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.date}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.time}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.systolic}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.diastolic}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.heartRate}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.period}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.date}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.time}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.systolic}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.diastolic}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.heartRate}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.period}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -131,6 +138,7 @@ const BloodPressurePage = () => {
     document.body.appendChild(tempDiv);
 
     try {
+      await new Promise((r) => setTimeout(r, 50));
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
         import("html2canvas"),
         import("jspdf"),
@@ -162,7 +170,7 @@ const BloodPressurePage = () => {
         heightLeft -= pageHeight;
       }
 
-      const fileName = "blood-pressure-report.pdf";
+      const fileName = `blood-pressure-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
 
       if (Capacitor.isNativePlatform()) {
         const pdfDataUri = pdf.output("datauristring");
@@ -188,11 +196,16 @@ const BloodPressurePage = () => {
       } else {
         pdf.save(fileName);
       }
+
+      toast.dismiss(loadingId);
+      toast.success(isRTL ? "تم إنشاء التقرير" : "Report generated");
     } catch (error) {
       console.error("Failed to export blood pressure report", error);
+      toast.dismiss(loadingId);
       toast.error(isRTL ? "تعذر إنشاء ملف التقرير الآن. حاول مرة أخرى." : "Unable to generate the report right now. Please try again.");
     } finally {
-      document.body.removeChild(tempDiv);
+      if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+      setPrinting(false);
     }
   };
 
