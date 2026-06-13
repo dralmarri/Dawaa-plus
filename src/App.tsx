@@ -94,6 +94,8 @@ const AppRoutes = () => {
     const count = await migrateLocalToCloud(uid);
     if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
     await syncFromCloud(uid);
+    setGuestMode(false);
+    navigate("/", { replace: true });
   };
 
   const handleImportCancel = async () => {
@@ -104,7 +106,10 @@ const AppRoutes = () => {
       localStorage.setItem(`dawaa_migrated_${uid}`, "skipped");
       await syncFromCloud(uid);
     }
+    setGuestMode(false);
+    navigate("/", { replace: true });
   };
+
 
   const isLoggedIn = !!user || guestMode;
 
