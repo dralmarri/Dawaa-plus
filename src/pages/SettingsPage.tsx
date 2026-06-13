@@ -112,7 +112,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
 
   const menuItems = [
-    { icon: FileText, label: isRTL ? "التقارير الصحية" : "Health Reports", action: () => navigate("/reports") },
+    
     { icon: Share2, label: t.shareApp, action: handleShareApp },
   ];
 
