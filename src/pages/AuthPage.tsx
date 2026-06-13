@@ -8,9 +8,10 @@ type Mode = "login" | "register" | "reset";
 
 interface AuthPageProps {
   onSkip: () => void;
+  onSignedIn?: () => void;
 }
 
-const AuthPage = ({ onSkip }: AuthPageProps) => {
+const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
   const { signIn, signUp, resetPassword, error, clearError } = useAuth();
   const { isRTL } = useLanguage();
   const [mode, setMode] = useState<Mode>("login");
@@ -41,6 +42,7 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
     try {
       if (mode === "login") {
         await signIn(email.trim(), password);
+        onSignedIn?.();
       } else if (mode === "register") {
         await signUp(email.trim(), password);
         setSignupSent(true);

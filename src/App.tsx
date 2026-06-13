@@ -49,8 +49,9 @@ const ProtectedRoute = ({ children, guestMode }: { children: React.ReactNode; gu
 
 const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolean) => void }) => {
   const location = useLocation();
-  if (user && !(location.state as any)?.fromSettings) return <Navigate to="/" replace />;
-  return <AuthPage onSkip={() => setGuestMode(true)} />;
+  const fromSettings = (location.state as any)?.fromSettings;
+  if (user && !fromSettings) return <Navigate to="/" replace />;
+  return <AuthPage onSkip={() => setGuestMode(true)} onSignedIn={() => setGuestMode(false)} />;
 };
 
 const AppRoutes = () => {
