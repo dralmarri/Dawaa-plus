@@ -57,10 +57,12 @@ const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolea
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [guestMode, setGuestMode] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const pendingUserId = useRef<string | null>(null);
   const { reschedule } = useNotifications();
+
 
   // Wire up cloud sync when user logs in
   useEffect(() => {
