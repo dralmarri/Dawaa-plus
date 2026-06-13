@@ -25,6 +25,7 @@ const BloodPressurePage = () => {
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [printing, setPrinting] = useState(false);
 
 
 
