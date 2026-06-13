@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
 import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft } from "lucide-react";
@@ -434,13 +435,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           </div>
         </div>
       )}
-      {showAuthOverlay && (
-        <div className="fixed inset-0 z-[200] bg-background">
+      {showAuthOverlay && createPortal(
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "var(--background)" }}>
           <AuthPage
             onSkip={() => setShowAuthOverlay(false)}
             onSignedIn={() => setShowAuthOverlay(false)}
           />
-        </div>
+        </div>,
+        document.body
       )}
 
       <AlertDialog open={signOutConfirm} onOpenChange={setSignOutConfirm}>
