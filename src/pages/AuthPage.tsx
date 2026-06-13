@@ -86,10 +86,17 @@ const AuthPage = ({ onSkip }: AuthPageProps) => {
           </div>
         )}
 
+        {/* Signup sent message */}
+        {signupSent && (
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
+            <p className="text-sm text-green-600 font-medium">✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني. افتح الرسالة لتفعيل حسابك.</p>
+          </div>
+        )}
+
         {/* Error */}
-        {error && (
+        {(localError || error) && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3">
-            <p className="text-sm text-destructive text-center">{error}</p>
+            <p className="text-sm text-destructive text-center">{localError || error}</p>
           </div>
         )}
 
