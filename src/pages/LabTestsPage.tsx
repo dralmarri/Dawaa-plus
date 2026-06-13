@@ -8,6 +8,10 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { analyzeValue, labReferences, type AnalyzedResult } from "@/lib/lab-references";
 import type { LabTest } from "@/types";
 import { Filesystem, Directory } from "@capacitor/filesystem";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ManualEntry {
   id: string;
@@ -156,6 +160,7 @@ const LabTestsPage = () => {
   const [pdfViewer, setPdfViewer] = useState<{ pages: string[]; name: string; downloadUrl: string } | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [listSearch, setListSearch] = useState("");
+  const [deleteId, setDeleteId] = useState<string | null>(null);
 
   const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
     try { return JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}"); } catch { return {}; }
@@ -426,14 +431,14 @@ const LabTestsPage = () => {
     setShowForm(true);
   };
 
-  const handleDelete = async (id: string) => {
-    const confirmed = window.confirm(isRTL ? "هل أنت متأكد من حذف هذا التحليل؟" : "Are you sure you want to delete this lab test?");
-    if (!confirmed) return;
-    await store.deleteLabTest(id);
+  const confirmDelete = async () => {
+    if (!deleteId) return;
+    await store.deleteLabTest(deleteId);
     const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
-    delete allResults[id];
+    delete allResults[deleteId];
     localStorage.setItem("dawaa_lab_results", JSON.stringify(allResults));
     setTests(store.getLabTests());
+    setDeleteId(null);
   };
 
   const loadSavedResults = (testId: string) => {
@@ -765,7 +770,7 @@ const LabTestsPage = () => {
                       <button onClick={() => openEdit(test)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={() => handleDelete(test.id)} className="text-destructive/60 hover:text-destructive p-1">
+                      <button onClick={() => setDeleteId(test.id)} className="text-destructive/60 hover:text-destructive p-1">
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -1074,6 +1079,22 @@ const LabTestsPage = () => {
           </div>
         </div>
       )}
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isRTL ? "حذف التحليل" : "Delete Lab Test"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isRTL ? "هل أنت متأكد من حذف هذا التحليل؟ لا يمكن التراجع عن هذا الإجراء." : "Are you sure you want to delete this lab test? This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isRTL ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isRTL ? "حذف" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

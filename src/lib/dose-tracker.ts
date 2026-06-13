@@ -78,8 +78,6 @@ export function generateTodayDoses(): DoseRecord[] {
   if (deduped.length < todayRecords.length) {
     const keepIds = new Set(deduped.map(r => r.id));
     const cleanedRecords = allExisting.filter(r => r.date !== today || keepIds.has(r.id));
-    const duplicateCount = todayRecords.length - deduped.length;
-    console.log(`[DoseTracker] Removed ${duplicateCount} duplicate dose records`);
     store._setDoseRecords(cleanedRecords);
   }
 

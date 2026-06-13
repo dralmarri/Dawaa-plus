@@ -1,6 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { store } from "@/lib/store";
 import ChipSelector from "@/components/ChipSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -22,6 +26,7 @@ const SettingsPage = () => {
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
+  const [signOutConfirm, setSignOutConfirm] = useState(false);
 
   const SHARE_URL = "https://dawaaplus.net";
   const SHARE_TEXT = isRTL
@@ -261,13 +266,7 @@ const SettingsPage = () => {
         </div>
 
         {user ? (
-          <button onClick={async () => {
-              const msg = isRTL ? "هل تريد تسجيل الخروج؟" : "Do you want to sign out?";
-              if (window.confirm(msg)) {
-                await logOut();
-                navigate("/auth", { replace: true });
-              }
-            }}
+          <button onClick={() => setSignOutConfirm(true)}
             className="bg-card rounded-2xl border border-border w-full flex items-center justify-between px-5 py-4 mb-4">
             <div className="flex items-center gap-3">
               <LogOut className="w-5 h-5 text-destructive" />
@@ -421,6 +420,22 @@ const SettingsPage = () => {
           </div>
         </div>
       )}
+      <AlertDialog open={signOutConfirm} onOpenChange={setSignOutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{isRTL ? "تسجيل الخروج" : "Sign Out"}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {isRTL ? "هل تريد تسجيل الخروج من حسابك؟" : "Do you want to sign out of your account?"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{isRTL ? "إلغاء" : "Cancel"}</AlertDialogCancel>
+            <AlertDialogAction onClick={async () => { await logOut(); navigate("/auth", { replace: true }); }}>
+              {isRTL ? "تسجيل الخروج" : "Sign Out"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

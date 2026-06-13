@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
@@ -9,6 +9,10 @@ import BottomNav from "@/components/BottomNav";
 import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData } from "@/lib/store";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 import AuthPage from "@/pages/AuthPage";
 import HomePage from "@/pages/HomePage";
@@ -46,6 +50,8 @@ const ProtectedRoute = ({ children, guestMode }: { children: React.ReactNode; gu
 const AppRoutes = () => {
   const { user, loading } = useAuth();
   const [guestMode, setGuestMode] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const pendingUserId = useRef<string | null>(null);
   const { reschedule } = useNotifications();
 
   // Wire up cloud sync when user logs in
@@ -60,26 +66,35 @@ const AppRoutes = () => {
       const alreadyHandled = localStorage.getItem(MIGRATED_KEY);
       const guestDataExists = !alreadyHandled && hasLocalData();
 
-      const proceed = async () => {
-        if (guestDataExists) {
-          const importIt = window.confirm(
-            "تم العثور على بيانات محفوظة من وضع الضيف.\n\nهل تريد استيرادها إلى هذا الحساب؟\n\n• اضغط (موافق) للاستيراد\n• اضغط (إلغاء) لبدء حساب جديد فارغ"
-          );
-          if (importIt) {
-            const count = await migrateLocalToCloud(user.id);
-            if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
-          } else {
-            await clearLocalData();
-            localStorage.setItem(MIGRATED_KEY, "skipped");
-          }
-        }
-        await syncFromCloud(user.id);
-      };
-      proceed();
+      if (guestDataExists) {
+        pendingUserId.current = user.id;
+        setImportDialogOpen(true);
+      } else {
+        syncFromCloud(user.id);
+      }
     } else {
       setStoreUid(null);
     }
   }, [user]);
+
+  const handleImportConfirm = async () => {
+    const uid = pendingUserId.current;
+    if (!uid) return;
+    setImportDialogOpen(false);
+    const count = await migrateLocalToCloud(uid);
+    if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
+    await syncFromCloud(uid);
+  };
+
+  const handleImportCancel = async () => {
+    const uid = pendingUserId.current;
+    setImportDialogOpen(false);
+    if (uid) {
+      await clearLocalData();
+      localStorage.setItem(`dawaa_migrated_${uid}`, "skipped");
+      await syncFromCloud(uid);
+    }
+  };
 
   const isLoggedIn = !!user || guestMode;
 
@@ -92,6 +107,21 @@ const AppRoutes = () => {
   }
 
   return (
+    <>
+    <AlertDialog open={importDialogOpen} onOpenChange={(open) => { if (!open) handleImportCancel(); }}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>استيراد بيانات وضع الضيف</AlertDialogTitle>
+          <AlertDialogDescription>
+            تم العثور على بيانات محفوظة من وضع الضيف. هل تريد استيرادها إلى هذا الحساب؟
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleImportCancel}>بدء حساب جديد فارغ</AlertDialogCancel>
+          <AlertDialogAction onClick={handleImportConfirm}>استيراد البيانات</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <div className="min-h-[100dvh] bg-background pb-20">
       <Routes>
         <Route path="/auth" element={(user || guestMode) ? <Navigate to="/" replace /> : <AuthPage onSkip={() => setGuestMode(true)} />} />
@@ -114,6 +144,7 @@ const AppRoutes = () => {
       </Routes>
       {isLoggedIn && <BottomNav />}
     </div>
+    </>
   );
 };
 
