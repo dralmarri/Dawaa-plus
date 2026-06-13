@@ -289,13 +289,6 @@ const BloodPressurePage = () => {
           </div>
         )}
 
-        <BPChart readings={readings} />
-
-        {readings.length > 0 && (
-          <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
-            🖨️ {t.printReport}
-          </button>
-        )}
 
         <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 space-y-3 sm:space-y-4 print-hide">
           <div className="flex items-center gap-3">
@@ -471,6 +464,14 @@ const BloodPressurePage = () => {
               ))}
             </div>
           </div>
+        )}
+
+        <BPChart readings={readings} />
+
+        {readings.length > 0 && (
+          <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
+            🖨️ {t.printReport}
+          </button>
         )}
       </div>
     </div>
