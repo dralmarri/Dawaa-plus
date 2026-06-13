@@ -266,10 +266,64 @@ const LabTestsPage = () => {
         reader.readAsDataURL(file);
       }
     } else if (file.type === "application/pdf") {
-      setAttachedImage("pdf:" + file.name);
+      // Store actual PDF data URL so it can be opened later.
+      // Format: pdfdata:<filename>|||<dataUrl>
+      try {
+        const dataUrl: string = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+        setAttachedImage(`pdfdata:${file.name}|||${dataUrl}`);
+      } catch {
+        setAttachedImage("pdf:" + file.name);
+      }
     }
     if (imageInputRef.current) imageInputRef.current.value = "";
   };
+
+  // Open a stored PDF for viewing (native share on iOS/Android, new tab on web)
+  const openPdf = async (fileUrl: string) => {
+    if (!fileUrl.startsWith("pdfdata:")) return;
+    const sep = fileUrl.indexOf("|||");
+    if (sep < 0) return;
+    const filename = fileUrl.slice("pdfdata:".length, sep) || "lab-test.pdf";
+    const dataUrl = fileUrl.slice(sep + 3);
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      if (Capacitor.isNativePlatform()) {
+        const base64 = dataUrl.split(",")[1] || "";
+        const safeName = filename.replace(/[^\w.\-]/g, "_");
+        const written = await Filesystem.writeFile({
+          path: safeName,
+          data: base64,
+          directory: Directory.Cache,
+        });
+        const { Share } = await import("@capacitor/share");
+        await Share.share({ title: filename, url: written.uri });
+        return;
+      }
+    } catch (err) {
+      console.warn("Native PDF open failed, falling back:", err);
+    }
+    // Web fallback: open blob in a new tab so the browser renders the PDF
+    try {
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, "_blank");
+      if (!win) {
+        // Popup blocked — force navigation
+        window.location.href = url;
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (err) {
+      console.error("Open PDF failed:", err);
+      alert(isRTL ? "تعذر فتح ملف PDF" : "Could not open PDF");
+    }
+  };
+
 
   const handleSave = async () => {
     const hasManualValues = manualEntries.some((entry) => entry.value.trim() !== "");
