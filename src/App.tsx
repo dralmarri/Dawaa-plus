@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
@@ -49,9 +49,10 @@ const ProtectedRoute = ({ children, guestMode }: { children: React.ReactNode; gu
 
 const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolean) => void }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const fromSettings = (location.state as any)?.fromSettings;
   if (user && !fromSettings) return <Navigate to="/" replace />;
-  return <AuthPage onSkip={() => { setGuestMode(true); window.location.replace("/"); }} onSignedIn={() => setGuestMode(false)} />;
+  return <AuthPage onSkip={() => { setGuestMode(true); navigate("/", { replace: true }); }} onSignedIn={() => setGuestMode(false)} />;
 };
 
 const AppRoutes = () => {
