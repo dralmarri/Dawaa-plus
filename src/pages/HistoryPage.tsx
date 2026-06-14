@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
 import { store } from "@/lib/store";
-import { generateTodayDoses, markDoseTaken, undoDose } from "@/lib/dose-tracker";
+import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
 import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
