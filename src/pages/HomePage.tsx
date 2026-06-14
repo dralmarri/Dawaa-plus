@@ -275,6 +275,9 @@ const HomePage = () => {
         doses={todayDoses}
         isRTL={isRTL}
         t={t}
+        onTaken={handleTaken}
+        onMissed={handleMissed}
+        onUndo={handleUndo}
       />
 
 
