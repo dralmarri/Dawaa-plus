@@ -150,13 +150,13 @@ const AppointmentsPage = () => {
           {sorted.map((apt) => {
             const countdown = getCountdown(apt);
             return (
-              <div key={apt.id} className="bg-card rounded-2xl border border-border p-4">
+              <div key={apt.id} className="bg-card rounded-3xl border-2 border-primary/30 p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-bold text-foreground">{specialtyMap[apt.specialty] || apt.specialty}</h3>
                       {countdown && (
-                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${countdown.tone}`}>
+                        <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${countdown.tone}`}>
                           {countdown.label}
                         </span>
                       )}
