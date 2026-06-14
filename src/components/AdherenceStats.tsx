@@ -56,6 +56,11 @@ const AdherenceStats = ({ period, onTogglePeriod }: Props) => {
     stats.pct >= 60 ? "text-warning" :
     "text-destructive";
 
+  const scoreBg =
+    stats.pct >= 85 ? "bg-success" :
+    stats.pct >= 60 ? "bg-warning" :
+    "bg-destructive";
+
   const maxBarH = Math.max(1, ...stats.byDay.map((d) => d.taken + d.missed));
 
   return (
