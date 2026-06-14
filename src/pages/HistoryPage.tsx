@@ -161,7 +161,7 @@ const HistoryPage = () => {
                           toast.success(isRTL ? "تم تسجيل الجرعة ✓" : "Dose recorded ✓");
                           window.location.reload();
                         }}
-                        className="text-xs font-medium px-2 py-1 rounded-full bg-summary-missed text-summary-missed-foreground hover:bg-summary-taken hover:text-summary-taken-foreground transition-colors cursor-pointer"
+                        className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-summary-missed text-summary-missed-foreground hover:bg-summary-taken hover:text-summary-taken-foreground transition-colors cursor-pointer"
                         title={isRTL ? "اضغط لتسجيلها كمأخوذة" : "Click to mark as taken"}
                       >
                         {isRTL ? "فائتة" : "Missed"}
@@ -173,13 +173,13 @@ const HistoryPage = () => {
                           toast(isRTL ? "تم التراجع — الجرعة لم تؤخذ" : "Reverted — dose not taken");
                           window.location.reload();
                         }}
-                        className="text-xs font-medium px-2 py-1 rounded-full bg-summary-taken text-summary-taken-foreground hover:bg-secondary hover:text-summary-schedule transition-colors cursor-pointer"
+                        className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-summary-taken text-summary-taken-foreground hover:bg-secondary hover:text-summary-schedule transition-colors cursor-pointer"
                         title={isRTL ? "اضغط للتراجع" : "Click to undo"}
                       >
                         {isRTL ? "تم ↶" : "Taken ↶"}
                       </button>
                     ) : (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary text-summary-schedule">
+                      <span className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-secondary text-summary-schedule">
                         {isRTL ? "معلقة" : "Pending"}
                       </span>
                     )}
