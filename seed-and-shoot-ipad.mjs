@@ -49,16 +49,16 @@ for (let d=0; d<3; d++) {
 }
 const settings = { language:'ar', theme:'light', notifications:true, voiceAlerts:false, userName:'محمد', emergencyContacts:[] };
 
-const seedScript = `
-  localStorage.setItem('dawaa_medications', ${JSON.stringify(JSON.stringify(meds))});
-  localStorage.setItem('dawaa_bp_readings', ${JSON.stringify(JSON.stringify(bp))});
-  localStorage.setItem('dawaa_lab_tests', ${JSON.stringify(JSON.stringify(labs))});
-  localStorage.setItem('dawaa_appointments', ${JSON.stringify(JSON.stringify(appts))});
-  localStorage.setItem('dawaa_dose_records', ${JSON.stringify(JSON.stringify(doses))});
-  localStorage.setItem('dawaa_settings', ${JSON.stringify(JSON.stringify(settings))});
-  localStorage.setItem('dawaa_guest_mode', 'true');
-  localStorage.setItem('language', 'ar');
-`;
+// Capacitor Preferences (web) stores under "CapacitorStorage." prefix
+const seedData = {
+  'CapacitorStorage.dawaa_medications': JSON.stringify(meds),
+  'CapacitorStorage.dawaa_readings': JSON.stringify(bp),
+  'CapacitorStorage.dawaa_labTests': JSON.stringify(labs),
+  'CapacitorStorage.dawaa_appointments': JSON.stringify(appts),
+  'CapacitorStorage.dawaa_doseRecords': JSON.stringify(doses),
+  'CapacitorStorage.dawaa_settings': JSON.stringify(settings),
+  'language': 'ar',
+};
 
 const pages = [
   { name: '01-home', route: '/' },
