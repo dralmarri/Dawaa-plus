@@ -149,13 +149,6 @@ const HomePage = () => {
             </p>
           </div>
         </div>
-        {/* Progress bar */}
-        <div className="mt-4 h-2 rounded-full bg-white/20 overflow-hidden">
-          <div
-            className="h-full bg-white rounded-full transition-all duration-500"
-            style={{ width: `${progressPct}%` }}
-          />
-        </div>
       </div>
 
       {/* Next dose hero */}
