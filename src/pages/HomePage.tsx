@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import type { DoseRecord } from "@/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper: classify a HH:mm time into morning/noon/evening with icon + label
 function getTimeOfDay(time: string, isRTL: boolean) {
