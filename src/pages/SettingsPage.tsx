@@ -150,6 +150,11 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
         </button>
         <h1 className="text-3xl font-bold text-foreground">{t.settings}</h1>
+        <img
+          src="/app-icon.png"
+          alt=""
+          className="w-9 h-9 rounded-xl object-cover shadow-sm border border-border"
+        />
       </div>
 
       <div className="px-4 space-y-4">
