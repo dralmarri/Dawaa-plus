@@ -207,18 +207,18 @@ const HomePage = () => {
       <div className="mb-6 mt-6">
         <h2 className="text-lg font-bold text-foreground mb-3">{t.todaySummary}</h2>
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-secondary rounded-2xl p-4 text-center">
+          <button onClick={() => setDialogFilter("scheduled")} className="bg-secondary rounded-2xl p-4 text-center hover:opacity-90 transition-opacity">
             <div className="text-3xl font-bold text-summary-schedule">{scheduled}</div>
             <div className="text-sm text-muted-foreground mt-1">{t.schedule}</div>
-          </div>
-          <div className="bg-summary-taken rounded-2xl p-4 text-center">
+          </button>
+          <button onClick={() => setDialogFilter("taken")} className="bg-summary-taken rounded-2xl p-4 text-center hover:opacity-90 transition-opacity">
             <div className="text-3xl font-bold text-summary-taken-foreground">{taken}</div>
             <div className="text-sm text-muted-foreground mt-1">{t.taken}</div>
-          </div>
-          <div className="bg-summary-missed rounded-2xl p-4 text-center">
+          </button>
+          <button onClick={() => setDialogFilter("missed")} className="bg-summary-missed rounded-2xl p-4 text-center hover:opacity-90 transition-opacity">
             <div className="text-3xl font-bold text-summary-missed-foreground">{missed}</div>
             <div className="text-sm text-muted-foreground mt-1">{t.missed}</div>
-          </div>
+          </button>
         </div>
       </div>
 
