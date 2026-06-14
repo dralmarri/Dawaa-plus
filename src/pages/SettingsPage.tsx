@@ -27,8 +27,6 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [shareChoiceOpen, setShareChoiceOpen] = useState(false);
-  const [shareMode, setShareMode] = useState<"app" | "link">("app");
   const [signOutConfirm, setSignOutConfirm] = useState(false);
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
 
