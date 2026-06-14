@@ -56,6 +56,11 @@ const AdherenceStats = ({ period, onTogglePeriod }: Props) => {
     stats.pct >= 60 ? "text-warning" :
     "text-destructive";
 
+  const scoreBg =
+    stats.pct >= 85 ? "bg-success" :
+    stats.pct >= 60 ? "bg-warning" :
+    "bg-destructive";
+
   const maxBarH = Math.max(1, ...stats.byDay.map((d) => d.taken + d.missed));
 
   return (
@@ -90,6 +95,12 @@ const AdherenceStats = ({ period, onTogglePeriod }: Props) => {
                 ? period === "week" ? "هذا الأسبوع" : "هذا الشهر"
                 : period === "week" ? "this week" : "this month"}
             </div>
+          </div>
+
+
+
+          <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden mb-4">
+            <div className={`h-full ${scoreBg} rounded-full transition-all duration-500`} style={{ width: `${stats.pct}%` }} />
           </div>
 
           <div className="flex gap-4 mb-4 text-sm">
