@@ -267,7 +267,7 @@ const HomePage = () => {
       </div>
 
 
-      {/* Today's Doses - Grouped by time */}
+      {/* Today's Doses - hero-style cards */}
       <div className="mb-6">
         <h2 className="text-lg font-bold text-foreground mb-3">{t.upcomingDoses}</h2>
         {groupedDoses.length === 0 ? (
@@ -276,86 +276,82 @@ const HomePage = () => {
           </div>
         ) : (
           <div className="space-y-3">
-            {groupedDoses.map(({ time, doses }) => {
-              const tod = getTimeOfDay(time, isRTL);
-              const TodIcon = tod.icon;
+            {groupedDoses.flatMap(({ doses }) => doses).map((dose) => {
+              const med = store.getMedications().find(m => m.id === dose.medicationId);
+              const isPending = dose.status === "pending";
+              const isMissed = dose.status === "missed";
+              const borderClass = isPending
+                ? "border-2 border-primary/30"
+                : isMissed
+                ? "border border-summary-missed"
+                : "border border-summary-taken";
               return (
-              <div key={time} className={`bg-card rounded-2xl border ${tod.border} overflow-hidden`}>
-                {/* Time header */}
-                <div className={`flex items-center gap-2 px-4 py-2.5 ${tod.bg}`}>
-                  <TodIcon className={`w-4 h-4 ${tod.tint}`} />
-                  <span className={`text-sm font-bold ${tod.tint}`}>{time}</span>
-                  <span className={`text-xs font-medium ${tod.tint} opacity-80`}>· {tod.label}</span>
-                  {doses.length > 1 && (
-                    <span className="text-xs text-muted-foreground ml-auto rtl:ml-0 rtl:mr-auto">
-                      {doses.length} {isRTL ? "أدوية" : "meds"}
+                <div key={dose.id} className={`rounded-3xl bg-card p-4 shadow-sm ${borderClass}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                      {isPending
+                        ? (isRTL ? "جرعة قادمة" : "Upcoming dose")
+                        : isMissed
+                        ? (isRTL ? "جرعة فائتة" : "Missed dose")
+                        : (isRTL ? "تم أخذها" : "Taken")}
                     </span>
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                      {dose.scheduledTime}
+                    </span>
+                  </div>
+                  <div
+                    className="flex items-center gap-3 cursor-pointer"
+                    onClick={() => navigate(`/medications/add?edit=${dose.medicationId}`)}
+                  >
+                    {med?.imageUrl ? (
+                      <img src={med.imageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <Pill className="w-7 h-7 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-foreground truncate">{dose.medicationName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {med ? `${med.dosage} ${med.form}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  {isPending ? (
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      <button
+                        onClick={(e) => handleTaken(dose.id, e)}
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                      >
+                        <Check className="w-4 h-4" />
+                        {isRTL ? "تم أخذها" : "Mark taken"}
+                      </button>
+                      <button
+                        onClick={(e) => handleMissed(dose.id, e)}
+                        className="rounded-xl border border-border bg-card py-2.5 font-semibold text-sm text-muted-foreground hover:border-summary-missed-foreground hover:text-summary-missed-foreground transition-colors"
+                      >
+                        {isRTL ? "تأجيل" : "Skip"}
+                      </button>
+                    </div>
+                  ) : isMissed ? (
+                    <button
+                      onClick={(e) => handleTaken(dose.id, e)}
+                      className="mt-4 w-full rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity"
+                    >
+                      {isRTL ? "✗ تسجيل كمأخوذة" : "✗ Mark as taken"}
+                    </button>
+                  ) : (
+                    <div className="mt-4 w-full rounded-xl bg-summary-taken text-summary-taken-foreground py-2.5 font-semibold text-sm text-center">
+                      {isRTL ? "✓ تم أخذها" : "✓ Taken"}
+                    </div>
                   )}
                 </div>
-                <div className="divide-y divide-border">
-                  {doses.map((dose) => {
-                    const med = store.getMedications().find(m => m.id === dose.medicationId);
-                    return (
-                      <div key={dose.id} className="flex items-center justify-between p-4 pt-3">
-                        <div
-                          className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer"
-                          onClick={() => navigate(`/medications/add?edit=${dose.medicationId}`)}
-                        >
-                          {med?.imageUrl ? (
-                            <img src={med.imageUrl} alt={dose.medicationName} className="w-10 h-10 rounded-lg object-cover border border-border flex-shrink-0" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                              <Pill className="w-5 h-5 text-primary" />
-                            </div>
-                          )}
-                          <div className="min-w-0">
-                            <p className="font-semibold text-foreground truncate">{dose.medicationName}</p>
-                            <p className="text-sm text-muted-foreground">
-                              {med && `${med.dosage} ${med.form}`}
-                            </p>
-                          </div>
-                        </div>
-
-                        {dose.status === "pending" ? (
-                          <div className="flex items-center gap-2 flex-shrink-0">
-                            <button
-                              onClick={(e) => handleTaken(dose.id, e)}
-                              className="w-9 h-9 rounded-full bg-summary-taken flex items-center justify-center hover:opacity-80 transition-opacity"
-                              aria-label={isRTL ? "تم أخذها" : "Mark taken"}
-                            >
-                              <Check className="w-5 h-5 text-summary-taken-foreground" />
-                            </button>
-                            <button
-                              onClick={(e) => handleMissed(dose.id, e)}
-                              className="w-9 h-9 rounded-full bg-summary-missed flex items-center justify-center hover:opacity-80 transition-opacity"
-                              aria-label={isRTL ? "فائتة" : "Mark missed"}
-                            >
-                              <X className="w-5 h-5 text-summary-missed-foreground" />
-                            </button>
-                          </div>
-                        ) : dose.status === "missed" ? (
-                          <button
-                            onClick={(e) => handleTaken(dose.id, e)}
-                            className="text-xs font-medium px-3 py-1.5 rounded-full flex-shrink-0 bg-summary-missed text-summary-missed-foreground hover:bg-summary-taken hover:text-summary-taken-foreground transition-colors"
-                            title={isRTL ? "اضغط لتسجيلها كمأخوذة" : "Click to mark as taken"}
-                          >
-                            {isRTL ? "✗ فائتة" : "✗ Missed"}
-                          </button>
-                        ) : (
-                          <span className="text-xs font-medium px-3 py-1.5 rounded-full flex-shrink-0 bg-summary-taken text-summary-taken-foreground">
-                            {isRTL ? "✓ تم" : "✓ Taken"}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
               );
             })}
           </div>
         )}
       </div>
+
 
       <FloatingAddButton navigate={navigate} isRTL={isRTL} t={t} />
     </div>
