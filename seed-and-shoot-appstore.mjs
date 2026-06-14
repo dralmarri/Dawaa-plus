@@ -172,7 +172,7 @@ async function capture(device) {
   }, seedData);
 
   const page = await ctx.newPage();
-  await page.goto(PREVIEW_URL + '/auth', { waitUntil: 'networkidle' });
+  await page.goto(PREVIEW_URL + '/auth', { waitUntil: 'load', timeout: 60000 });
   await page.waitForTimeout(1000);
 
   // Click guest button to enter the app
