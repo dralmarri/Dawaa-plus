@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import BottomNav from "@/components/BottomNav";
-import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData } from "@/lib/store";
+import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData, getMigratedFlag, setMigratedFlag } from "@/lib/store";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 import {
@@ -73,16 +73,17 @@ const AppRoutes = () => {
   useEffect(() => {
     if (user) {
       setStoreUid(user.id);
-      const MIGRATED_KEY = `dawaa_migrated_${user.id}`;
-      const alreadyHandled = localStorage.getItem(MIGRATED_KEY);
-      const guestDataExists = !alreadyHandled && hasLocalData();
-
-      if (guestDataExists) {
-        pendingUserId.current = user.id;
-        setImportDialogOpen(true);
-      } else {
-        syncFromCloud(user.id);
-      }
+      (async () => {
+        const alreadyHandled = await getMigratedFlag(user.id);
+        const guestDataExists = !alreadyHandled && hasLocalData();
+        if (guestDataExists) {
+          pendingUserId.current = user.id;
+          setImportDialogOpen(true);
+        } else {
+          if (!alreadyHandled) await setMigratedFlag(user.id, "no-guest-data");
+          syncFromCloud(user.id);
+        }
+      })();
     } else {
       setStoreUid(null);
     }
@@ -98,7 +99,7 @@ const AppRoutes = () => {
     setImportDialogOpen(false);
     const count = await migrateLocalToCloud(uid);
     if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
-    localStorage.setItem(`dawaa_migrated_${uid}`, "imported");
+    await setMigratedFlag(uid, "imported");
     await syncFromCloud(uid);
     setGuestMode(false);
     navigate("/", { replace: true });
@@ -112,7 +113,7 @@ const AppRoutes = () => {
     setImportDialogOpen(false);
     if (uid) {
       await clearLocalData();
-      localStorage.setItem(`dawaa_migrated_${uid}`, "skipped");
+      await setMigratedFlag(uid, "skipped");
       await syncFromCloud(uid);
     }
     setGuestMode(false);

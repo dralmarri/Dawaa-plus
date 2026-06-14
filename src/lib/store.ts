@@ -210,9 +210,31 @@ export async function syncFromCloud(uid: string) {
 }
 
 // ── Migrate local data to cloud ──────────────────────────────────
+export async function getMigratedFlag(uid: string): Promise<string | null> {
+  const key = `dawaa_migrated_${uid}`;
+  const { value } = await Preferences.get({ key });
+  if (value) return value;
+  // Backward compat: fall back to localStorage, then migrate it forward
+  try {
+    const legacy = localStorage.getItem(key);
+    if (legacy) {
+      await Preferences.set({ key, value: legacy });
+      return legacy;
+    }
+  } catch {}
+  return null;
+}
+
+export async function setMigratedFlag(uid: string, value: string): Promise<void> {
+  const key = `dawaa_migrated_${uid}`;
+  await Preferences.set({ key, value });
+  try { localStorage.setItem(key, value); } catch {}
+}
+
 export async function migrateLocalToCloud(uid: string): Promise<number> {
-  const MIGRATED_KEY = `dawaa_migrated_${uid}`;
-  if (localStorage.getItem(MIGRATED_KEY)) return 0;
+  if (await getMigratedFlag(uid)) return 0;
+
+
 
   let count = 0;
   try {
@@ -234,7 +256,7 @@ export async function migrateLocalToCloud(uid: string): Promise<number> {
       count++;
     }
 
-    localStorage.setItem(MIGRATED_KEY, "true");
+    await setMigratedFlag(uid, "true");
   } catch (err) {
     console.error("Migration error:", err);
   }
