@@ -73,16 +73,17 @@ const AppRoutes = () => {
   useEffect(() => {
     if (user) {
       setStoreUid(user.id);
-      const MIGRATED_KEY = `dawaa_migrated_${user.id}`;
-      const alreadyHandled = localStorage.getItem(MIGRATED_KEY);
-      const guestDataExists = !alreadyHandled && hasLocalData();
-
-      if (guestDataExists) {
-        pendingUserId.current = user.id;
-        setImportDialogOpen(true);
-      } else {
-        syncFromCloud(user.id);
-      }
+      (async () => {
+        const alreadyHandled = await getMigratedFlag(user.id);
+        const guestDataExists = !alreadyHandled && hasLocalData();
+        if (guestDataExists) {
+          pendingUserId.current = user.id;
+          setImportDialogOpen(true);
+        } else {
+          if (!alreadyHandled) await setMigratedFlag(user.id, "no-guest-data");
+          syncFromCloud(user.id);
+        }
+      })();
     } else {
       setStoreUid(null);
     }
