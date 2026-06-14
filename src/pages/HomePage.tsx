@@ -266,91 +266,16 @@ const HomePage = () => {
         </button>
       </div>
 
+      <DosesDialog
+        open={dialogFilter !== null}
+        onOpenChange={(o) => !o && setDialogFilter(null)}
+        filter={dialogFilter}
+        doses={todayDoses}
+        isRTL={isRTL}
+        t={t}
+      />
 
-      {/* Today's Doses - hero-style cards */}
-      <div className="mb-6">
-        <h2 className="text-lg font-bold text-foreground mb-3">{t.upcomingDoses}</h2>
-        {groupedDoses.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-border">
-            <p className="text-center text-muted-foreground p-6">{t.noDosesToday}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {groupedDoses.flatMap(({ doses }) => doses).map((dose) => {
-              const med = store.getMedications().find(m => m.id === dose.medicationId);
-              const isPending = dose.status === "pending";
-              const isMissed = dose.status === "missed";
-              const borderClass = isPending
-                ? "border-2 border-primary/30"
-                : isMissed
-                ? "border border-summary-missed"
-                : "border border-summary-taken";
-              return (
-                <div key={dose.id} className={`rounded-3xl bg-card p-4 shadow-sm ${borderClass}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
-                      {isPending
-                        ? (isRTL ? "جرعة قادمة" : "Upcoming dose")
-                        : isMissed
-                        ? (isRTL ? "جرعة فائتة" : "Missed dose")
-                        : (isRTL ? "تم أخذها" : "Taken")}
-                    </span>
-                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                      {dose.scheduledTime}
-                    </span>
-                  </div>
-                  <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => navigate(`/medications/add?edit=${dose.medicationId}`)}
-                  >
-                    {med?.imageUrl ? (
-                      <img src={med.imageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                        <Pill className="w-7 h-7 text-primary" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-foreground truncate">{dose.medicationName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {med ? `${med.dosage} ${med.form}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  {isPending ? (
-                    <div className="grid grid-cols-2 gap-2 mt-4">
-                      <button
-                        onClick={(e) => handleTaken(dose.id, e)}
-                        className="rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
-                      >
-                        <Check className="w-4 h-4" />
-                        {isRTL ? "تم أخذها" : "Mark taken"}
-                      </button>
-                      <button
-                        onClick={(e) => handleMissed(dose.id, e)}
-                        className="rounded-xl border border-border bg-card py-2.5 font-semibold text-sm text-muted-foreground hover:border-summary-missed-foreground hover:text-summary-missed-foreground transition-colors"
-                      >
-                        {isRTL ? "تأجيل" : "Skip"}
-                      </button>
-                    </div>
-                  ) : isMissed ? (
-                    <button
-                      onClick={(e) => handleTaken(dose.id, e)}
-                      className="mt-4 w-full rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity"
-                    >
-                      {isRTL ? "✗ تسجيل كمأخوذة" : "✗ Mark as taken"}
-                    </button>
-                  ) : (
-                    <div className="mt-4 w-full rounded-xl bg-summary-taken text-summary-taken-foreground py-2.5 font-semibold text-sm text-center">
-                      {isRTL ? "✓ تم أخذها" : "✓ Taken"}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+
 
 
       <FloatingAddButton navigate={navigate} isRTL={isRTL} t={t} />
