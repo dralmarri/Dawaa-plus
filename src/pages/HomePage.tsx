@@ -450,13 +450,14 @@ const DosesDialog = ({
                         className="rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                       >
                         <Check className="w-4 h-4" />
-                        {isRTL ? "تم أخذها" : "Mark as taken"}
+                        {isRTL ? "تم أخذها" : "Taken"}
                       </button>
                       <button
-                        onClick={(e) => onUndo(dose.id, e)}
-                        className="rounded-xl border border-border bg-card py-2.5 font-semibold text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                        onClick={(e) => onMissed(dose.id, e)}
+                        className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                       >
-                        {isRTL ? "تراجع" : "Undo"}
+                        <X className="w-4 h-4" />
+                        {isRTL ? "فائته" : "Missed"}
                       </button>
                     </div>
                   ) : (
