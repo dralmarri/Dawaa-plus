@@ -6,7 +6,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import BottomNav from "@/components/BottomNav";
-import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData } from "@/lib/store";
+import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData, getMigratedFlag, setMigratedFlag } from "@/lib/store";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 import {
