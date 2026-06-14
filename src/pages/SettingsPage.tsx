@@ -335,6 +335,49 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
         )}
       </div>
 
+      {/* Share choice modal: app vs link */}
+      {shareChoiceOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4"
+          dir={isRTL ? "rtl" : "ltr"}
+          onClick={() => setShareChoiceOpen(false)}
+        >
+          <div
+            className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-bold text-foreground">{t.shareApp}</h2>
+              <button
+                onClick={() => setShareChoiceOpen(false)}
+                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-border"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <p className="text-sm text-muted-foreground">
+              {isRTL ? "كيف تريد المشاركة؟" : "How do you want to share?"}
+            </p>
+
+            <div className="flex flex-col gap-2">
+              <button
+                onClick={() => performShare("app")}
+                className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm hover:opacity-90 transition-opacity"
+              >
+                {isRTL ? "مشاركة التطبيق" : "Share the app"}
+              </button>
+              <button
+                onClick={() => performShare("link")}
+                className="rounded-xl bg-muted text-foreground py-2.5 px-5 font-semibold text-sm hover:bg-border transition-colors"
+              >
+                {isRTL ? "مشاركة الرابط فقط" : "Share link only"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Share app modal */}
       {shareOpen && (
         <div
