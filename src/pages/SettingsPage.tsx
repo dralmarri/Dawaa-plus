@@ -356,7 +356,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </button>
             </div>
 
-            <p className="text-sm text-muted-foreground">{SHARE_TEXT}</p>
+            <p className="text-sm text-muted-foreground">{shareMode === "app" ? SHARE_TEXT : SHARE_URL}</p>
 
             <div className="grid grid-cols-4 gap-3">
               <a
