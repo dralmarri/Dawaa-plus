@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
 import { store } from "@/lib/store";
@@ -13,12 +13,15 @@ const HistoryPage = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
 
-  // Ensure today's doses are generated
-  generateTodayDoses();
-
-  const records = store.getDoseRecords();
+  const [records, setRecords] = useState(() => {
+    generateTodayDoses();
+    return store.getDoseRecords();
+  });
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
   const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
+
+  const refresh = () => setRecords([...store.getDoseRecords()]);
+
 
   // Group records by date
   const grouped = useMemo(() => {
@@ -156,10 +159,10 @@ const HistoryPage = () => {
                     </div>
                     {rec.status === "missed" ? (
                       <button
-                        onClick={() => {
-                          markDoseTaken(rec.id);
+                        onClick={async () => {
+                          await markDoseTaken(rec.id);
+                          refresh();
                           toast.success(isRTL ? "تم تسجيل الجرعة ✓" : "Dose recorded ✓");
-                          window.location.reload();
                         }}
                         className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                         title={isRTL ? "اضغط لتسجيلها كمأخوذة" : "Click to mark as taken"}
@@ -171,8 +174,8 @@ const HistoryPage = () => {
                       <button
                         onClick={async () => {
                           await markDoseMissed(rec.id);
+                          refresh();
                           toast(isRTL ? "تم التغيير إلى فائتة" : "Marked as missed");
-                          window.location.reload();
                         }}
                         className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                         title={isRTL ? "اضغط لتغييرها إلى فائتة" : "Click to mark as missed"}
@@ -180,6 +183,7 @@ const HistoryPage = () => {
                         <Check className="w-4 h-4" />
                         {isRTL ? "تم أخذها" : "Taken"}
                       </button>
+
                     ) : (
                       <span className="rounded-xl bg-secondary text-summary-schedule py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5">
                         <Clock className="w-4 h-4" />
