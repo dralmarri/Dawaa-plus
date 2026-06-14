@@ -256,7 +256,7 @@ export async function migrateLocalToCloud(uid: string): Promise<number> {
       count++;
     }
 
-    localStorage.setItem(MIGRATED_KEY, "true");
+    await setMigratedFlag(uid, "true");
   } catch (err) {
     console.error("Migration error:", err);
   }
