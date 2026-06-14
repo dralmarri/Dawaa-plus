@@ -134,7 +134,7 @@ const HistoryPage = () => {
           {grouped.map(({ date, records: dayRecords }) => (
             <div key={date}>
               <h3 className="text-sm font-bold text-muted-foreground mb-2">{formatDate(date)}</h3>
-              <div className="bg-card rounded-2xl border border-border divide-y divide-border">
+              <div className="bg-card rounded-3xl border-2 border-primary/30 shadow-sm divide-y divide-border">
                 {dayRecords.map((rec) => (
                   <div key={rec.id} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
