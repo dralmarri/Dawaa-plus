@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import type { DoseRecord } from "@/types";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 // Helper: classify a HH:mm time into morning/noon/evening with icon + label
 function getTimeOfDay(time: string, isRTL: boolean) {
@@ -29,6 +30,7 @@ const HomePage = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
   const [todayDoses, setTodayDoses] = useState<DoseRecord[]>([]);
+  const [dialogFilter, setDialogFilter] = useState<"scheduled" | "taken" | "missed" | null>(null);
 
   useEffect(() => {
     const doses = generateTodayDoses();
@@ -206,18 +208,18 @@ const HomePage = () => {
       <div className="mb-6 mt-6">
         <h2 className="text-lg font-bold text-foreground mb-3">{t.todaySummary}</h2>
         <div className="grid grid-cols-3 gap-3">
-          <div className="bg-secondary rounded-2xl p-4 text-center">
+          <button onClick={() => setDialogFilter("scheduled")} className="bg-secondary rounded-2xl p-4 text-center hover:opacity-90 transition-opacity">
             <div className="text-3xl font-bold text-summary-schedule">{scheduled}</div>
             <div className="text-sm text-muted-foreground mt-1">{t.schedule}</div>
-          </div>
-          <div className="bg-summary-taken rounded-2xl p-4 text-center">
+          </button>
+          <button onClick={() => setDialogFilter("taken")} className="bg-summary-taken rounded-2xl p-4 text-center hover:opacity-90 transition-opacity">
             <div className="text-3xl font-bold text-summary-taken-foreground">{taken}</div>
             <div className="text-sm text-muted-foreground mt-1">{t.taken}</div>
-          </div>
-          <div className="bg-summary-missed rounded-2xl p-4 text-center">
+          </button>
+          <button onClick={() => setDialogFilter("missed")} className="bg-summary-missed rounded-2xl p-4 text-center hover:opacity-90 transition-opacity">
             <div className="text-3xl font-bold text-summary-missed-foreground">{missed}</div>
             <div className="text-sm text-muted-foreground mt-1">{t.missed}</div>
-          </div>
+          </button>
         </div>
       </div>
 
@@ -266,91 +268,16 @@ const HomePage = () => {
         </button>
       </div>
 
+      <DosesDialog
+        open={dialogFilter !== null}
+        onOpenChange={(o) => !o && setDialogFilter(null)}
+        filter={dialogFilter}
+        doses={todayDoses}
+        isRTL={isRTL}
+        t={t}
+      />
 
-      {/* Today's Doses - hero-style cards */}
-      <div className="mb-6">
-        <h2 className="text-lg font-bold text-foreground mb-3">{t.upcomingDoses}</h2>
-        {groupedDoses.length === 0 ? (
-          <div className="bg-card rounded-2xl border border-border">
-            <p className="text-center text-muted-foreground p-6">{t.noDosesToday}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {groupedDoses.flatMap(({ doses }) => doses).map((dose) => {
-              const med = store.getMedications().find(m => m.id === dose.medicationId);
-              const isPending = dose.status === "pending";
-              const isMissed = dose.status === "missed";
-              const borderClass = isPending
-                ? "border-2 border-primary/30"
-                : isMissed
-                ? "border border-summary-missed"
-                : "border border-summary-taken";
-              return (
-                <div key={dose.id} className={`rounded-3xl bg-card p-4 shadow-sm ${borderClass}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
-                      {isPending
-                        ? (isRTL ? "جرعة قادمة" : "Upcoming dose")
-                        : isMissed
-                        ? (isRTL ? "جرعة فائتة" : "Missed dose")
-                        : (isRTL ? "تم أخذها" : "Taken")}
-                    </span>
-                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                      {dose.scheduledTime}
-                    </span>
-                  </div>
-                  <div
-                    className="flex items-center gap-3 cursor-pointer"
-                    onClick={() => navigate(`/medications/add?edit=${dose.medicationId}`)}
-                  >
-                    {med?.imageUrl ? (
-                      <img src={med.imageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border" />
-                    ) : (
-                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                        <Pill className="w-7 h-7 text-primary" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-bold text-foreground truncate">{dose.medicationName}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {med ? `${med.dosage} ${med.form}` : ""}
-                      </p>
-                    </div>
-                  </div>
-                  {isPending ? (
-                    <div className="grid grid-cols-2 gap-2 mt-4">
-                      <button
-                        onClick={(e) => handleTaken(dose.id, e)}
-                        className="rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
-                      >
-                        <Check className="w-4 h-4" />
-                        {isRTL ? "تم أخذها" : "Mark taken"}
-                      </button>
-                      <button
-                        onClick={(e) => handleMissed(dose.id, e)}
-                        className="rounded-xl border border-border bg-card py-2.5 font-semibold text-sm text-muted-foreground hover:border-summary-missed-foreground hover:text-summary-missed-foreground transition-colors"
-                      >
-                        {isRTL ? "تأجيل" : "Skip"}
-                      </button>
-                    </div>
-                  ) : isMissed ? (
-                    <button
-                      onClick={(e) => handleTaken(dose.id, e)}
-                      className="mt-4 w-full rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 font-semibold text-sm hover:opacity-90 transition-opacity"
-                    >
-                      {isRTL ? "✗ تسجيل كمأخوذة" : "✗ Mark as taken"}
-                    </button>
-                  ) : (
-                    <div className="mt-4 w-full rounded-xl bg-summary-taken text-summary-taken-foreground py-2.5 font-semibold text-sm text-center">
-                      {isRTL ? "✓ تم أخذها" : "✓ Taken"}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+
 
 
       <FloatingAddButton navigate={navigate} isRTL={isRTL} t={t} />
@@ -408,4 +335,90 @@ const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: any; isRTL: boole
   );
 };
 
+const DosesDialog = ({
+  open,
+  onOpenChange,
+  filter,
+  doses,
+  isRTL,
+  t,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  filter: "scheduled" | "taken" | "missed" | null;
+  doses: DoseRecord[];
+  isRTL: boolean;
+  t: any;
+}) => {
+  const filtered = useMemo(() => {
+    if (!filter) return [];
+    const list = filter === "scheduled" ? doses : doses.filter((d) => d.status === filter);
+    return [...list].sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
+  }, [filter, doses]);
+
+  const title =
+    filter === "scheduled"
+      ? t.schedule
+      : filter === "taken"
+      ? t.taken
+      : filter === "missed"
+      ? t.missed
+      : "";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        {filtered.length === 0 ? (
+          <p className="text-center text-muted-foreground py-6 text-sm">
+            {isRTL ? "لا توجد جرعات" : "No doses"}
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {filtered.map((dose) => {
+              const med = store.getMedications().find((m) => m.id === dose.medicationId);
+              const statusBg =
+                dose.status === "taken"
+                  ? "bg-summary-taken"
+                  : dose.status === "missed"
+                  ? "bg-summary-missed"
+                  : "bg-secondary";
+              const statusLabel =
+                dose.status === "taken"
+                  ? isRTL ? "تم أخذها" : "Taken"
+                  : dose.status === "missed"
+                  ? isRTL ? "فائتة" : "Missed"
+                  : isRTL ? "مجدولة" : "Scheduled";
+              return (
+                <div key={dose.id} className={`flex items-center gap-3 rounded-2xl p-3 ${statusBg}`}>
+                  {med?.imageUrl ? (
+                    <img src={med.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Pill className="w-5 h-5 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate text-sm">{dose.medicationName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {med ? `${med.dosage} ${med.form}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-foreground">{dose.scheduledTime}</p>
+                    <p className="text-[10px] text-muted-foreground">{statusLabel}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default HomePage;
+
