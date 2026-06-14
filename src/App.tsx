@@ -113,7 +113,7 @@ const AppRoutes = () => {
     setImportDialogOpen(false);
     if (uid) {
       await clearLocalData();
-      localStorage.setItem(`dawaa_migrated_${uid}`, "skipped");
+      await setMigratedFlag(uid, "skipped");
       await syncFromCloud(uid);
     }
     setGuestMode(false);
