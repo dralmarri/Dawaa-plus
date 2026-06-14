@@ -47,7 +47,7 @@ const MedicationsPage = () => {
       ) : (
         <div className="px-4 space-y-3 mt-4">
           {medications.map((med) => (
-            <div key={med.id} className="bg-card rounded-2xl border border-border p-4">
+            <div key={med.id} className="bg-card rounded-3xl border-2 border-primary/30 p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 {med.imageUrl ? (
                   <img src={med.imageUrl} alt={med.name} className="w-16 h-16 rounded-xl object-cover border border-border flex-shrink-0" />
