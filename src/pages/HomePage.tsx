@@ -449,8 +449,9 @@ const DosesDialog = ({
                     </button>
                   ) : (
                     <div className="grid grid-cols-2 gap-2 mt-4">
-                      <div className="rounded-xl bg-summary-taken text-summary-taken-foreground py-2.5 font-semibold text-sm text-center">
-                        {isRTL ? "✓ تم أخذها" : "✓ Taken"}
+                      <div className="rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5">
+                        <Check className="w-4 h-4" />
+                        {isRTL ? "تم أخذها" : "Taken"}
                       </div>
                       <button
                         onClick={(e) => onUndo(dose.id, e)}
