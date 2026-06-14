@@ -148,7 +148,6 @@ const HomePage = () => {
             </h1>
           </div>
 
-          </div>
         </div>
       </div>
 
