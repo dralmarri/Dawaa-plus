@@ -80,7 +80,6 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   const handleShareApp = () => {
-    setShareMode("app");
     setShareOpen(true);
   };
 
