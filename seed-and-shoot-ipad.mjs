@@ -75,9 +75,12 @@ const browser = await chromium.launch({ executablePath:'/bin/chromium', args:['-
 const ctx = await browser.newContext({ viewport: VP, deviceScaleFactor: 2, locale: 'ar-SA' });
 const page = await ctx.newPage();
 
-await page.goto(PREVIEW_URL, { waitUntil:'domcontentloaded' });
+await page.goto(PREVIEW_URL + '/auth', { waitUntil:'networkidle' });
 await page.evaluate(seedScript);
 await page.waitForTimeout(500);
+// Click "Continue without account" to enter guest mode
+await page.getByText('المتابعة بدون حساب', { exact: false }).click().catch(()=>{});
+await page.waitForTimeout(1000);
 
 for (const p of pages) {
   await page.goto(PREVIEW_URL + p.route, { waitUntil:'networkidle' }).catch(()=>{});
