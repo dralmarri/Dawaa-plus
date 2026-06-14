@@ -126,8 +126,6 @@ const AdherenceStats = ({ period, onTogglePeriod }: Props) => {
               );
             })}
           </div>
-
-          <div className={`mt-3 h-1 rounded-full ${scoreBg} opacity-60`} style={{ width: `${stats.pct}%` }} />
         </>
       )}
     </div>
