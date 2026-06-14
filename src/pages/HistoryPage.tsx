@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
 import { store } from "@/lib/store";
@@ -13,12 +13,15 @@ const HistoryPage = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
 
-  // Ensure today's doses are generated
-  generateTodayDoses();
-
-  const records = store.getDoseRecords();
+  const [records, setRecords] = useState(() => {
+    generateTodayDoses();
+    return store.getDoseRecords();
+  });
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
   const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
+
+  const refresh = () => setRecords([...store.getDoseRecords()]);
+
 
   // Group records by date
   const grouped = useMemo(() => {
