@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
 import { store } from "@/lib/store";
-import { generateTodayDoses, markDoseTaken, undoDose } from "@/lib/dose-tracker";
+import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
 import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -170,12 +170,12 @@ const HistoryPage = () => {
                     ) : rec.status === "taken" ? (
                       <button
                         onClick={async () => {
-                          await undoDose(rec.id);
-                          toast(isRTL ? "تم التراجع — الجرعة لم تؤخذ" : "Reverted — dose not taken");
+                          await markDoseMissed(rec.id);
+                          toast(isRTL ? "تم التغيير إلى فائتة" : "Marked as missed");
                           window.location.reload();
                         }}
                         className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
-                        title={isRTL ? "اضغط للتراجع" : "Click to undo"}
+                        title={isRTL ? "اضغط لتغييرها إلى فائتة" : "Click to mark as missed"}
                       >
                         <Check className="w-4 h-4" />
                         {isRTL ? "تم أخذها" : "Taken"}

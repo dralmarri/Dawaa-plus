@@ -193,8 +193,17 @@ export async function markDoseMissed(recordId: string) {
   const records = store.getDoseRecords();
   const record = records.find(r => r.id === recordId);
   if (record) {
+    const wasTaken = record.status === 'taken';
     record.status = 'missed';
+    record.takenAt = undefined;
     await store.saveDoseRecord(record);
+    if (wasTaken) {
+      const med = store.getMedications().find(m => m.id === record.medicationId);
+      if (med) {
+        med.stock += 1;
+        await store.saveMedication(med);
+      }
+    }
   }
 }
 
