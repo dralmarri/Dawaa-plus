@@ -81,24 +81,41 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
-  const handleShareApp = async () => {
+  const handleShareApp = () => {
+    // Ask user: share as full app pitch or just the link
+    setShareChoiceOpen(true);
+  };
+
+  const performShare = async (mode: "app" | "link") => {
+    setShareChoiceOpen(false);
+    setShareMode(mode);
+    const title = "dawaa+";
+    const text = mode === "app" ? SHARE_TEXT : "";
     // Try Capacitor native share first (iOS/Android app)
     try {
       const { Share } = await import("@capacitor/share");
       const can = await Share.canShare();
       if (can.value) {
         await Share.share({
-          title: "dawaa+",
-          text: SHARE_TEXT,
+          title,
+          ...(text ? { text } : {}),
           url: SHARE_URL,
-          dialogTitle: "dawaa+",
+          dialogTitle: title,
         });
         return;
       }
     } catch {
       /* not in native app */
     }
-    // Fallback: open in-app share modal with multiple options
+    // Web fallback: try native Web Share, else open in-app share modal
+    try {
+      if (navigator.share) {
+        await navigator.share({ title, ...(text ? { text } : {}), url: SHARE_URL });
+        return;
+      }
+    } catch {
+      /* user cancelled or unsupported */
+    }
     setShareOpen(true);
   };
 
