@@ -3,7 +3,7 @@ import sharp from 'sharp';
 import fs from 'fs';
 import path from 'path';
 
-const PREVIEW_URL = process.env.PREVIEW_URL || 'https://dawaaplus.net';
+const PREVIEW_URL = process.env.PREVIEW_URL || 'http://localhost:4173';
 const OUT_BASE = '/mnt/documents/appstore-screenshots';
 
 const devices = [
