@@ -140,14 +140,18 @@ const HomePage = () => {
       {/* Hero greeting card */}
       <div className="mt-6 rounded-3xl p-8 text-primary-foreground shadow-lg relative overflow-hidden"
            style={{ background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(152 52% 18%) 100%)" }}>
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
+        <div className="flex items-center justify-between gap-3">
+          <img
+            src="/app-icon.png"
+            alt=""
+            className="w-14 h-14 rounded-2xl object-cover shadow-md border border-white/20 shrink-0"
+          />
+          <div className="min-w-0 flex-1 text-end">
             <p className="text-sm opacity-80">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
             <h1 className="text-3xl font-bold mt-2 truncate">
               {isRTL ? `أهلاً، ${displayName}` : `Hello, ${displayName}`}
             </h1>
           </div>
-
         </div>
       </div>
 
