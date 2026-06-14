@@ -759,7 +759,7 @@ const LabTestsPage = () => {
             const pdfDataName = hasPdfData ? (test.fileUrl!.slice("pdfdata:".length).split("|||")[0] || "PDF") : "";
 
             return (
-              <div key={test.id} className="bg-card rounded-2xl border border-border overflow-hidden">
+              <div key={test.id} className="bg-card rounded-3xl border-2 border-primary/30 shadow-sm overflow-hidden">
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
