@@ -334,4 +334,90 @@ const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: any; isRTL: boole
   );
 };
 
+const DosesDialog = ({
+  open,
+  onOpenChange,
+  filter,
+  doses,
+  isRTL,
+  t,
+}: {
+  open: boolean;
+  onOpenChange: (o: boolean) => void;
+  filter: "scheduled" | "taken" | "missed" | null;
+  doses: DoseRecord[];
+  isRTL: boolean;
+  t: any;
+}) => {
+  const filtered = useMemo(() => {
+    if (!filter) return [];
+    const list = filter === "scheduled" ? doses : doses.filter((d) => d.status === filter);
+    return [...list].sort((a, b) => a.scheduledTime.localeCompare(b.scheduledTime));
+  }, [filter, doses]);
+
+  const title =
+    filter === "scheduled"
+      ? t.schedule
+      : filter === "taken"
+      ? t.taken
+      : filter === "missed"
+      ? t.missed
+      : "";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        {filtered.length === 0 ? (
+          <p className="text-center text-muted-foreground py-6 text-sm">
+            {isRTL ? "لا توجد جرعات" : "No doses"}
+          </p>
+        ) : (
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {filtered.map((dose) => {
+              const med = store.getMedications().find((m) => m.id === dose.medicationId);
+              const statusBg =
+                dose.status === "taken"
+                  ? "bg-summary-taken"
+                  : dose.status === "missed"
+                  ? "bg-summary-missed"
+                  : "bg-secondary";
+              const statusLabel =
+                dose.status === "taken"
+                  ? isRTL ? "تم أخذها" : "Taken"
+                  : dose.status === "missed"
+                  ? isRTL ? "فائتة" : "Missed"
+                  : isRTL ? "مجدولة" : "Scheduled";
+              return (
+                <div key={dose.id} className={`flex items-center gap-3 rounded-2xl p-3 ${statusBg}`}>
+                  {med?.imageUrl ? (
+                    <img src={med.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                  ) : (
+                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <Pill className="w-5 h-5 text-primary" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground truncate text-sm">{dose.medicationName}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {med ? `${med.dosage} ${med.form}` : ""}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-foreground">{dose.scheduledTime}</p>
+                    <p className="text-[10px] text-muted-foreground">{statusLabel}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export default HomePage;
+
