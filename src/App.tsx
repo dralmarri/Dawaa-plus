@@ -53,7 +53,10 @@ const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolea
   const navigate = useNavigate();
   const fromSettings = (location.state as any)?.fromSettings;
   if (user && !fromSettings) return <Navigate to="/" replace />;
-  return <AuthPage onSkip={() => { setGuestMode(true); navigate("/", { replace: true }); }} onSignedIn={() => setGuestMode(false)} />;
+  return <AuthPage
+    onSkip={() => { setGuestMode(true); navigate("/", { replace: true }); }}
+    onSignedIn={() => { setGuestMode(false); navigate("/", { replace: true, state: {} }); }}
+  />;
 };
 
 const AppRoutes = () => {
