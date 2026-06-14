@@ -99,7 +99,7 @@ const AppRoutes = () => {
     setImportDialogOpen(false);
     const count = await migrateLocalToCloud(uid);
     if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
-    localStorage.setItem(`dawaa_migrated_${uid}`, "imported");
+    await setMigratedFlag(uid, "imported");
     await syncFromCloud(uid);
     setGuestMode(false);
     navigate("/", { replace: true });
