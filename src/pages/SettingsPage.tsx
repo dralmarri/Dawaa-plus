@@ -27,8 +27,6 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [deleteInput, setDeleteInput] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [shareOpen, setShareOpen] = useState(false);
-  const [shareChoiceOpen, setShareChoiceOpen] = useState(false);
-  const [shareMode, setShareMode] = useState<"app" | "link">("app");
   const [signOutConfirm, setSignOutConfirm] = useState(false);
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
 
@@ -82,42 +80,35 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const Chevron = isRTL ? ChevronLeft : ChevronRight;
 
   const handleShareApp = () => {
-    // Ask user: share as full app pitch or just the link
-    setShareChoiceOpen(true);
+    setShareOpen(true);
   };
 
-  const performShare = async (mode: "app" | "link") => {
-    setShareChoiceOpen(false);
-    setShareMode(mode);
+  const shareAsApp = async () => {
     const title = "dawaa+";
-    const text = mode === "app" ? SHARE_TEXT : "";
-    // Try Capacitor native share first (iOS/Android app)
+    const text = SHARE_TEXT;
+    setShareOpen(false);
     try {
       const { Share } = await import("@capacitor/share");
       const can = await Share.canShare();
       if (can.value) {
-        await Share.share({
-          title,
-          ...(text ? { text } : {}),
-          url: SHARE_URL,
-          dialogTitle: title,
-        });
+        await Share.share({ title, text, url: SHARE_URL, dialogTitle: title });
         return;
       }
     } catch {
       /* not in native app */
     }
-    // Web fallback: try native Web Share, else open in-app share modal
     try {
       if (navigator.share) {
-        await navigator.share({ title, ...(text ? { text } : {}), url: SHARE_URL });
+        await navigator.share({ title, text, url: SHARE_URL });
         return;
       }
     } catch {
-      /* user cancelled or unsupported */
+      /* user cancelled */
     }
+    // Fallback: reopen modal so user can use link options
     setShareOpen(true);
   };
+
 
   const copyLink = async () => {
     try {
@@ -335,50 +326,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
         )}
       </div>
 
-      {/* Share choice modal: app vs link */}
-      {shareChoiceOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4"
-          dir={isRTL ? "rtl" : "ltr"}
-          onClick={() => setShareChoiceOpen(false)}
-        >
-          <div
-            className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-foreground">{t.shareApp}</h2>
-              <button
-                onClick={() => setShareChoiceOpen(false)}
-                className="w-9 h-9 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-border"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <p className="text-sm text-muted-foreground">
-              {isRTL ? "كيف تريد المشاركة؟" : "How do you want to share?"}
-            </p>
-
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => performShare("app")}
-                className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm hover:opacity-90 transition-opacity"
-              >
-                {isRTL ? "مشاركة التطبيق" : "Share the app"}
-              </button>
-              <button
-                onClick={() => performShare("link")}
-                className="rounded-xl bg-muted text-foreground py-2.5 px-5 font-semibold text-sm hover:bg-border transition-colors"
-              >
-                {isRTL ? "مشاركة الرابط فقط" : "Share link only"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Share app modal */}
+      {/* Share app modal - unified */}
       {shareOpen && (
         <div
           className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4"
@@ -399,11 +347,27 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </button>
             </div>
 
-            <p className="text-sm text-muted-foreground">{shareMode === "app" ? SHARE_TEXT : SHARE_URL}</p>
+            <p className="text-sm text-muted-foreground">{SHARE_TEXT}</p>
+
+            {/* Primary: share full app pitch via system share sheet */}
+            <button
+              onClick={shareAsApp}
+              className="w-full rounded-2xl bg-primary text-primary-foreground py-3 px-5 font-semibold text-base hover:opacity-90 transition-opacity"
+            >
+              {isRTL ? "مشاركة التطبيق" : "Share the app"}
+            </button>
+
+            <div className="flex items-center gap-2 pt-1">
+              <div className="h-px flex-1 bg-border" />
+              <span className="text-xs text-muted-foreground">
+                {isRTL ? "أو شارك الرابط عبر" : "Or share link via"}
+              </span>
+              <div className="h-px flex-1 bg-border" />
+            </div>
 
             <div className="grid grid-cols-4 gap-3">
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(shareMode === "app" ? SHARE_TEXT + " " + SHARE_URL : SHARE_URL)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(SHARE_URL)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShareOpen(false)}
@@ -416,7 +380,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </a>
 
               <a
-                href={`https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}${shareMode === "app" ? `&text=${encodeURIComponent(SHARE_TEXT)}` : ""}`}
+                href={`https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShareOpen(false)}
@@ -429,7 +393,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </a>
 
               <a
-                href={`mailto:?subject=${encodeURIComponent("dawaa+")}&body=${encodeURIComponent(shareMode === "app" ? SHARE_TEXT + "\n\n" + SHARE_URL : SHARE_URL)}`}
+                href={`mailto:?subject=${encodeURIComponent("dawaa+")}&body=${encodeURIComponent(SHARE_URL)}`}
                 onClick={() => setShareOpen(false)}
                 className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-muted hover:bg-border transition-colors"
               >
@@ -459,6 +423,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
                 {isRTL ? "نسخ" : "Copy"}
               </button>
             </div>
+
           </div>
         </div>
       )}
