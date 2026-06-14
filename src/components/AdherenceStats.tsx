@@ -97,7 +97,7 @@ const AdherenceStats = ({ period, onTogglePeriod }: Props) => {
             </div>
           </div>
 
-          </div>
+
 
           <div className="mt-3 h-1.5 rounded-full bg-muted overflow-hidden mb-4">
             <div className={`h-full ${scoreBg} rounded-full transition-all duration-500`} style={{ width: `${stats.pct}%` }} />
