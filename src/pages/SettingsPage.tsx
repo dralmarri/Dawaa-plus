@@ -360,7 +360,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
             <div className="grid grid-cols-4 gap-3">
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(SHARE_TEXT + " " + SHARE_URL)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(shareMode === "app" ? SHARE_TEXT + " " + SHARE_URL : SHARE_URL)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShareOpen(false)}
