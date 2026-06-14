@@ -146,9 +146,8 @@ const HomePage = () => {
             <h1 className="text-xl font-bold mt-1 truncate">
               {isRTL ? `أهلاً، ${displayName}` : `Hello, ${displayName}`}
             </h1>
-            <p className="text-sm opacity-90 mt-1">
-              {isRTL ? `${taken} من ${scheduled} جرعات اليوم` : `${taken} of ${scheduled} doses today`}
-            </p>
+          </div>
+
           </div>
         </div>
       </div>
