@@ -81,18 +81,18 @@ const HistoryPage = () => {
       {/* Summary bar */}
       {records.length > 0 && (
         <div className="px-4 mb-4">
-          <div className="flex gap-3">
-            <div className="flex-1 bg-summary-taken rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-summary-taken-foreground">{totalTaken}</div>
-              <div className="text-xs text-muted-foreground">{t.taken}</div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-summary-taken rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-summary-taken-foreground">{totalTaken}</div>
+              <div className="text-sm text-muted-foreground mt-1">{t.taken}</div>
             </div>
-            <div className="flex-1 bg-summary-missed rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-summary-missed-foreground">{totalMissed}</div>
-              <div className="text-xs text-muted-foreground">{t.missed}</div>
+            <div className="bg-summary-missed rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-summary-missed-foreground">{totalMissed}</div>
+              <div className="text-sm text-muted-foreground mt-1">{t.missed}</div>
             </div>
-            <div className="flex-1 bg-secondary rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-summary-schedule">{totalPending}</div>
-              <div className="text-xs text-muted-foreground">{isRTL ? "معلقة" : "Pending"}</div>
+            <div className="bg-secondary rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-summary-schedule">{totalPending}</div>
+              <div className="text-sm text-muted-foreground mt-1">{isRTL ? "معلقة" : "Pending"}</div>
             </div>
           </div>
         </div>
