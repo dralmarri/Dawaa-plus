@@ -138,12 +138,12 @@ const HomePage = () => {
   return (
     <div className="pb-28 px-4">
       {/* Hero greeting card */}
-      <div className="mt-4 rounded-3xl p-5 text-primary-foreground shadow-lg relative overflow-hidden"
+      <div className="mt-6 rounded-3xl p-8 text-primary-foreground shadow-lg relative overflow-hidden"
            style={{ background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(152 52% 18%) 100%)" }}>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs opacity-80">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
-            <h1 className="text-xl font-bold mt-1 truncate">
+            <p className="text-sm opacity-80">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
+            <h1 className="text-3xl font-bold mt-2 truncate">
               {isRTL ? `أهلاً، ${displayName}` : `Hello, ${displayName}`}
             </h1>
           </div>
