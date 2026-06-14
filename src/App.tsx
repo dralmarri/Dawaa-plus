@@ -31,6 +31,7 @@ import ContactUsPage from "@/pages/ContactUsPage";
 import ReportsPage from "@/pages/ReportsPage";
 
 import NotFound from "@/pages/NotFound";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -147,6 +148,7 @@ const AppRoutes = () => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
+    <ScrollToTop />
     <div className={`min-h-[100dvh] bg-background ${isLoggedIn ? "pb-20" : ""}`}>
       <Routes>
         <Route path="/auth" element={<AuthRoute user={user} setGuestMode={setGuestMode} />} />
