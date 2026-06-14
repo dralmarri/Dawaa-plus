@@ -73,14 +73,17 @@ const pages = [
 
 const browser = await chromium.launch({ executablePath:'/bin/chromium', args:['--no-sandbox','--disable-setuid-sandbox'] });
 const ctx = await browser.newContext({ viewport: VP, deviceScaleFactor: 2, locale: 'ar-SA' });
+// Seed localStorage BEFORE app boots, so Capacitor Preferences picks it up in initStore()
+await ctx.addInitScript((data) => {
+  for (const [k, v] of Object.entries(data)) localStorage.setItem(k, v);
+}, seedData);
 const page = await ctx.newPage();
 
 await page.goto(PREVIEW_URL + '/auth', { waitUntil:'networkidle' });
-await page.evaluate(seedScript);
-await page.waitForTimeout(500);
+await page.waitForTimeout(800);
 // Click "Continue without account" to enter guest mode
 await page.getByText('المتابعة بدون حساب', { exact: false }).click().catch(()=>{});
-await page.waitForTimeout(1000);
+await page.waitForTimeout(1500);
 
 for (const p of pages) {
   // SPA navigation to preserve guest-mode React state
