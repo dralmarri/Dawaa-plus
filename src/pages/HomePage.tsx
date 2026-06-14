@@ -275,6 +275,9 @@ const HomePage = () => {
         doses={todayDoses}
         isRTL={isRTL}
         t={t}
+        onTaken={handleTaken}
+        onMissed={handleMissed}
+        onUndo={handleUndo}
       />
 
 
@@ -342,6 +345,9 @@ const DosesDialog = ({
   doses,
   isRTL,
   t,
+  onTaken,
+  onMissed,
+  onUndo,
 }: {
   open: boolean;
   onOpenChange: (o: boolean) => void;
@@ -349,6 +355,9 @@ const DosesDialog = ({
   doses: DoseRecord[];
   isRTL: boolean;
   t: any;
+  onTaken: (id: string, e: React.MouseEvent) => void;
+  onMissed: (id: string, e: React.MouseEvent) => void;
+  onUndo: (id: string, e: React.MouseEvent) => void;
 }) => {
   const filtered = useMemo(() => {
     if (!filter) return [];
@@ -376,40 +385,83 @@ const DosesDialog = ({
             {isRTL ? "لا توجد جرعات" : "No doses"}
           </p>
         ) : (
-          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+          <div className="space-y-3 max-h-[65vh] overflow-y-auto pr-1">
             {filtered.map((dose) => {
               const med = store.getMedications().find((m) => m.id === dose.medicationId);
-              const statusBg =
-                dose.status === "taken"
-                  ? "bg-summary-taken"
-                  : dose.status === "missed"
-                  ? "bg-summary-missed"
-                  : "bg-secondary";
-              const statusLabel =
-                dose.status === "taken"
-                  ? isRTL ? "تم أخذها" : "Taken"
-                  : dose.status === "missed"
-                  ? isRTL ? "فائتة" : "Missed"
-                  : isRTL ? "مجدولة" : "Scheduled";
+              const isPending = dose.status === "pending";
+              const isMissed = dose.status === "missed";
+              const borderClass = isPending
+                ? "border-2 border-primary/30"
+                : isMissed
+                ? "border border-summary-missed"
+                : "border border-summary-taken";
+              const headerLabel = isPending
+                ? isRTL ? "جرعة مجدولة" : "Scheduled dose"
+                : isMissed
+                ? isRTL ? "جرعة فائتة" : "Missed dose"
+                : isRTL ? "تم أخذها" : "Taken";
               return (
-                <div key={dose.id} className={`flex items-center gap-3 rounded-2xl p-3 ${statusBg}`}>
-                  {med?.imageUrl ? (
-                    <img src={med.imageUrl} alt="" className="w-10 h-10 rounded-xl object-cover" />
+                <div key={dose.id} className={`rounded-3xl bg-card p-4 shadow-sm ${borderClass}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold text-primary uppercase tracking-wide">
+                      {headerLabel}
+                    </span>
+                    <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                      {dose.scheduledTime}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    {med?.imageUrl ? (
+                      <img src={med.imageUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border border-border" />
+                    ) : (
+                      <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
+                        <Pill className="w-7 h-7 text-primary" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-foreground truncate">{dose.medicationName}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {med ? `${med.dosage} ${med.form}` : ""}
+                      </p>
+                    </div>
+                  </div>
+                  {isPending ? (
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      <button
+                        onClick={(e) => onTaken(dose.id, e)}
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                      >
+                        <Check className="w-4 h-4" />
+                        {isRTL ? "تم أخذها" : "Mark taken"}
+                      </button>
+                      <button
+                        onClick={(e) => onMissed(dose.id, e)}
+                        className="rounded-xl border border-border bg-card py-2.5 font-semibold text-sm text-muted-foreground hover:border-summary-missed-foreground hover:text-summary-missed-foreground transition-colors"
+                      >
+                        {isRTL ? "تأجيل" : "Skip"}
+                      </button>
+                    </div>
+                  ) : isMissed ? (
+                    <button
+                      onClick={(e) => onTaken(dose.id, e)}
+                      className="mt-4 w-full rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                    >
+                      <Check className="w-4 h-4" />
+                      {isRTL ? "تم أخذها" : "Mark as taken"}
+                    </button>
                   ) : (
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <Pill className="w-5 h-5 text-primary" />
+                    <div className="grid grid-cols-2 gap-2 mt-4">
+                      <div className="rounded-xl bg-summary-taken text-summary-taken-foreground py-2.5 font-semibold text-sm text-center">
+                        {isRTL ? "✓ تم أخذها" : "✓ Taken"}
+                      </div>
+                      <button
+                        onClick={(e) => onUndo(dose.id, e)}
+                        className="rounded-xl border border-border bg-card py-2.5 font-semibold text-sm text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                      >
+                        {isRTL ? "تراجع" : "Undo"}
+                      </button>
                     </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-foreground truncate text-sm">{dose.medicationName}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {med ? `${med.dosage} ${med.form}` : ""}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold text-foreground">{dose.scheduledTime}</p>
-                    <p className="text-[10px] text-muted-foreground">{statusLabel}</p>
-                  </div>
                 </div>
               );
             })}
