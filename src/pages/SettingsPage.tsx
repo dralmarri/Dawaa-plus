@@ -373,7 +373,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </a>
 
               <a
-                href={`https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}&text=${encodeURIComponent(SHARE_TEXT)}`}
+                href={`https://t.me/share/url?url=${encodeURIComponent(SHARE_URL)}${shareMode === "app" ? `&text=${encodeURIComponent(SHARE_TEXT)}` : ""}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setShareOpen(false)}
