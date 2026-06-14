@@ -161,9 +161,10 @@ const HistoryPage = () => {
                           toast.success(isRTL ? "تم تسجيل الجرعة ✓" : "Dose recorded ✓");
                           window.location.reload();
                         }}
-                        className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-summary-missed text-summary-missed-foreground hover:bg-summary-taken hover:text-summary-taken-foreground transition-colors cursor-pointer"
+                        className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                         title={isRTL ? "اضغط لتسجيلها كمأخوذة" : "Click to mark as taken"}
                       >
+                        <X className="w-4 h-4" />
                         {isRTL ? "فائتة" : "Missed"}
                       </button>
                     ) : rec.status === "taken" ? (
@@ -173,13 +174,15 @@ const HistoryPage = () => {
                           toast(isRTL ? "تم التراجع — الجرعة لم تؤخذ" : "Reverted — dose not taken");
                           window.location.reload();
                         }}
-                        className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-summary-taken text-summary-taken-foreground hover:bg-secondary hover:text-summary-schedule transition-colors cursor-pointer"
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                         title={isRTL ? "اضغط للتراجع" : "Click to undo"}
                       >
-                        {isRTL ? "تم ↶" : "Taken ↶"}
+                        <Check className="w-4 h-4" />
+                        {isRTL ? "تم أخذها" : "Taken"}
                       </button>
                     ) : (
-                      <span className="text-sm font-semibold px-4 py-2.5 rounded-xl bg-secondary text-summary-schedule">
+                      <span className="rounded-xl bg-secondary text-summary-schedule py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5">
+                        <Clock className="w-4 h-4" />
                         {isRTL ? "معلقة" : "Pending"}
                       </span>
                     )}
