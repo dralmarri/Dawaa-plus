@@ -83,8 +83,12 @@ await page.getByText('المتابعة بدون حساب', { exact: false }).cli
 await page.waitForTimeout(1000);
 
 for (const p of pages) {
-  await page.goto(PREVIEW_URL + p.route, { waitUntil:'networkidle' }).catch(()=>{});
-  await page.waitForTimeout(1200);
+  // SPA navigation to preserve guest-mode React state
+  await page.evaluate((route) => {
+    window.history.pushState({}, '', route);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  }, p.route);
+  await page.waitForTimeout(1500);
   const raw = `/tmp/ipad-${p.name}-raw.png`;
   await page.screenshot({ path: raw, fullPage: false });
   const out = path.join(OUT_DIR, `ipad-129-${p.name}.png`);
