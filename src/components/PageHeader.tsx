@@ -22,8 +22,14 @@ const PageHeader = ({ title, showBack, onAdd }: PageHeaderProps) => {
             <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
           </button>
         )}
+        <img
+          src="/app-icon.png"
+          alt=""
+          className="w-9 h-9 rounded-xl object-cover shadow-sm border border-border"
+        />
         <h1 className="text-2xl font-bold text-foreground">{title}</h1>
       </div>
+
       {onAdd && (
         <button onClick={onAdd} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
           <Plus className="w-5 h-5" />
