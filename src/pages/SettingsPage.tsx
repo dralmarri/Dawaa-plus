@@ -386,7 +386,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </a>
 
               <a
-                href={`mailto:?subject=${encodeURIComponent("dawaa+")}&body=${encodeURIComponent(SHARE_TEXT + "\n\n" + SHARE_URL)}`}
+                href={`mailto:?subject=${encodeURIComponent("dawaa+")}&body=${encodeURIComponent(shareMode === "app" ? SHARE_TEXT + "\n\n" + SHARE_URL : SHARE_URL)}`}
                 onClick={() => setShareOpen(false)}
                 className="flex flex-col items-center gap-2 p-3 rounded-2xl bg-muted hover:bg-border transition-colors"
               >
