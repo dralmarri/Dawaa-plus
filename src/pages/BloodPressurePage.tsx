@@ -351,11 +351,16 @@ const BloodPressurePage = () => {
                       {getCategory(r.systolic, r.diastolic).emoji} {getCategory(r.systolic, r.diastolic).label}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-1 ms-2">
-                    <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
-                      <Pencil className="w-3.5 h-3.5" />
+                  <div className="flex flex-col gap-2 ms-2 shrink-0">
+                    <button onClick={() => openEdit(r)}
+                      className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                      <Pencil className="w-4 h-4" />
+                      {isRTL ? "تعديل" : "Edit"}
                     </button>
-                    <button onClick={() => setDeleteId(r.id)} className="text-destructive/60 hover:text-destructive p-1">🗑️</button>
+                    <button onClick={() => setDeleteId(r.id)}
+                      className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                      🗑️ {isRTL ? "حذف" : "Delete"}
+                    </button>
                   </div>
                 </div>
               ))}

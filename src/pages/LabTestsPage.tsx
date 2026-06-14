@@ -774,12 +774,16 @@ const LabTestsPage = () => {
                       </p>
                       {test.notes && <p className="text-sm text-muted-foreground mt-1">📝 {test.notes}</p>}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(test)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
-                        <Pencil className="w-3.5 h-3.5" />
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <button onClick={() => openEdit(test)}
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                        <Pencil className="w-4 h-4" />
+                        {isRTL ? "تعديل" : "Edit"}
                       </button>
-                      <button onClick={() => setDeleteId(test.id)} className="text-destructive/60 hover:text-destructive p-1">
+                      <button onClick={() => setDeleteId(test.id)}
+                        className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
                         <Trash2 className="w-4 h-4" />
+                        {isRTL ? "حذف" : "Delete"}
                       </button>
                     </div>
                   </div>

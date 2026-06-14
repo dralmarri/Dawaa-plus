@@ -183,16 +183,21 @@ const AppointmentsPage = () => {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col gap-2 items-end shrink-0">
+                  <div className="flex flex-col gap-2 items-stretch shrink-0">
                     <button onClick={() => openEdit(apt)}
-                      className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
+                      className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
                       <Pencil className="w-4 h-4" />
+                      {isRTL ? "تعديل" : "Edit"}
                     </button>
                     <button onClick={() => toggleComplete(apt.id)}
-                      className={`text-xs px-2 py-1 rounded-full whitespace-nowrap ${apt.completed ? "bg-summary-taken text-summary-taken-foreground" : "bg-accent text-accent-foreground"}`}>
+                      className={`rounded-xl py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity ${apt.completed ? "bg-summary-taken text-summary-taken-foreground" : "bg-accent text-accent-foreground"}`}>
                       {apt.completed ? `✓ ${t.done}` : t.markDone}
                     </button>
-                    <button onClick={() => setDeleteId(apt.id)} className="text-destructive/60 hover:text-destructive text-lg">🗑️</button>
+                    <button onClick={() => setDeleteId(apt.id)}
+                      className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                      <X className="w-4 h-4" />
+                      {isRTL ? "حذف" : "Delete"}
+                    </button>
                   </div>
                 </div>
               </div>
