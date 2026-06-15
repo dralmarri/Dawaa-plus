@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.dawaaplus.app',
+  appId: 'dev.a0.apps.mymeds539',
   appName: 'Dawaa+',
   webDir: 'dist',
   ios: {
