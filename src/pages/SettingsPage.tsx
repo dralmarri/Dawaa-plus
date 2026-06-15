@@ -60,7 +60,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     const next = { ...settings, ...partial };
     setSettings(next);
     await store.saveSettings(next);
-    if (partial.notifications !== undefined || partial.reminderBefore !== undefined) {
+    if (partial.notifications !== undefined || partial.reminderBefore !== undefined || partial.bpReminders !== undefined || partial.dailySummary !== undefined || partial.dailySummaryTime !== undefined) {
       if (next.notifications) {
         const granted = await requestNotificationPermission();
         if (granted) {
@@ -211,28 +211,28 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
         </div>
 
-        {/* Notifications */}
-        <div className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between">
-          <div>
-            <h3 className="font-bold text-foreground">{t.notifications}</h3>
-            <p className="text-sm text-muted-foreground">
-              {settings.notifications ? t.enabled : t.disabled} - 0 {t.scheduled}
-            </p>
-          </div>
-          <button onClick={() => update({ notifications: !settings.notifications })}
-            className={`w-12 h-7 rounded-full transition-colors relative ${settings.notifications ? "bg-primary" : "bg-border"}`}>
-            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-          </button>
-        </div>
+        {/* Medication Notifications (reminders + daily summary) */}
+        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+          <h3 className="font-bold text-foreground">{t.notifications}</h3>
 
-        {/* Voice notifications removed due to poor speech synthesis quality */}
-
-
-        {/* Daily Summary */}
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-3">
-          <div className="flex items-center justify-between">
+          {/* Medication reminders toggle */}
+          <div className="flex items-center justify-between gap-3">
             <div className="flex-1">
-              <h3 className="font-bold text-foreground flex items-center gap-2">📋 {t.dailySummary}</h3>
+              <p className="font-semibold text-foreground">⏰ {t.medicationReminders}</p>
+              <p className="text-sm text-muted-foreground">{t.medicationRemindersDesc}</p>
+            </div>
+            <button onClick={() => update({ notifications: !settings.notifications })}
+              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.notifications ? "bg-primary" : "bg-border"}`}>
+              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+            </button>
+          </div>
+
+          <div className="h-px bg-border" />
+
+          {/* Daily summary toggle */}
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <p className="font-semibold text-foreground">📋 {t.dailySummary}</p>
               <p className="text-sm text-muted-foreground">{t.dailySummaryDesc}</p>
             </div>
             <button onClick={() => update({ dailySummary: !settings.dailySummary })}
@@ -241,7 +241,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             </button>
           </div>
           {settings.dailySummary && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 ltr:pl-2 rtl:pr-2">
               <label className="text-sm font-medium text-muted-foreground">{t.dailySummaryTime}</label>
               <input type="time" value={settings.dailySummaryTime || "08:00"}
                 onChange={(e) => update({ dailySummaryTime: e.target.value })}
@@ -249,6 +249,19 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             </div>
           )}
         </div>
+
+        {/* Blood Pressure Reminders */}
+        <div className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between gap-3">
+          <div className="flex-1">
+            <h3 className="font-bold text-foreground">🩺 {t.bpReminders}</h3>
+            <p className="text-sm text-muted-foreground">{t.bpRemindersDesc}</p>
+          </div>
+          <button onClick={() => update({ bpReminders: !settings.bpReminders })}
+            className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bpReminders ? "bg-primary" : "bg-border"}`}>
+            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bpReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+          </button>
+        </div>
+
 
         {/* Reminder */}
         <div className="bg-card rounded-2xl border border-border p-5">

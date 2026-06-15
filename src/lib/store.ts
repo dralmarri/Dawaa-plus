@@ -24,6 +24,7 @@ const defaultSettings: AppSettings = {
   escalationOnMissed: false,
   dailySummary: true,
   dailySummaryTime: '08:00',
+  bpReminders: false,
 };
 
 // ── Sync cache (in-memory) ─────────────────────────────────────────

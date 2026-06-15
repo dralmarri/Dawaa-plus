@@ -292,8 +292,10 @@ export async function scheduleMedicationNotifications() {
     });
   });
 
-  // === Blood Pressure Reminders (10 AM and 9 PM daily) ===
-  const bpTimes = [{ hour: 10, min: 0, id: 9990 }, { hour: 21, min: 0, id: 9991 }];
+  // === Blood Pressure Reminders (10 AM and 9 PM daily) — opt-in ===
+  const bpTimes = settings.bpReminders
+    ? [{ hour: 10, min: 0, id: 9990 }, { hour: 21, min: 0, id: 9991 }]
+    : [];
   bpTimes.forEach(({ hour, min, id }) => {
     scheduledIds.push(id);
     notifications.push({
