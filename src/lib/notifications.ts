@@ -292,23 +292,37 @@ export async function scheduleMedicationNotifications() {
     });
   });
 
-  // === Blood Pressure Reminders (10 AM and 9 PM daily) — opt-in ===
-  const bpTimes = settings.bpReminders
-    ? [{ hour: 10, min: 0, id: 9990 }, { hour: 21, min: 0, id: 9991 }]
-    : [];
-  bpTimes.forEach(({ hour, min, id }) => {
-    scheduledIds.push(id);
-    notifications.push({
-      id,
-      title: isArabic ? '🩺 تذكير قياس الضغط' : '🩺 Blood Pressure Reminder',
-      body: isArabic
-        ? `حان وقت قياس ضغط الدم (${hour === 10 ? 'الصباح' : 'المساء'})`
-        : `Time to measure your blood pressure (${hour === 10 ? 'Morning' : 'Evening'})`,
-      schedule: { on: { hour, minute: min }, allowWhileIdle: true },
-      sound: 'default',
-      smallIcon: 'ic_stat_icon_config_sample',
+  // === Blood Pressure Reminders — opt-in. Defaults: 10 AM + 9 PM, plus user custom times ===
+  if (settings.bpReminders) {
+    const bpEntries: Array<{ hour: number; min: number; id: number; label: 'morning' | 'evening' | 'custom' }> = [
+      { hour: 10, min: 0, id: 9990, label: 'morning' },
+      { hour: 21, min: 0, id: 9991, label: 'evening' },
+    ];
+    (settings.bpCustomTimes || []).forEach((t) => {
+      const [h, m] = t.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) return;
+      // avoid duplicating default times
+      if ((h === 10 && m === 0) || (h === 21 && m === 0)) return;
+      bpEntries.push({ hour: h, min: m, id: stableId('bp-custom', t), label: 'custom' });
     });
-  });
+
+    bpEntries.forEach(({ hour, min, id, label }) => {
+      scheduledIds.push(id);
+      const period = isArabic
+        ? (label === 'morning' ? 'الصباح' : label === 'evening' ? 'المساء' : `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`)
+        : (label === 'morning' ? 'Morning' : label === 'evening' ? 'Evening' : `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+      notifications.push({
+        id,
+        title: isArabic ? '🩺 تذكير قياس الضغط' : '🩺 Blood Pressure Reminder',
+        body: isArabic
+          ? `حان وقت قياس ضغط الدم (${period})`
+          : `Time to measure your blood pressure (${period})`,
+        schedule: { on: { hour, minute: min }, allowWhileIdle: true },
+        sound: 'default',
+        smallIcon: 'ic_stat_icon_config_sample',
+      });
+    });
+  }
 
   // === Low Stock Alert (≤20% of 2-month supply) — daily at 9 AM ===
   const lowStockMeds = medications.filter(med => {
