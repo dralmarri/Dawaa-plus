@@ -75,4 +75,5 @@ export interface AppSettings {
   emergencyContact?: EmergencyContact;
   dailySummary: boolean;
   dailySummaryTime: string;
+  bpReminders: boolean;
 }
