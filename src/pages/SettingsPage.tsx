@@ -252,7 +252,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               <h3 className="font-bold text-foreground">🩺 {t.bpReminders}</h3>
               <p className="text-sm text-muted-foreground">{t.bpRemindersDesc}</p>
             </div>
-            <button onClick={() => update({ bpReminders: !settings.bpReminders })}
+            <button onClick={() => {
+                const enabling = !settings.bpReminders;
+                const patch: Partial<AppSettings> = { bpReminders: enabling };
+                if (enabling && (!settings.bpCustomTimes || settings.bpCustomTimes.length === 0)) {
+                  patch.bpCustomTimes = ['10:00', '21:00'];
+                }
+                update(patch);
+              }}
               className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bpReminders ? "bg-primary" : "bg-border"}`}>
               <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bpReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
             </button>
