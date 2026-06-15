@@ -23,7 +23,7 @@ const defaultSettings: AppSettings = {
   reminderBefore: '5',
   escalationOnMissed: false,
   bpReminders: false,
-  bpCustomTimes: [],
+  bpCustomTimes: ['10:00', '21:00'],
 };
 
 // ── Sync cache (in-memory) ─────────────────────────────────────────
