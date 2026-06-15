@@ -22,9 +22,8 @@ const defaultSettings: AppSettings = {
   voiceNotifications: false,
   reminderBefore: '5',
   escalationOnMissed: false,
-  dailySummary: true,
-  dailySummaryTime: '08:00',
   bpReminders: false,
+  bpCustomTimes: [],
 };
 
 // ── Sync cache (in-memory) ─────────────────────────────────────────
