@@ -60,7 +60,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     const next = { ...settings, ...partial };
     setSettings(next);
     await store.saveSettings(next);
-    if (partial.notifications !== undefined || partial.reminderBefore !== undefined) {
+    if (partial.notifications !== undefined || partial.reminderBefore !== undefined || partial.bpReminders !== undefined || partial.dailySummary !== undefined || partial.dailySummaryTime !== undefined) {
       if (next.notifications) {
         const granted = await requestNotificationPermission();
         if (granted) {
