@@ -144,13 +144,13 @@ const HistoryPage = () => {
               <h3 className="text-sm font-bold text-muted-foreground mb-2">{formatDate(date)}</h3>
               <div className="bg-card rounded-3xl border-2 border-primary/30 shadow-sm divide-y divide-border">
                 {dayRecords.map((rec) => (
-                  <div key={rec.id} className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                        <Pill className="w-5 h-5 text-primary" />
+                  <div key={rec.id} className="flex items-center justify-between gap-3 p-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Pill className="w-7 h-7 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{rec.medicationName}</p>
+                      <div className="min-w-0">
+                        <p className="text-lg font-bold text-foreground truncate">{rec.medicationName}</p>
                         <p className="text-sm text-muted-foreground">
                           {rec.scheduledTime}
                           {rec.takenAt && ` → ${rec.takenAt}`}
