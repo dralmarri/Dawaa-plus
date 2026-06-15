@@ -172,6 +172,7 @@ export const cloudStore = {
       emergencyContact: data.emergency_contact as any,
       dailySummary: data.daily_summary,
       dailySummaryTime: data.daily_summary_time,
+      bpReminders: (data as any).bp_reminders ?? false,
     };
   },
   saveSettings: async (uid: string, s: AppSettings) => {
