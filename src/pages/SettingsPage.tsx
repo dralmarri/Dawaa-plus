@@ -243,6 +243,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
             </button>
           </div>
+
+          {settings.notifications && (
+            <div className="pt-3 border-t border-border">
+              <label className="text-sm font-semibold text-foreground block mb-3">{t.reminderBefore}</label>
+              <ChipSelector options={reminderLabels} value={reminderMap[settings.reminderBefore] || settings.reminderBefore}
+                onChange={(v) => update({ reminderBefore: reminderKeys[reminderLabels.indexOf(v)] || v })} />
+            </div>
+          )}
         </div>
 
         {/* Blood Pressure Reminders */}
@@ -315,12 +323,6 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
 
 
-        {/* Reminder */}
-        <div className="bg-card rounded-2xl border border-border p-5">
-          <label className="text-base font-bold text-foreground block mb-3">{t.reminderBefore}</label>
-          <ChipSelector options={reminderLabels} value={reminderMap[settings.reminderBefore] || settings.reminderBefore}
-            onChange={(v) => update({ reminderBefore: reminderKeys[reminderLabels.indexOf(v)] || v })} />
-        </div>
 
         {/* Menu Items */}
         <div className="bg-card rounded-2xl border border-border divide-y divide-border">
