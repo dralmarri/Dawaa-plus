@@ -292,32 +292,25 @@ export async function scheduleMedicationNotifications() {
     });
   });
 
-  // === Blood Pressure Reminders — opt-in. Defaults: 10 AM + 9 PM, plus user custom times ===
+  // === Blood Pressure Reminders — opt-in. User-editable list (defaults seeded: 10 AM + 9 PM) ===
   if (settings.bpReminders) {
-    const bpEntries: Array<{ hour: number; min: number; id: number; label: 'morning' | 'evening' | 'custom' }> = [
-      { hour: 10, min: 0, id: 9990, label: 'morning' },
-      { hour: 21, min: 0, id: 9991, label: 'evening' },
-    ];
-    (settings.bpCustomTimes || []).forEach((t) => {
+    const bpTimes = (settings.bpCustomTimes && settings.bpCustomTimes.length > 0)
+      ? settings.bpCustomTimes
+      : ['10:00', '21:00'];
+
+    bpTimes.forEach((t) => {
       const [h, m] = t.split(':').map(Number);
       if (isNaN(h) || isNaN(m)) return;
-      // avoid duplicating default times
-      if ((h === 10 && m === 0) || (h === 21 && m === 0)) return;
-      bpEntries.push({ hour: h, min: m, id: stableId('bp-custom', t), label: 'custom' });
-    });
-
-    bpEntries.forEach(({ hour, min, id, label }) => {
+      const id = stableId('bp-time', t);
       scheduledIds.push(id);
-      const period = isArabic
-        ? (label === 'morning' ? 'الصباح' : label === 'evening' ? 'المساء' : `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`)
-        : (label === 'morning' ? 'Morning' : label === 'evening' ? 'Evening' : `${String(hour).padStart(2, '0')}:${String(min).padStart(2, '0')}`);
+      const timeLabel = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
       notifications.push({
         id,
         title: isArabic ? '🩺 تذكير قياس الضغط' : '🩺 Blood Pressure Reminder',
         body: isArabic
-          ? `حان وقت قياس ضغط الدم (${period})`
-          : `Time to measure your blood pressure (${period})`,
-        schedule: { on: { hour, minute: min }, allowWhileIdle: true },
+          ? `حان وقت قياس ضغط الدم (${timeLabel})`
+          : `Time to measure your blood pressure (${timeLabel})`,
+        schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
         sound: 'default',
         smallIcon: 'ic_stat_icon_config_sample',
       });
