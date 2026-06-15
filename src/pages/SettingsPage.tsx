@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -379,18 +379,52 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
             <p className="text-sm text-muted-foreground">{SHARE_TEXT}</p>
 
-            {/* Primary: share full app pitch via system share sheet */}
-            <button
-              onClick={shareAsApp}
-              className="w-full rounded-2xl bg-primary text-primary-foreground py-3 px-5 font-semibold text-base hover:opacity-90 transition-opacity"
-            >
-              {isRTL ? "مشاركة التطبيق" : "Share the app"}
-            </button>
+            {/* Two clear options: web page vs App Store */}
+            <div className="space-y-3">
+              <button
+                onClick={shareWebLink}
+                className="w-full rounded-2xl border border-border bg-muted/40 hover:bg-muted transition-colors p-4 flex items-center gap-3 text-start"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Globe className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground">
+                    {isRTL ? "مشاركة رابط الموقع" : "Share website link"}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate" dir="ltr">
+                    {SHARE_URL}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    {isRTL ? "يفتح كصفحة ويب على أي جهاز" : "Opens as a web page on any device"}
+                  </p>
+                </div>
+                <Chevron className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              </button>
+
+              <button
+                onClick={shareAppStoreLink}
+                className="w-full rounded-2xl border border-border bg-muted/40 hover:bg-muted transition-colors p-4 flex items-center gap-3 text-start"
+              >
+                <div className="w-12 h-12 rounded-2xl bg-foreground flex items-center justify-center flex-shrink-0">
+                  <Smartphone className="w-6 h-6 text-background" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground">
+                    {isRTL ? "مشاركة التطبيق من متجر آبل" : "Share App Store link"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {isRTL ? "للتثبيت على iPhone و iPad مباشرة" : "Install directly on iPhone & iPad"}
+                  </p>
+                </div>
+                <Chevron className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              </button>
+            </div>
 
             <div className="flex items-center gap-2 pt-1">
               <div className="h-px flex-1 bg-border" />
               <span className="text-xs text-muted-foreground">
-                {isRTL ? "أو شارك الرابط عبر" : "Or share link via"}
+                {isRTL ? "أو شارك رابط الموقع عبر" : "Or share website link via"}
               </span>
               <div className="h-px flex-1 bg-border" />
             </div>
@@ -444,15 +478,6 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </button>
             </div>
 
-            <div className="flex items-center gap-2 p-3 rounded-xl bg-muted">
-              <span className="text-xs text-muted-foreground flex-1 truncate" dir="ltr">{SHARE_URL}</span>
-              <button
-                onClick={copyLink}
-                className="text-xs font-bold text-primary px-2 py-1 rounded-lg hover:bg-primary/10"
-              >
-                {isRTL ? "نسخ" : "Copy"}
-              </button>
-            </div>
 
           </div>
         </div>
