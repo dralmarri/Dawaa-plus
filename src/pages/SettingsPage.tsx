@@ -31,6 +31,8 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
 
   const SHARE_URL = "https://dawaaplus.net";
+  // TODO: replace the placeholder ID below once the app is live on the App Store.
+  const APP_STORE_URL = "https://apps.apple.com/app/dawaa-plus/id0000000000";
   const SHARE_TEXT = isRTL
     ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك"
     : "Try dawaa+ app to manage your medications and health";
@@ -83,15 +85,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     setShareOpen(true);
   };
 
-  const shareAsApp = async () => {
+  const shareWithSystem = async (url: string, text: string) => {
     const title = "dawaa+";
-    const text = SHARE_TEXT;
     setShareOpen(false);
     try {
       const { Share } = await import("@capacitor/share");
       const can = await Share.canShare();
       if (can.value) {
-        await Share.share({ title, text, url: SHARE_URL, dialogTitle: title });
+        await Share.share({ title, text, url, dialogTitle: title });
         return;
       }
     } catch {
@@ -99,7 +100,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     }
     try {
       if (navigator.share) {
-        await navigator.share({ title, text, url: SHARE_URL });
+        await navigator.share({ title, text, url });
         return;
       }
     } catch {
@@ -108,6 +109,17 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     // Fallback: reopen modal so user can use link options
     setShareOpen(true);
   };
+
+  const shareWebLink = () => shareWithSystem(SHARE_URL, SHARE_TEXT);
+  const shareAppStoreLink = () =>
+    shareWithSystem(
+      APP_STORE_URL,
+      isRTL
+        ? `${SHARE_TEXT}\nحمّل التطبيق من متجر آبل:`
+        : `${SHARE_TEXT}\nDownload from the App Store:`
+    );
+
+
 
 
   const copyLink = async () => {
