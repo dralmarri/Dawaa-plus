@@ -257,7 +257,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
         <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex-1">
-              <h3 className="font-bold text-foreground">🩺 {t.bpReminders}</h3>
+              <h3 className="font-bold text-foreground">❤️‍🩹 {t.bpReminders}</h3>
               <p className="text-sm text-muted-foreground">{t.bpRemindersDesc}</p>
             </div>
             <button onClick={() => {
