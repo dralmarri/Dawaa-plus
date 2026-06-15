@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
+import { CalendarDays, Check, X, Clock, ArrowLeft, Pill } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
@@ -146,8 +146,10 @@ const HistoryPage = () => {
                 {dayRecords.map((rec) => (
                   <div key={rec.id} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+                        <Pill className="w-5 h-5 text-primary" />
+                      </div>
                       <div>
-
                         <p className="font-semibold text-foreground">{rec.medicationName}</p>
                         <p className="text-sm text-muted-foreground">
                           {rec.scheduledTime}
