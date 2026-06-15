@@ -244,7 +244,11 @@ const AddMedicationPage = () => {
       await store.deleteDosesForMedDate(med.id, today);
     }
 
-    await scheduleMedicationNotifications();
+    try {
+      await scheduleMedicationNotifications();
+    } catch (err) {
+      console.warn("Failed to schedule notifications:", err);
+    }
     navigate("/medications");
   };
   const canNext = () => {
