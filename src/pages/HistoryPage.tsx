@@ -146,15 +146,8 @@ const HistoryPage = () => {
                 {dayRecords.map((rec) => (
                   <div key={rec.id} className="flex items-center justify-between p-4">
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        rec.status === "taken" ? "bg-summary-taken" :
-                        rec.status === "missed" ? "bg-summary-missed" : "bg-secondary"
-                      }`}>
-                        {rec.status === "taken" ? <Check className="w-4 h-4 text-summary-taken-foreground" /> :
-                         rec.status === "missed" ? <X className="w-4 h-4 text-summary-missed-foreground" /> :
-                         <Clock className="w-4 h-4 text-summary-schedule" />}
-                      </div>
                       <div>
+
                         <p className="font-semibold text-foreground">{rec.medicationName}</p>
                         <p className="text-sm text-muted-foreground">
                           {rec.scheduledTime}
