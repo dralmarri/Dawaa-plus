@@ -30,6 +30,12 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [shareOpen, setShareOpen] = useState(false);
   const [signOutConfirm, setSignOutConfirm] = useState(false);
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [bloodSugarOpen, setBloodSugarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [bpOpen, setBpOpen] = useState(false);
 
   const SHARE_URL = "https://dawaaplus.net";
   // TODO: replace the placeholder ID below once the app is live on the App Store.
