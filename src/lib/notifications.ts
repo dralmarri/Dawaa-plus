@@ -317,6 +317,31 @@ export async function scheduleMedicationNotifications() {
     });
   }
 
+  // === Blood Sugar Reminders — opt-in. User-editable list (defaults seeded: 8 AM + 9 PM) ===
+  if (settings.bloodSugarReminders) {
+    const bsTimes = (settings.bloodSugarCustomTimes && settings.bloodSugarCustomTimes.length > 0)
+      ? settings.bloodSugarCustomTimes
+      : ['08:00', '21:00'];
+
+    bsTimes.forEach((t) => {
+      const [h, m] = t.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) return;
+      const id = stableId('bs-time', t);
+      scheduledIds.push(id);
+      const timeLabel = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      notifications.push({
+        id,
+        title: isArabic ? '🩸 تذكير قياس السكر' : '🩸 Blood Sugar Reminder',
+        body: isArabic
+          ? `حان وقت قياس مستوى السكر (${timeLabel})`
+          : `Time to measure your blood sugar (${timeLabel})`,
+        schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
+        sound: 'default',
+        smallIcon: 'ic_stat_icon_config_sample',
+      });
+    });
+  }
+
   // === Low Stock Alert (≤20% of 2-month supply) — daily at 9 AM ===
   const lowStockMeds = medications.filter(med => {
     const timesPerDay = med.times.length || 1;
