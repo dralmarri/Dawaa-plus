@@ -208,6 +208,10 @@ const translations = {
     deleteAccountSuccess: "Your account has been deleted",
     deleteAccountError: "Could not delete account. Please try again.",
     typeDeleteToConfirm: "Type DELETE to confirm",
+    resetDoseCounter: "Reset Counter",
+    resetDoseCounterConfirmTitle: "Reset dose counter?",
+    resetDoseCounterConfirmBody: "This will clear all dose history records. This action cannot be undone.",
+    resetDoseCounterSuccess: "Dose counter reset successfully",
   },
   ar: {
     appName: "دواء+",
