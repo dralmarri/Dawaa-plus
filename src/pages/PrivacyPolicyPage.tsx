@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate();
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t } = useLanguage();
   const ar = lang === "ar";
   const Back = isRTL ? ChevronRight : ChevronLeft;
 
