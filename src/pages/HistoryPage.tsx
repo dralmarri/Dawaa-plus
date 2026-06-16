@@ -23,6 +23,7 @@ const HistoryPage = () => {
   });
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
   const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
+  const [resetConfirm, setResetConfirm] = useState(false);
 
   const refresh = () => setRecords([...store.getDoseRecords()]);
 
