@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone, User, Bell, Heart, Droplet, Languages, Palette } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone, User, Bell, Languages } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -33,9 +33,8 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [languageOpen, setLanguageOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const [bloodSugarOpen, setBloodSugarOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [bpOpen, setBpOpen] = useState(false);
+  
 
   // Local draft for the profile dialog; saved only when the user presses Save
   const [draftProfile, setDraftProfile] = useState<AppSettings>(settings);
@@ -222,22 +221,18 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             settings.emergencyContact?.phone,
           ].filter(Boolean).length;
           const profileTotal = 8;
-          const notifSummary = settings.notifications
-            ? `${isRTL ? "مفعّلة" : "On"} · ${reminderMap[settings.reminderBefore] || settings.reminderBefore}`
-            : (isRTL ? "متوقفة" : "Off");
-          const bpSummary = settings.bpReminders
-            ? `${isRTL ? "مفعّلة" : "On"} · ${(settings.bpCustomTimes || []).join(" · ") || "—"}`
-            : (isRTL ? "متوقفة" : "Off");
-          const bsSummary = settings.bloodSugarReminders
-            ? `${isRTL ? "مفعّلة" : "On"} · ${(settings.bloodSugarCustomTimes || []).join(" · ") || "—"}`
-            : (isRTL ? "متوقفة" : "Off");
+          const totalNotifs = 3;
+          const activeNotifs = [settings.notifications, settings.bpReminders, settings.bloodSugarReminders].filter(Boolean).length;
+          const notifSummary = activeNotifs === totalNotifs
+            ? t.enabled
+            : activeNotifs === 0
+              ? t.disabled
+              : `${activeNotifs}/${totalNotifs} ${isRTL ? "مفعّلة" : "On"}`;
           const rows = [
             { icon: Languages, label: t.language, value: lang === "ar" ? "العربية" : "English", onClick: () => setLanguageOpen(true) },
             { icon: theme === "dark" ? Moon : Sun, label: t.theme, value: theme === "dark" ? t.darkMode : t.lightMode, onClick: () => setThemeOpen(true) },
             { icon: User, label: isRTL ? "بيانات المستخدم" : "User Profile", value: `${profileFilled}/${profileTotal} ${isRTL ? "حقول" : "fields"}`, onClick: () => setProfileOpen(true) },
-            { icon: Droplet, label: t.bloodSugarReminders, value: bsSummary, onClick: () => setBloodSugarOpen(true) },
             { icon: Bell, label: t.notifications, value: notifSummary, onClick: () => setNotificationsOpen(true) },
-            { icon: Heart, label: t.bpReminders, value: bpSummary, onClick: () => setBpOpen(true) },
           ];
           return (
             <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
@@ -431,147 +426,139 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           </DialogContent>
         </Dialog>
 
-        {/* Blood Sugar Dialog */}
-        <Dialog open={bloodSugarOpen} onOpenChange={setBloodSugarOpen}>
-          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
-            <DialogHeader><DialogTitle>🩸 {t.bloodSugarReminders}</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground flex-1">{t.bloodSugarRemindersDesc}</p>
-                <button onClick={() => {
-                    const enabling = !settings.bloodSugarReminders;
-                    const patch: Partial<AppSettings> = { bloodSugarReminders: enabling };
-                    if (enabling && (!settings.bloodSugarCustomTimes || settings.bloodSugarCustomTimes.length === 0)) {
-                      patch.bloodSugarCustomTimes = ['08:00', '21:00'];
-                    }
-                    update(patch);
-                  }}
-                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarReminders ? "bg-primary" : "bg-border"}`}>
-                  <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-                </button>
-              </div>
-
-              {settings.bloodSugarReminders && (
-                <div className="space-y-3 pt-3 border-t border-border">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{t.bloodSugarCustomTimes}</p>
-                    <p className="text-xs text-muted-foreground">{t.bloodSugarCustomTimesDesc}</p>
-                  </div>
-
-                  <div className="space-y-2">
-                    {(settings.bloodSugarCustomTimes || []).map((time, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input type="time" value={time}
-                          onChange={(e) => {
-                            const next = [...(settings.bloodSugarCustomTimes || [])];
-                            next[idx] = e.target.value;
-                            update({ bloodSugarCustomTimes: next });
-                          }}
-                          className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                        <button onClick={() => {
-                            const next = (settings.bloodSugarCustomTimes || []).filter((_, i) => i !== idx);
-                            update({ bloodSugarCustomTimes: next });
-                          }}
-                          className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
-                          aria-label="remove">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button onClick={() => { const next = [...(settings.bloodSugarCustomTimes || []), "08:00"]; update({ bloodSugarCustomTimes: next }); }}
-                    className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm">
-                    + {t.addTime}
-                  </button>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
         {/* Notifications Dialog */}
         <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
-          <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
-            <DialogHeader><DialogTitle>{t.notifications}</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex-1">
-                  <p className="font-semibold text-foreground">⏰ {t.medicationReminders}</p>
-                  <p className="text-sm text-muted-foreground">{t.medicationRemindersDesc}</p>
-                </div>
-                <button onClick={() => update({ notifications: !settings.notifications })}
-                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.notifications ? "bg-primary" : "bg-border"}`}>
-                  <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-                </button>
-              </div>
-
-              {settings.notifications && (
-                <div className="pt-3 border-t border-border">
-                  <label className="text-sm font-semibold text-foreground block mb-3">{t.reminderBefore}</label>
-                  <ChipSelector options={reminderLabels} value={reminderMap[settings.reminderBefore] || settings.reminderBefore}
-                    onChange={(v) => update({ reminderBefore: reminderKeys[reminderLabels.indexOf(v)] || v })} />
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Blood Pressure Dialog */}
-        <Dialog open={bpOpen} onOpenChange={setBpOpen}>
           <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
-            <DialogHeader><DialogTitle>❤️‍🩹 {t.bpReminders}</DialogTitle></DialogHeader>
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center justify-between gap-3">
-                <p className="text-sm text-muted-foreground flex-1">{t.bpRemindersDesc}</p>
-                <button onClick={() => {
-                    const enabling = !settings.bpReminders;
-                    const patch: Partial<AppSettings> = { bpReminders: enabling };
-                    if (enabling && (!settings.bpCustomTimes || settings.bpCustomTimes.length === 0)) {
-                      patch.bpCustomTimes = ['10:00', '21:00'];
-                    }
-                    update(patch);
-                  }}
-                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bpReminders ? "bg-primary" : "bg-border"}`}>
-                  <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bpReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-                </button>
-              </div>
-
-              {settings.bpReminders && (
-                <div className="space-y-3 pt-3 border-t border-border">
-                  <div>
-                    <p className="text-sm font-semibold text-foreground">{t.bpCustomTimes}</p>
-                    <p className="text-xs text-muted-foreground">{t.bpCustomTimesDesc}</p>
+            <DialogHeader><DialogTitle>🔔 {t.notifications}</DialogTitle></DialogHeader>
+            <div className="space-y-6 pt-2">
+              {/* Medication reminders */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">💊 {t.medicationReminders}</p>
+                    <p className="text-sm text-muted-foreground">{t.medicationRemindersDesc}</p>
                   </div>
-
-                  <div className="space-y-2">
-                    {(settings.bpCustomTimes || []).map((time, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input type="time" value={time}
-                          onChange={(e) => {
-                            const next = [...(settings.bpCustomTimes || [])];
-                            next[idx] = e.target.value;
-                            update({ bpCustomTimes: next });
-                          }}
-                          className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-                        <button onClick={() => {
-                            const next = (settings.bpCustomTimes || []).filter((_, i) => i !== idx);
-                            update({ bpCustomTimes: next });
-                          }}
-                          className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
-                          aria-label="remove">
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <button onClick={() => { const next = [...(settings.bpCustomTimes || []), "08:00"]; update({ bpCustomTimes: next }); }}
-                    className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm">
-                    + {t.addTime}
+                  <button onClick={() => update({ notifications: !settings.notifications })}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.notifications ? "bg-primary" : "bg-border"}`}>
+                    <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
                   </button>
                 </div>
-              )}
+                {settings.notifications && (
+                  <div className="pt-3 border-t border-border">
+                    <label className="text-sm font-semibold text-foreground block mb-3">{t.reminderBefore}</label>
+                    <ChipSelector options={reminderLabels} value={reminderMap[settings.reminderBefore] || settings.reminderBefore}
+                      onChange={(v) => update({ reminderBefore: reminderKeys[reminderLabels.indexOf(v)] || v })} />
+                  </div>
+                )}
+              </div>
+
+              {/* Blood pressure reminders */}
+              <div className="space-y-3 pt-4 border-t border-border">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">❤️‍🩹 {t.bpReminders}</p>
+                    <p className="text-sm text-muted-foreground">{t.bpRemindersDesc}</p>
+                  </div>
+                  <button onClick={() => {
+                      const enabling = !settings.bpReminders;
+                      const patch: Partial<AppSettings> = { bpReminders: enabling };
+                      if (enabling && (!settings.bpCustomTimes || settings.bpCustomTimes.length === 0)) {
+                        patch.bpCustomTimes = ['10:00', '21:00'];
+                      }
+                      update(patch);
+                    }}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bpReminders ? "bg-primary" : "bg-border"}`}>
+                    <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bpReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+                  </button>
+                </div>
+                {settings.bpReminders && (
+                  <div className="space-y-3 pt-3 border-t border-border">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{t.bpCustomTimes}</p>
+                      <p className="text-xs text-muted-foreground">{t.bpCustomTimesDesc}</p>
+                    </div>
+                    <div className="space-y-2">
+                      {(settings.bpCustomTimes || []).map((time, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input type="time" value={time}
+                            onChange={(e) => {
+                              const next = [...(settings.bpCustomTimes || [])];
+                              next[idx] = e.target.value;
+                              update({ bpCustomTimes: next });
+                            }}
+                            className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                          <button onClick={() => {
+                              const next = (settings.bpCustomTimes || []).filter((_, i) => i !== idx);
+                              update({ bpCustomTimes: next });
+                            }}
+                            className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
+                            aria-label="remove">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => { const next = [...(settings.bpCustomTimes || []), "08:00"]; update({ bpCustomTimes: next }); }}
+                      className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm">
+                      + {t.addTime}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Blood sugar reminders */}
+              <div className="space-y-3 pt-4 border-t border-border">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">🩸 {t.bloodSugarReminders}</p>
+                    <p className="text-sm text-muted-foreground">{t.bloodSugarRemindersDesc}</p>
+                  </div>
+                  <button onClick={() => {
+                      const enabling = !settings.bloodSugarReminders;
+                      const patch: Partial<AppSettings> = { bloodSugarReminders: enabling };
+                      if (enabling && (!settings.bloodSugarCustomTimes || settings.bloodSugarCustomTimes.length === 0)) {
+                        patch.bloodSugarCustomTimes = ['08:00', '21:00'];
+                      }
+                      update(patch);
+                    }}
+                    className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarReminders ? "bg-primary" : "bg-border"}`}>
+                    <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+                  </button>
+                </div>
+                {settings.bloodSugarReminders && (
+                  <div className="space-y-3 pt-3 border-t border-border">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{t.bloodSugarCustomTimes}</p>
+                      <p className="text-xs text-muted-foreground">{t.bloodSugarCustomTimesDesc}</p>
+                    </div>
+                    <div className="space-y-2">
+                      {(settings.bloodSugarCustomTimes || []).map((time, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <input type="time" value={time}
+                            onChange={(e) => {
+                              const next = [...(settings.bloodSugarCustomTimes || [])];
+                              next[idx] = e.target.value;
+                              update({ bloodSugarCustomTimes: next });
+                            }}
+                            className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                          <button onClick={() => {
+                              const next = (settings.bloodSugarCustomTimes || []).filter((_, i) => i !== idx);
+                              update({ bloodSugarCustomTimes: next });
+                            }}
+                            className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
+                            aria-label="remove">
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={() => { const next = [...(settings.bloodSugarCustomTimes || []), "08:00"]; update({ bloodSugarCustomTimes: next }); }}
+                      className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm">
+                      + {t.addTime}
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </DialogContent>
         </Dialog>
