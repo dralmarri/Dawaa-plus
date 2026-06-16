@@ -433,16 +433,59 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
         {/* Blood Sugar Dialog */}
         <Dialog open={bloodSugarOpen} onOpenChange={setBloodSugarOpen}>
-          <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
-            <DialogHeader><DialogTitle>🩸 {isRTL ? "تتبع السكر" : "Blood Sugar Tracking"}</DialogTitle></DialogHeader>
-            <div className="flex items-center justify-between gap-3 pt-2">
-              <p className="text-sm text-muted-foreground flex-1">
-                {isRTL ? "فعّله إذا كنت تعاني من السكر لإضافة قياس السكر في الصفحة الرئيسية" : "Enable to show blood sugar logging on the home screen"}
-              </p>
-              <button onClick={() => update({ bloodSugarTracking: !settings.bloodSugarTracking })}
-                className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarTracking ? "bg-primary" : "bg-border"}`}>
-                <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarTracking ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-              </button>
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>🩸 {t.bloodSugarReminders}</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground flex-1">{t.bloodSugarRemindersDesc}</p>
+                <button onClick={() => {
+                    const enabling = !settings.bloodSugarReminders;
+                    const patch: Partial<AppSettings> = { bloodSugarReminders: enabling };
+                    if (enabling && (!settings.bloodSugarCustomTimes || settings.bloodSugarCustomTimes.length === 0)) {
+                      patch.bloodSugarCustomTimes = ['08:00', '21:00'];
+                    }
+                    update(patch);
+                  }}
+                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarReminders ? "bg-primary" : "bg-border"}`}>
+                  <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+                </button>
+              </div>
+
+              {settings.bloodSugarReminders && (
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{t.bloodSugarCustomTimes}</p>
+                    <p className="text-xs text-muted-foreground">{t.bloodSugarCustomTimesDesc}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {(settings.bloodSugarCustomTimes || []).map((time, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input type="time" value={time}
+                          onChange={(e) => {
+                            const next = [...(settings.bloodSugarCustomTimes || [])];
+                            next[idx] = e.target.value;
+                            update({ bloodSugarCustomTimes: next });
+                          }}
+                          className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                        <button onClick={() => {
+                            const next = (settings.bloodSugarCustomTimes || []).filter((_, i) => i !== idx);
+                            update({ bloodSugarCustomTimes: next });
+                          }}
+                          className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
+                          aria-label="remove">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button onClick={() => { const next = [...(settings.bloodSugarCustomTimes || []), "08:00"]; update({ bloodSugarCustomTimes: next }); }}
+                    className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm">
+                    + {t.addTime}
+                  </button>
+                </div>
+              )}
             </div>
           </DialogContent>
         </Dialog>
