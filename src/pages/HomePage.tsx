@@ -91,11 +91,11 @@ const HomePage = () => {
     setTodayDoses(generateTodayDoses());
   };
 
-  const bloodSugarEnabled = store.getSettings().bloodSugarTracking;
   const quickLinks = [
     { label: t.medications, icon: Pill, path: "/medications", color: "text-primary" },
     { label: t.bloodPressure, icon: Heart, path: "/blood-pressure", color: "text-heart" },
-    ...(bloodSugarEnabled ? [{ label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "text-warning" }] : []),
+    { label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "text-warning" },
+    { label: isRTL ? "التقارير الصحية" : "Health Reports", icon: FileText, path: "/reports", color: "text-primary" },
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "text-warning" },
     { label: t.labTests, icon: FlaskConical, path: "/lab-tests", color: "text-primary" },
   ];
@@ -262,15 +262,6 @@ const HomePage = () => {
             <span className="text-sm font-semibold text-foreground">{link.label}</span>
           </button>
         ))}
-        <button
-          onClick={() => navigate("/reports")}
-          className="col-span-2 bg-card rounded-2xl p-5 flex flex-row items-center justify-center gap-3 border border-border hover:border-primary/30 transition-colors"
-        >
-          <FileText className="w-7 h-7 text-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            {isRTL ? "التقارير الصحية" : "Health Reports"}
-          </span>
-        </button>
       </div>
 
       <button
@@ -346,11 +337,10 @@ const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: any; isRTL: boole
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
-  const bsEnabled = store.getSettings().bloodSugarTracking;
   const items = [
     { label: t.addMedication, icon: Pill, path: "/medications/add", color: "bg-primary" },
     { label: t.bloodPressure, icon: Heart, path: "/blood-pressure", color: "bg-heart" },
-    ...(bsEnabled ? [{ label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "bg-warning" }] : []),
+    { label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "bg-warning" },
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "bg-warning" },
     { label: t.labTests, icon: FlaskConical, path: "/lab-tests", color: "bg-primary" },
   ];

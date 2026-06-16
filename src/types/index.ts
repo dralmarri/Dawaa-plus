@@ -91,5 +91,7 @@ export interface AppSettings {
   dailySummaryTime?: string;
   bpReminders: boolean;
   bpCustomTimes?: string[];
-  bloodSugarTracking?: boolean;
+  bloodSugarReminders?: boolean;
+  bloodSugarCustomTimes?: string[];
+  bloodSugarTracking?: boolean; // legacy field, replaced by bloodSugarReminders
 }

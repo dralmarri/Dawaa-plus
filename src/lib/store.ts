@@ -25,6 +25,8 @@ const defaultSettings: AppSettings = {
   escalationOnMissed: false,
   bpReminders: false,
   bpCustomTimes: ['10:00', '21:00'],
+  bloodSugarReminders: false,
+  bloodSugarCustomTimes: ['08:00', '21:00'],
 };
 
 // ── Sync cache (in-memory) ─────────────────────────────────────────
