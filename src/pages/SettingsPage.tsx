@@ -298,6 +298,31 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
           <div>
             <label className="text-sm font-semibold text-foreground block mb-2">
+              {isRTL ? "فصيلة الدم" : "Blood Type"}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bt) => {
+                const selected = settings.bloodType === bt;
+                return (
+                  <button
+                    key={bt}
+                    type="button"
+                    onClick={() => update({ bloodType: selected ? undefined : bt })}
+                    className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors ${
+                      selected
+                        ? "bg-chip-active text-chip-active-foreground border-chip-active"
+                        : "bg-chip text-chip-foreground border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {bt}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-foreground block mb-2">
               {isRTL ? "أمراض أخرى (تخصيص)" : "Other Conditions (custom)"}
             </label>
             <p className="text-xs text-muted-foreground mb-2">
@@ -310,6 +335,23 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               rows={2}
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
+          </div>
+        </div>
+
+        {/* Blood Sugar Tracking (optional, for diabetic users) */}
+        <div className="bg-card rounded-2xl border border-border p-5">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex-1">
+              <h3 className="font-bold text-foreground">🩸 {isRTL ? "تتبع السكر" : "Blood Sugar Tracking"}</h3>
+              <p className="text-sm text-muted-foreground">
+                {isRTL ? "فعّله إذا كنت تعاني من السكر لإضافة قياس السكر في الصفحة الرئيسية" : "Enable to show blood sugar logging on the home screen"}
+              </p>
+            </div>
+            <button
+              onClick={() => update({ bloodSugarTracking: !settings.bloodSugarTracking })}
+              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarTracking ? "bg-primary" : "bg-border"}`}>
+              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarTracking ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+            </button>
           </div>
         </div>
 
