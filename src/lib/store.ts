@@ -163,12 +163,6 @@ export const store = {
     await setCache(KEYS.doseRecords, records);
   },
 
-  /** Reset the dose counter by clearing all dose records */
-  resetDoseRecords: async () => {
-    await setCache(KEYS.doseRecords, []);
-    if (currentUid) await cloudStore.deleteAllDoseRecords(currentUid);
-  },
-
   /** Delete all dose records for a specific medication on a specific date */
   deleteDosesForMedDate: async (medicationId: string, date: string) => {
     const all = store.getDoseRecords();

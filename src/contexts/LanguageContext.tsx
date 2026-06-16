@@ -208,10 +208,6 @@ const translations = {
     deleteAccountSuccess: "Your account has been deleted",
     deleteAccountError: "Could not delete account. Please try again.",
     typeDeleteToConfirm: "Type DELETE to confirm",
-    resetDoseCounter: "Reset Counter",
-    resetDoseCounterConfirmTitle: "Reset dose counter?",
-    resetDoseCounterConfirmBody: "This will clear all dose history records. This action cannot be undone.",
-    resetDoseCounterSuccess: "Dose counter reset successfully",
   },
   ar: {
     appName: "دواء+",
@@ -417,10 +413,6 @@ const translations = {
     deleteAccountSuccess: "تم حذف حسابك",
     deleteAccountError: "تعذر حذف الحساب. حاول مرة أخرى.",
     typeDeleteToConfirm: "اكتب حذف للتأكيد",
-    resetDoseCounter: "تصفير العداد",
-    resetDoseCounterConfirmTitle: "تصفير عداد الجرعات؟",
-    resetDoseCounterConfirmBody: "سيتم مسح جميع سجلات الجرعات. لا يمكن التراجع عن هذا الإجراء.",
-    resetDoseCounterSuccess: "تم تصفير عداد الجرعات",
   },
 };
 
