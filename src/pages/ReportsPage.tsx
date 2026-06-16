@@ -193,6 +193,67 @@ const ReportsPage = () => {
           </div>
         `).join("");
 
+    // ── Patient profile block ─────────────────────────────
+    const diseaseLabels: Record<string, { ar: string; en: string }> = {
+      diabetes: { ar: "السكري", en: "Diabetes" },
+      hypertension: { ar: "ضغط الدم", en: "Hypertension" },
+      cholesterol: { ar: "الكوليسترول", en: "Cholesterol" },
+      heart: { ar: "أمراض القلب", en: "Heart Disease" },
+      asthma: { ar: "الربو", en: "Asthma" },
+      thyroid: { ar: "الغدة الدرقية", en: "Thyroid" },
+      kidney: { ar: "الكلى", en: "Kidney" },
+      liver: { ar: "الكبد", en: "Liver" },
+      rheumatism: { ar: "الروماتيزم", en: "Rheumatism" },
+      anemia: { ar: "فقر الدم", en: "Anemia" },
+    };
+    const dash = isRTL ? "—" : "—";
+    const ec = settings.emergencyContact;
+    const diseasesList = [
+      ...((settings.chronicDiseases || []).map((k) => diseaseLabels[k]?.[isRTL ? "ar" : "en"] || k)),
+      ...(settings.customDiseases ? [settings.customDiseases] : []),
+    ];
+    const profileRow = (label: string, value: string) =>
+      `<tr>${td(`<strong>${label}</strong>`)}${td(value || dash)}</tr>`;
+    const profileTable = `<table style="width:100%;border-collapse:collapse;">
+      <tbody>
+        ${profileRow(isRTL ? "الاسم" : "Name", patientName)}
+        ${profileRow(isRTL ? "تاريخ الميلاد" : "Date of Birth", settings.dateOfBirth || "")}
+        ${profileRow(isRTL ? "فصيلة الدم" : "Blood Type", settings.bloodType || "")}
+        ${profileRow(isRTL ? "الحساسية من الأدوية" : "Drug Allergies", settings.allergies || (isRTL ? "لا يوجد" : "None"))}
+        ${profileRow(isRTL ? "الأمراض المزمنة" : "Chronic Diseases", diseasesList.length ? diseasesList.join("، ") : (isRTL ? "لا يوجد" : "None"))}
+        ${profileRow(isRTL ? "جهة اتصال الطوارئ" : "Emergency Contact",
+          ec && ec.name ? `${ec.name} — <span dir="ltr">${ec.phone}</span> (${ec.method === "whatsapp" ? "WhatsApp" : "SMS"})` : "")}
+      </tbody>
+    </table>`;
+
+    // ── Blood sugar last 30 days ──────────────────────────
+    const bs30 = bsReadings
+      .filter((r) => { try { return isAfter(parseISO(r.date), cutoff); } catch { return false; } })
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const bsPeriodLabel: Record<string, { ar: string; en: string }> = {
+      "Fasting": { ar: "صائم", en: "Fasting" },
+      "Before meal": { ar: "قبل الأكل", en: "Before meal" },
+      "After meal": { ar: "بعد الأكل", en: "After meal" },
+      "Bedtime": { ar: "قبل النوم", en: "Bedtime" },
+      "Random": { ar: "عشوائي", en: "Random" },
+    };
+    const bsTable = bs30.length === 0
+      ? `<p style="color:#6b7280;font-size:13px;">${isRTL ? "لا توجد قراءات سكر في آخر 30 يوماً" : "No blood sugar readings in the last 30 days"}</p>`
+      : `<table style="width:100%;border-collapse:collapse;">
+          <thead><tr>
+            ${th(isRTL ? "التاريخ" : "Date")}
+            ${th(isRTL ? "الوقت" : "Time")}
+            ${th(isRTL ? "القراءة (mg/dL)" : "Value (mg/dL)")}
+            ${th(isRTL ? "وقت القياس" : "When")}
+          </tr></thead>
+          <tbody>${bs30.map((r) => `<tr>
+            ${td(r.date)}
+            ${td(r.time)}
+            ${td(`<strong>${r.value}</strong>`)}
+            ${td(bsPeriodLabel[r.period]?.[isRTL ? "ar" : "en"] || r.period)}
+          </tr>`).join("")}</tbody>
+        </table>`;
+
     return `
       <div dir="${dir}" style="width:794px;padding:32px;background:#fff;font-family:'Segoe UI','Tahoma','Arial',sans-serif;color:#111827;">
         <!-- Header -->
@@ -208,11 +269,16 @@ const ReportsPage = () => {
           </div>
         </div>
 
+        ${sectionTitle(isRTL ? "👤 بيانات المريض" : "👤 Patient Profile")}
+        ${profileTable}
+
         ${sectionTitle(isRTL ? "💊 الأدوية الحالية" : "💊 Current Medications")}
         ${medsTable}
 
         ${sectionTitle(isRTL ? "🩺 ضغط الدم — آخر 30 يوماً" : "🩺 Blood Pressure — Last 30 Days")}
         <div style="text-align:center;">${renderBPChart()}</div>
+
+        ${settings.bloodSugarTracking ? `${sectionTitle(isRTL ? "🩸 سكر الدم — آخر 30 يوماً" : "🩸 Blood Sugar — Last 30 Days")}${bsTable}` : ""}
 
         ${sectionTitle(isRTL ? "📅 المواعيد القادمة" : "📅 Upcoming Appointments")}
         ${apptsTable}
