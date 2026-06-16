@@ -1,8 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Check, X, Clock, ArrowLeft, Pill } from "lucide-react";
+import { CalendarDays, Check, X, Clock, ArrowLeft, Pill, RotateCcw } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { store } from "@/lib/store";
-import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
+import { generateTodayDoses, markDoseTaken, markDoseMissed } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
 import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
