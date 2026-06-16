@@ -99,7 +99,9 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
       partial.notifications !== undefined ||
       partial.reminderBefore !== undefined ||
       partial.bpReminders !== undefined ||
-      partial.bpCustomTimes !== undefined
+      partial.bpCustomTimes !== undefined ||
+      partial.bloodSugarReminders !== undefined ||
+      partial.bloodSugarCustomTimes !== undefined
     ) {
       if (next.notifications) {
         const granted = await requestNotificationPermission();
