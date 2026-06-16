@@ -176,6 +176,20 @@ export const store = {
     await setCache(KEYS.settings, s);
     if (currentUid) await cloudStore.saveSettings(currentUid, s);
   },
+
+  // Blood sugar readings (local only)
+  getBloodSugarReadings: (): BloodSugarReading[] =>
+    getCache(KEYS.bloodSugar, []),
+
+  saveBloodSugarReading: async (r: BloodSugarReading) => {
+    const all = store.getBloodSugarReadings();
+    all.unshift(r);
+    await setCache(KEYS.bloodSugar, all);
+  },
+
+  deleteBloodSugarReading: async (id: string) => {
+    await setCache(KEYS.bloodSugar, store.getBloodSugarReadings().filter(r => r.id !== id));
+  },
 };
 
 // ── Load cloud data into local cache ──────────────────────────────
