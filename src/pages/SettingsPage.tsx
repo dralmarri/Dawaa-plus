@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone, User, Bell, Languages } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, ChevronDown, Check, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone, User, Bell, Languages } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -34,6 +34,8 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [themeOpen, setThemeOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [diseaseDropdownOpen, setDiseaseDropdownOpen] = useState(false);
+  const [bloodTypeDropdownOpen, setBloodTypeDropdownOpen] = useState(false);
   
 
   // Local draft for the profile dialog; saved only when the user presses Save
@@ -332,39 +334,91 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
               <div>
                 <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "الأمراض المزمنة" : "Chronic Diseases"}</label>
-                <p className="text-xs text-muted-foreground mb-2">{isRTL ? "اختر من القائمة الأمراض التي تعاني منها (يمكن الضغط باستمرار مع Ctrl لاختيار متعدد)" : "Select any conditions you have (hold Ctrl / ⌘ to select multiple)"}</p>
-                <select
-                  multiple
-                  value={draftProfile.chronicDiseases || []}
-                  onChange={(e) => {
-                    const selected = Array.from(e.target.selectedOptions, (o) => o.value);
-                    setDraftProfile({ ...draftProfile, chronicDiseases: selected });
-                  }}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                <p className="text-xs text-muted-foreground mb-2">{isRTL ? "اختر من القائمة الأمراض التي تعاني منها" : "Select any conditions you have"}</p>
+                <button
+                  type="button"
+                  onClick={() => setDiseaseDropdownOpen(true)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  {diseaseOptions.map((d) => (
-                    <option key={d.key} value={d.key}>{isRTL ? d.ar : d.en}</option>
-                  ))}
-                </select>
+                  <span className="truncate">
+                    {(draftProfile.chronicDiseases || []).length > 0
+                      ? (isRTL ? "تم اختيار " : "Selected ") + (draftProfile.chronicDiseases || []).length + (isRTL ? " مرض" : " conditions")
+                      : (isRTL ? "اختر من القائمة" : "Select from list")}
+                  </span>
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                </button>
                 <p className="text-xs text-muted-foreground mt-1">
                   {isRTL
                     ? "الاختيارات الحالية: " + (draftProfile.chronicDiseases || []).map((k) => diseaseOptions.find((d) => d.key === k)?.ar || k).join(", ")
                     : "Selected: " + (draftProfile.chronicDiseases || []).map((k) => diseaseOptions.find((d) => d.key === k)?.en || k).join(", ")}
                 </p>
+                <Dialog open={diseaseDropdownOpen} onOpenChange={setDiseaseDropdownOpen}>
+                  <DialogContent className="max-w-sm max-h-[80vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+                    <DialogHeader><DialogTitle>{isRTL ? "الأمراض المزمنة" : "Chronic Diseases"}</DialogTitle></DialogHeader>
+                    <div className="space-y-2 pt-2">
+                      {diseaseOptions.map((d) => {
+                        const selected = (draftProfile.chronicDiseases || []).includes(d.key);
+                        return (
+                          <button
+                            key={d.key}
+                            type="button"
+                            onClick={() => {
+                              const next = selected
+                                ? (draftProfile.chronicDiseases || []).filter((k) => k !== d.key)
+                                : [...(draftProfile.chronicDiseases || []), d.key];
+                              setDraftProfile({ ...draftProfile, chronicDiseases: next });
+                            }}
+                            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl border text-start transition-colors ${selected ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-foreground"}`}
+                          >
+                            <span>{isRTL ? d.ar : d.en}</span>
+                            <div className={`w-5 h-5 rounded border flex items-center justify-center ${selected ? "bg-primary border-primary" : "border-muted-foreground"}`}>
+                              {selected && <Check className="w-3.5 h-3.5 text-primary-foreground" />}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div>
                 <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "فصيلة الدم" : "Blood Type"}</label>
-                <select
-                  value={draftProfile.bloodType || ""}
-                  onChange={(e) => setDraftProfile({ ...draftProfile, bloodType: e.target.value || undefined })}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                <button
+                  type="button"
+                  onClick={() => setBloodTypeDropdownOpen(true)}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
-                  <option value="">{isRTL ? "اختر فصيلة الدم" : "Select blood type"}</option>
-                  {bloodTypes.map((bt) => (
-                    <option key={bt} value={bt}>{bt}</option>
-                  ))}
-                </select>
+                  <span className="truncate">{draftProfile.bloodType || (isRTL ? "اختر فصيلة الدم" : "Select blood type")}</span>
+                  <ChevronDown className="w-5 h-5 text-muted-foreground" />
+                </button>
+                <Dialog open={bloodTypeDropdownOpen} onOpenChange={setBloodTypeDropdownOpen}>
+                  <DialogContent className="max-w-sm" dir={isRTL ? "rtl" : "ltr"}>
+                    <DialogHeader><DialogTitle>{isRTL ? "فصيلة الدم" : "Blood Type"}</DialogTitle></DialogHeader>
+                    <div className="grid grid-cols-4 gap-2 pt-2">
+                      {bloodTypes.map((bt) => {
+                        const selected = draftProfile.bloodType === bt;
+                        return (
+                          <button
+                            key={bt}
+                            type="button"
+                            onClick={() => { setDraftProfile({ ...draftProfile, bloodType: bt }); setBloodTypeDropdownOpen(false); }}
+                            className={`py-2.5 rounded-xl border text-sm font-semibold transition-colors ${selected ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-foreground"}`}
+                          >
+                            {bt}
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => { setDraftProfile({ ...draftProfile, bloodType: undefined }); setBloodTypeDropdownOpen(false); }}
+                        className={`py-2.5 rounded-xl border text-sm font-semibold transition-colors ${!draftProfile.bloodType ? "border-primary bg-primary/10 text-foreground" : "border-border bg-background text-foreground"}`}
+                      >
+                        {isRTL ? "غير محدد" : "Not set"}
+                      </button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
 
               <div>

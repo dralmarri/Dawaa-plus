@@ -266,26 +266,26 @@ const HomePage = () => {
 
       <button
         onClick={() => setAboutOpen(true)}
-        className="w-full bg-card rounded-2xl border border-border p-5 mb-6 shadow-sm flex items-center gap-3 hover:border-primary/30 transition-colors text-start"
+        className="w-full max-w-sm mx-auto bg-card rounded-2xl border border-border p-5 mb-6 shadow-sm flex items-center gap-3 hover:border-primary/30 transition-colors text-start"
       >
         <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
           <Clipboard className="w-5 h-5 text-primary" />
         </div>
         <div className="flex-1">
-          <h2 className="text-base font-bold text-foreground">{t.aboutDisclaimer}</h2>
+          <h2 className="text-base font-bold text-foreground">{t.clinicalDisclaimer}</h2>
           <p className="text-xs text-muted-foreground">
-            {isRTL ? "اضغط لعرض معلومات التطبيق وإخلاء المسؤولية" : "Tap to view app info and disclaimer"}
+            {isRTL ? "اضغط لعرض إخلاء المسؤولية" : "Tap to view disclaimer"}
           </p>
         </div>
         <ChevronRight className="w-5 h-5 text-muted-foreground rtl:rotate-180" />
       </button>
 
       <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
-        <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+        <DialogContent className="max-w-sm" dir={isRTL ? "rtl" : "ltr"}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Clipboard className="w-5 h-5 text-primary" />
-              {t.aboutDisclaimer}
+              {t.clinicalDisclaimer}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
@@ -295,10 +295,6 @@ const HomePage = () => {
                 {t.clinicalDisclaimer}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{t.disclaimerText}</p>
-            </div>
-            <div className="border-t border-border pt-4">
-              <h3 className="text-sm font-bold text-foreground mb-1.5">{t.about}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{t.aboutDescription}</p>
             </div>
           </div>
         </DialogContent>
