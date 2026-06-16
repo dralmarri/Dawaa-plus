@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, ChevronLeft, ChevronRight, Droplet, Clipboard } from "lucide-react";
+import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, ChevronLeft, ChevronRight, Droplet, Clipboard, Info } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import { format } from "date-fns";
