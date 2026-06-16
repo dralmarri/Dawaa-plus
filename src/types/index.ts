@@ -68,6 +68,10 @@ export interface EmergencyContact {
 export interface AppSettings {
   language: 'en' | 'ar';
   userName: string;
+  dateOfBirth?: string;
+  allergies?: string;
+  chronicDiseases?: string[];
+  customDiseases?: string;
   notifications: boolean;
   voiceNotifications: boolean;
   reminderBefore: string;
