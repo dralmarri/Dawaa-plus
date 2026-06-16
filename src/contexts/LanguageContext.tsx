@@ -417,6 +417,10 @@ const translations = {
     deleteAccountSuccess: "تم حذف حسابك",
     deleteAccountError: "تعذر حذف الحساب. حاول مرة أخرى.",
     typeDeleteToConfirm: "اكتب حذف للتأكيد",
+    resetDoseCounter: "تصفير العداد",
+    resetDoseCounterConfirmTitle: "تصفير عداد الجرعات؟",
+    resetDoseCounterConfirmBody: "سيتم مسح جميع سجلات الجرعات. لا يمكن التراجع عن هذا الإجراء.",
+    resetDoseCounterSuccess: "تم تصفير عداد الجرعات",
   },
 };
 
