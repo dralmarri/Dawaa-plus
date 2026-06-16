@@ -436,8 +436,10 @@ const ReportsPage = () => {
           </div>
 
           <ul className="text-sm text-foreground/80 space-y-1.5 mb-4 ms-2">
+            <li>• {isRTL ? "بيانات المريض (الاسم، العمر، فصيلة الدم، الحساسية، الأمراض، جهة الطوارئ)" : "Patient profile (name, DOB, blood type, allergies, conditions, emergency contact)"}</li>
             <li>• {isRTL ? "قائمة الأدوية مع الجرعات والمواعيد" : "Medications list with dosage & schedule"}</li>
             <li>• {isRTL ? "مخطط ضغط الدم لآخر 30 يوماً" : "Blood pressure chart (last 30 days)"}</li>
+            <li>• {isRTL ? "قراءات السكر لآخر 30 يوماً (إذا فُعّل التتبع)" : "Blood sugar readings (last 30 days, if tracking enabled)"}</li>
             <li>• {isRTL ? "المواعيد الطبية القادمة" : "Upcoming appointments"}</li>
             <li>• {isRTL ? "ملخص نتائج التحاليل" : "Lab results summary"}</li>
           </ul>
