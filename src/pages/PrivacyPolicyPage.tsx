@@ -108,7 +108,15 @@ export default function PrivacyPolicyPage() {
         },
         {
           h: t.clinicalDisclaimer,
-          body: <p>{t.disclaimerText}</p>,
+          body: (
+            <>
+              <p>
+                تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
+                الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
+              </p>
+              <p className="mt-2">{t.disclaimerText}</p>
+            </>
+          ),
         },
         {
           h: "التواصل",
