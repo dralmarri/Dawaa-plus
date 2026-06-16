@@ -336,6 +336,95 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
             />
           </div>
+
+          {/* Emergency contact (used by SOS feature) */}
+          <div className="pt-4 border-t border-border space-y-3">
+            <div>
+              <h4 className="font-bold text-foreground flex items-center gap-2">
+                🆘 {isRTL ? "جهة اتصال الطوارئ" : "Emergency Contact"}
+              </h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                {isRTL
+                  ? "بيانات أقرب شخص للاتصال به وقت الطوارئ — ستُستخدم في ميزة SOS وفي حال تفويت جرعتين متتاليتين."
+                  : "Closest person to contact in an emergency — used by the SOS feature and after 2 consecutive missed doses."}
+              </p>
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-foreground block mb-2">
+                {isRTL ? "الاسم وصلة القرابة" : "Name & Relation"}
+              </label>
+              <input
+                value={settings.emergencyContact?.name || ""}
+                onChange={(e) =>
+                  update({
+                    emergencyContact: {
+                      name: e.target.value,
+                      phone: settings.emergencyContact?.phone || "",
+                      method: settings.emergencyContact?.method || "whatsapp",
+                    },
+                  })
+                }
+                placeholder={isRTL ? "مثال: أحمد - الابن" : "e.g. Ahmed - Son"}
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-foreground block mb-2">
+                {isRTL ? "رقم الهاتف (مع رمز الدولة)" : "Phone (with country code)"}
+              </label>
+              <input
+                type="tel"
+                dir="ltr"
+                value={settings.emergencyContact?.phone || ""}
+                onChange={(e) =>
+                  update({
+                    emergencyContact: {
+                      name: settings.emergencyContact?.name || "",
+                      phone: e.target.value,
+                      method: settings.emergencyContact?.method || "whatsapp",
+                    },
+                  })
+                }
+                placeholder="+966XXXXXXXXX"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-semibold text-foreground block mb-2">
+                {isRTL ? "طريقة التواصل" : "Contact Method"}
+              </label>
+              <div className="flex gap-2">
+                {(["whatsapp", "sms"] as const).map((m) => {
+                  const selected = (settings.emergencyContact?.method || "whatsapp") === m;
+                  return (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() =>
+                        update({
+                          emergencyContact: {
+                            name: settings.emergencyContact?.name || "",
+                            phone: settings.emergencyContact?.phone || "",
+                            method: m,
+                          },
+                        })
+                      }
+                      className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
+                        selected
+                          ? "border-primary bg-chip-active text-chip-active-foreground"
+                          : "border-border bg-chip text-chip-foreground"
+                      }`}
+                    >
+                      {m === "whatsapp" ? "WhatsApp" : "SMS"}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Blood Sugar Tracking (optional, for diabetic users) */}
