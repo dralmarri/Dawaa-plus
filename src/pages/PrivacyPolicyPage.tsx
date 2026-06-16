@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate();
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t } = useLanguage();
   const ar = lang === "ar";
   const Back = isRTL ? ChevronRight : ChevronLeft;
 
@@ -107,12 +107,15 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "إخلاء المسؤولية الطبية",
+          h: t.clinicalDisclaimer,
           body: (
-            <p>
-              تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
-              الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
-            </p>
+            <>
+              <p>
+                تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
+                الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
+              </p>
+              <p className="mt-2">{t.disclaimerText}</p>
+            </>
           ),
         },
         {
@@ -237,13 +240,16 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "Medical disclaimer",
+          h: t.clinicalDisclaimer,
           body: (
-            <p>
-              Dawaa+ is an aid for organizing medications and measurements only and is not a substitute for
-              consultation with your doctor or pharmacist. Always consult a qualified professional before making
-              any decision about your health or treatment.
-            </p>
+            <>
+              <p>
+                Dawaa+ is an aid for organizing medications and measurements only and is not a substitute for
+                consultation with your doctor or pharmacist. Always consult a qualified professional before making
+                any decision about your health or treatment.
+              </p>
+              <p className="mt-2">{t.disclaimerText}</p>
+            </>
           ),
         },
         {
