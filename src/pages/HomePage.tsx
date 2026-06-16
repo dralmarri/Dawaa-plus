@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, ChevronLeft, ChevronRight, Droplet, Clipboard } from "lucide-react";
+import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, ChevronLeft, ChevronRight, Droplet, Clipboard, Info } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import { format } from "date-fns";
@@ -31,6 +31,7 @@ const HomePage = () => {
   const { t, isRTL } = useLanguage();
   const [todayDoses, setTodayDoses] = useState<DoseRecord[]>([]);
   const [dialogFilter, setDialogFilter] = useState<"scheduled" | "taken" | "missed" | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     const doses = generateTodayDoses();
@@ -272,25 +273,45 @@ const HomePage = () => {
         </button>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-5 mb-6 shadow-sm">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-            <Clipboard className="w-5 h-5 text-primary" />
-          </div>
-          <h2 className="text-lg font-bold text-foreground">{t.aboutDisclaimer}</h2>
+      <button
+        onClick={() => setAboutOpen(true)}
+        className="w-full bg-card rounded-2xl border border-border p-5 mb-6 shadow-sm flex items-center gap-3 hover:border-primary/30 transition-colors text-start"
+      >
+        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+          <Clipboard className="w-5 h-5 text-primary" />
         </div>
+        <div className="flex-1">
+          <h2 className="text-base font-bold text-foreground">{t.aboutDisclaimer}</h2>
+          <p className="text-xs text-muted-foreground">
+            {isRTL ? "اضغط لعرض معلومات التطبيق وإخلاء المسؤولية" : "Tap to view app info and disclaimer"}
+          </p>
+        </div>
+        <ChevronRight className="w-5 h-5 text-muted-foreground rtl:rotate-180" />
+      </button>
 
-        <div className="space-y-4">
-          <div>
-            <h3 className="text-sm font-bold text-foreground mb-1.5">{t.clinicalDisclaimer}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{t.disclaimerText}</p>
+      <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+        <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Clipboard className="w-5 h-5 text-primary" />
+              {t.aboutDisclaimer}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+            <div>
+              <h3 className="text-sm font-bold text-foreground mb-1.5 flex items-center gap-2">
+                <Info className="w-4 h-4 text-primary" />
+                {t.clinicalDisclaimer}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{t.disclaimerText}</p>
+            </div>
+            <div className="border-t border-border pt-4">
+              <h3 className="text-sm font-bold text-foreground mb-1.5">{t.about}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{t.aboutDescription}</p>
+            </div>
           </div>
-          <div className="border-t border-border pt-4">
-            <h3 className="text-sm font-bold text-foreground mb-1.5">{t.about}</h3>
-            <p className="text-sm text-muted-foreground leading-relaxed">{t.aboutDescription}</p>
-          </div>
-        </div>
-      </div>
+        </DialogContent>
+      </Dialog>
 
       <DosesDialog
         open={dialogFilter !== null}
