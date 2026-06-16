@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Check, X, Clock, ArrowLeft, Pill } from "lucide-react";
+import { CalendarDays, Check, X, Clock, ArrowLeft, Pill, RotateCcw } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
@@ -8,6 +8,7 @@ import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
@@ -19,6 +20,7 @@ const HistoryPage = () => {
   });
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
   const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
+  const [resetOpen, setResetOpen] = useState(false);
 
   const refresh = () => setRecords([...store.getDoseRecords()]);
 
@@ -106,22 +108,32 @@ const HistoryPage = () => {
         </div>
       )}
 
-      {/* Filter chips */}
+      {/* Filter chips + reset counter */}
       {records.length > 0 && (
-        <div className="px-4 flex gap-2 mb-4">
-          {(["all", "taken", "missed"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                filter === f
-                  ? "bg-chip-active text-chip-active-foreground border-chip-active"
-                  : "bg-chip text-chip-foreground border-border"
-              }`}
-            >
-              {filterLabels[f]}
-            </button>
-          ))}
+        <div className="px-4 flex items-center gap-2 mb-4">
+          <div className="flex-1 flex gap-2 flex-wrap">
+            {(["all", "taken", "missed"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  filter === f
+                    ? "bg-chip-active text-chip-active-foreground border-chip-active"
+                    : "bg-chip text-chip-foreground border-border"
+                }`}
+              >
+                {filterLabels[f]}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setResetOpen(true)}
+            className="px-4 py-2 rounded-full text-sm font-medium border border-destructive text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            aria-label={t.resetCounter}
+          >
+            <RotateCcw className="w-4 h-4" />
+            {isRTL ? "تصفير" : "Reset"}
+          </button>
         </div>
       )}
 
@@ -197,6 +209,44 @@ const HistoryPage = () => {
           ))}
         </div>
       )}
+      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+        <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t.resetCounter}
+              <span className="block text-sm text-muted-foreground font-normal mt-1">
+                {isRTL ? "Reset Counter" : "تصفير العداد"}
+              </span>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-1">
+                <p>{t.resetCounterConfirmDesc}</p>
+                <p className="text-muted-foreground">
+                  {isRTL
+                    ? "This will clear all dose records. This action cannot be undone."
+                    : "سيتم حذف جميع سجلات الجرعات. لا يمكن التراجع عن هذا الإجراء."}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {isRTL ? "إلغاء / Cancel" : "Cancel / إلغاء"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await store.clearDoseRecords();
+                refresh();
+                setResetOpen(false);
+                toast.success(isRTL ? "تم تصفير العداد" : "Counter reset");
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isRTL ? "تصفير / Reset" : "Reset / تصفير"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
