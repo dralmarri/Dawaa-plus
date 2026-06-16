@@ -31,6 +31,7 @@ const HomePage = () => {
   const { t, isRTL } = useLanguage();
   const [todayDoses, setTodayDoses] = useState<DoseRecord[]>([]);
   const [dialogFilter, setDialogFilter] = useState<"scheduled" | "taken" | "missed" | null>(null);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     const doses = generateTodayDoses();
