@@ -220,12 +220,97 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           </div>
         </div>
 
-        {/* User Name */}
-        <div className="bg-card rounded-2xl border border-border p-5">
-          <label className="text-base font-bold text-foreground block mb-2">{t.userName}</label>
-          <input value={settings.userName} onChange={(e) => update({ userName: e.target.value })}
-            placeholder={t.userName + "..."}
-            className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+        {/* User Profile */}
+        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
+          <h3 className="font-bold text-foreground">{isRTL ? "بيانات المستخدم" : "User Profile"}</h3>
+
+          <div>
+            <label className="text-sm font-semibold text-foreground block mb-2">{t.userName}</label>
+            <input value={settings.userName} onChange={(e) => update({ userName: e.target.value })}
+              placeholder={isRTL ? "الاسم الكامل..." : "Full name..."}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-foreground block mb-2">
+              {isRTL ? "تاريخ الميلاد" : "Date of Birth"}
+            </label>
+            <input
+              type="date"
+              value={settings.dateOfBirth || ""}
+              onChange={(e) => update({ dateOfBirth: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-foreground block mb-2">
+              {isRTL ? "الحساسية من أدوية" : "Drug Allergies"}
+            </label>
+            <p className="text-xs text-muted-foreground mb-2">
+              {isRTL ? "اذكر أي دواء تعاني من حساسية تجاهه (مثل: بنسلين، أسبرين)" : "List any medications you are allergic to (e.g. Penicillin, Aspirin)"}
+            </p>
+            <textarea
+              value={settings.allergies || ""}
+              onChange={(e) => update({ allergies: e.target.value })}
+              placeholder={isRTL ? "لا يوجد" : "None"}
+              rows={2}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            />
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-foreground block mb-2">
+              {isRTL ? "الأمراض المزمنة" : "Chronic Diseases"}
+            </label>
+            <p className="text-xs text-muted-foreground mb-2">
+              {isRTL ? "اختر من القائمة الأمراض التي تعاني منها" : "Select any conditions you have"}
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {(isRTL
+                ? ["السكري", "ضغط الدم", "الكوليسترول", "القلب", "الربو", "الغدة الدرقية", "الكلى", "الكبد", "الروماتيزم", "فقر الدم"]
+                : ["Diabetes", "Hypertension", "Cholesterol", "Heart Disease", "Asthma", "Thyroid", "Kidney", "Liver", "Rheumatism", "Anemia"]
+              ).map((disease, i) => {
+                const keys = ["diabetes", "hypertension", "cholesterol", "heart", "asthma", "thyroid", "kidney", "liver", "rheumatism", "anemia"];
+                const key = keys[i];
+                const selected = (settings.chronicDiseases || []).includes(key);
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => {
+                      const current = settings.chronicDiseases || [];
+                      const next = selected ? current.filter((k) => k !== key) : [...current, key];
+                      update({ chronicDiseases: next });
+                    }}
+                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                      selected
+                        ? "bg-chip-active text-chip-active-foreground border-chip-active"
+                        : "bg-chip text-chip-foreground border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {disease}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-sm font-semibold text-foreground block mb-2">
+              {isRTL ? "أمراض أخرى (تخصيص)" : "Other Conditions (custom)"}
+            </label>
+            <p className="text-xs text-muted-foreground mb-2">
+              {isRTL ? "اكتب أي مرض خاص غير موجود في القائمة" : "Write any condition not listed above"}
+            </p>
+            <textarea
+              value={settings.customDiseases || ""}
+              onChange={(e) => update({ customDiseases: e.target.value })}
+              placeholder={isRTL ? "اكتب هنا..." : "Write here..."}
+              rows={2}
+              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
+            />
+          </div>
         </div>
 
         {/* Medication Notifications */}
