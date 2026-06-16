@@ -21,6 +21,7 @@ import AddMedicationPage from "@/pages/AddMedicationPage";
 import HistoryPage from "@/pages/HistoryPage";
 import SettingsPage from "@/pages/SettingsPage";
 import BloodPressurePage from "@/pages/BloodPressurePage";
+import BloodSugarPage from "@/pages/BloodSugarPage";
 import AppointmentsPage from "@/pages/AppointmentsPage";
 import LabTestsPage from "@/pages/LabTestsPage";
 import EmergencyContactPage from "@/pages/EmergencyContactPage";
