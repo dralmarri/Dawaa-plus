@@ -65,10 +65,20 @@ export interface EmergencyContact {
   method: 'whatsapp' | 'sms';
 }
 
+export interface BloodSugarReading {
+  id: string;
+  value: number; // mg/dL
+  period: 'Fasting' | 'Before meal' | 'After meal' | 'Bedtime' | 'Random';
+  date: string;
+  time: string;
+  notes?: string;
+}
+
 export interface AppSettings {
   language: 'en' | 'ar';
   userName: string;
   dateOfBirth?: string;
+  bloodType?: string;
   allergies?: string;
   chronicDiseases?: string[];
   customDiseases?: string;
@@ -81,4 +91,5 @@ export interface AppSettings {
   dailySummaryTime?: string;
   bpReminders: boolean;
   bpCustomTimes?: string[];
+  bloodSugarTracking?: boolean;
 }

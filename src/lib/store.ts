@@ -1,5 +1,5 @@
 import { Preferences } from '@capacitor/preferences';
-import { Medication, BloodPressureReading, Appointment, LabTest, DoseRecord, AppSettings } from '@/types';
+import { Medication, BloodPressureReading, Appointment, LabTest, DoseRecord, AppSettings, BloodSugarReading } from '@/types';
 import { cloudStore } from '@/lib/cloudStore';
 
 const KEYS = {
@@ -9,6 +9,7 @@ const KEYS = {
   labTests: 'dawaa_labTests',
   doseRecords: 'dawaa_doseRecords',
   settings: 'dawaa_settings',
+  bloodSugar: 'dawaa_bloodSugar',
 };
 
 // AuthPage UI is in Arabic, so default the app language to Arabic
@@ -174,6 +175,20 @@ export const store = {
   saveSettings: async (s: AppSettings) => {
     await setCache(KEYS.settings, s);
     if (currentUid) await cloudStore.saveSettings(currentUid, s);
+  },
+
+  // Blood sugar readings (local only)
+  getBloodSugarReadings: (): BloodSugarReading[] =>
+    getCache(KEYS.bloodSugar, []),
+
+  saveBloodSugarReading: async (r: BloodSugarReading) => {
+    const all = store.getBloodSugarReadings();
+    all.unshift(r);
+    await setCache(KEYS.bloodSugar, all);
+  },
+
+  deleteBloodSugarReading: async (id: string) => {
+    await setCache(KEYS.bloodSugar, store.getBloodSugarReadings().filter(r => r.id !== id));
   },
 };
 
