@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone, User, Bell, Heart, Droplet, Languages, Palette } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { store } from "@/lib/store";
 import ChipSelector from "@/components/ChipSelector";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -29,6 +30,12 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [shareOpen, setShareOpen] = useState(false);
   const [signOutConfirm, setSignOutConfirm] = useState(false);
   const [showAuthOverlay, setShowAuthOverlay] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [bloodSugarOpen, setBloodSugarOpen] = useState(false);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [bpOpen, setBpOpen] = useState(false);
 
   const SHARE_URL = "https://dawaaplus.net";
   // TODO: replace the placeholder ID below once the app is live on the App Store.
@@ -175,37 +182,52 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
       </div>
 
       <div className="px-4 space-y-4">
-        {/* Language */}
-        <div className="bg-card rounded-2xl border border-border p-5">
-          <label className="text-base font-bold text-foreground block mb-3">{t.language}</label>
-          <div className="flex gap-3">
-            <button onClick={() => { setLang("ar"); update({ language: "ar" }); }}
-              className={`flex-1 py-3 rounded-xl border text-center font-semibold transition-colors ${lang === "ar" ? "border-primary bg-chip-active text-chip-active-foreground" : "border-border bg-chip text-chip-foreground"}`}>
-              العربية
-            </button>
-            <button onClick={() => { setLang("en"); update({ language: "en" }); }}
-              className={`flex-1 py-3 rounded-xl border text-center font-semibold transition-colors ${lang === "en" ? "border-primary bg-chip-active text-chip-active-foreground" : "border-border bg-chip text-chip-foreground"}`}>
-              English
-            </button>
-          </div>
-        </div>
-
-        {/* Theme */}
-        <div className="bg-card rounded-2xl border border-border p-5 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {theme === "dark" ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
-            <div>
-              <h3 className="font-bold text-foreground">{t.theme}</h3>
-              <p className="text-sm text-muted-foreground">{theme === "dark" ? t.darkMode : t.lightMode}</p>
+        {(() => {
+          const profileFilled = [
+            settings.userName,
+            settings.dateOfBirth,
+            settings.bloodType,
+            settings.allergies,
+            (settings.chronicDiseases || []).length > 0 ? "1" : "",
+            settings.customDiseases,
+            settings.emergencyContact?.name,
+            settings.emergencyContact?.phone,
+          ].filter(Boolean).length;
+          const profileTotal = 8;
+          const notifSummary = settings.notifications
+            ? `${isRTL ? "مفعّلة" : "On"} · ${reminderMap[settings.reminderBefore] || settings.reminderBefore}`
+            : (isRTL ? "متوقفة" : "Off");
+          const bpSummary = settings.bpReminders
+            ? `${isRTL ? "مفعّلة" : "On"} · ${(settings.bpCustomTimes || []).join(" · ") || "—"}`
+            : (isRTL ? "متوقفة" : "Off");
+          const rows = [
+            { icon: Languages, label: t.language, value: lang === "ar" ? "العربية" : "English", onClick: () => setLanguageOpen(true) },
+            { icon: theme === "dark" ? Moon : Sun, label: t.theme, value: theme === "dark" ? t.darkMode : t.lightMode, onClick: () => setThemeOpen(true) },
+            { icon: User, label: isRTL ? "بيانات المستخدم" : "User Profile", value: `${profileFilled}/${profileTotal} ${isRTL ? "حقول" : "fields"}`, onClick: () => setProfileOpen(true) },
+            { icon: Droplet, label: isRTL ? "تتبع السكر" : "Blood Sugar Tracking", value: settings.bloodSugarTracking ? (isRTL ? "مفعّل" : "On") : (isRTL ? "متوقف" : "Off"), onClick: () => setBloodSugarOpen(true) },
+            { icon: Bell, label: t.notifications, value: notifSummary, onClick: () => setNotificationsOpen(true) },
+            { icon: Heart, label: t.bpReminders, value: bpSummary, onClick: () => setBpOpen(true) },
+          ];
+          return (
+            <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">
+              {rows.map((row) => (
+                <button key={row.label} onClick={row.onClick}
+                  className="w-full flex items-center justify-between px-5 py-4 hover:bg-muted/30 transition-colors text-start">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <row.icon className="w-5 h-5 text-primary flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="text-foreground font-medium truncate">{row.label}</p>
+                      <p className="text-xs text-muted-foreground truncate">{row.value}</p>
+                    </div>
+                  </div>
+                  <Chevron className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                </button>
+              ))}
             </div>
-          </div>
-          <button onClick={toggleTheme}
-            className={`w-12 h-7 rounded-full transition-colors relative ${theme === "dark" ? "bg-primary" : "bg-border"}`}>
-            <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${theme === "dark" ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-          </button>
-        </div>
+          );
+        })()}
 
-        {/* Account info */}
+        {/* Account info row (read-only) */}
         <div className="bg-card rounded-2xl border border-border p-5 flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
             <Mail className="w-5 h-5 text-primary" />
@@ -220,321 +242,264 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           </div>
         </div>
 
-        {/* User Profile */}
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-          <h3 className="font-bold text-foreground">{isRTL ? "بيانات المستخدم" : "User Profile"}</h3>
-
-          <div>
-            <label className="text-sm font-semibold text-foreground block mb-2">{t.userName}</label>
-            <input value={settings.userName} onChange={(e) => update({ userName: e.target.value })}
-              placeholder={isRTL ? "الاسم الكامل..." : "Full name..."}
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-foreground block mb-2">
-              {isRTL ? "تاريخ الميلاد" : "Date of Birth"}
-            </label>
-            <input
-              type="date"
-              value={settings.dateOfBirth || ""}
-              onChange={(e) => update({ dateOfBirth: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-foreground block mb-2">
-              {isRTL ? "الحساسية من أدوية" : "Drug Allergies"}
-            </label>
-            <p className="text-xs text-muted-foreground mb-2">
-              {isRTL ? "اذكر أي دواء تعاني من حساسية تجاهه (مثل: بنسلين، أسبرين)" : "List any medications you are allergic to (e.g. Penicillin, Aspirin)"}
-            </p>
-            <textarea
-              value={settings.allergies || ""}
-              onChange={(e) => update({ allergies: e.target.value })}
-              placeholder={isRTL ? "لا يوجد" : "None"}
-              rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-foreground block mb-2">
-              {isRTL ? "الأمراض المزمنة" : "Chronic Diseases"}
-            </label>
-            <p className="text-xs text-muted-foreground mb-2">
-              {isRTL ? "اختر من القائمة الأمراض التي تعاني منها" : "Select any conditions you have"}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(isRTL
-                ? ["السكري", "ضغط الدم", "الكوليسترول", "القلب", "الربو", "الغدة الدرقية", "الكلى", "الكبد", "الروماتيزم", "فقر الدم"]
-                : ["Diabetes", "Hypertension", "Cholesterol", "Heart Disease", "Asthma", "Thyroid", "Kidney", "Liver", "Rheumatism", "Anemia"]
-              ).map((disease, i) => {
-                const keys = ["diabetes", "hypertension", "cholesterol", "heart", "asthma", "thyroid", "kidney", "liver", "rheumatism", "anemia"];
-                const key = keys[i];
-                const selected = (settings.chronicDiseases || []).includes(key);
-                return (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => {
-                      const current = settings.chronicDiseases || [];
-                      const next = selected ? current.filter((k) => k !== key) : [...current, key];
-                      update({ chronicDiseases: next });
-                    }}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                      selected
-                        ? "bg-chip-active text-chip-active-foreground border-chip-active"
-                        : "bg-chip text-chip-foreground border-border hover:border-primary/50"
-                    }`}
-                  >
-                    {disease}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-foreground block mb-2">
-              {isRTL ? "فصيلة الدم" : "Blood Type"}
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bt) => {
-                const selected = settings.bloodType === bt;
-                return (
-                  <button
-                    key={bt}
-                    type="button"
-                    onClick={() => update({ bloodType: selected ? undefined : bt })}
-                    className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors ${
-                      selected
-                        ? "bg-chip-active text-chip-active-foreground border-chip-active"
-                        : "bg-chip text-chip-foreground border-border hover:border-primary/50"
-                    }`}
-                  >
-                    {bt}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div>
-            <label className="text-sm font-semibold text-foreground block mb-2">
-              {isRTL ? "أمراض أخرى (تخصيص)" : "Other Conditions (custom)"}
-            </label>
-            <p className="text-xs text-muted-foreground mb-2">
-              {isRTL ? "اكتب أي مرض خاص غير موجود في القائمة" : "Write any condition not listed above"}
-            </p>
-            <textarea
-              value={settings.customDiseases || ""}
-              onChange={(e) => update({ customDiseases: e.target.value })}
-              placeholder={isRTL ? "اكتب هنا..." : "Write here..."}
-              rows={2}
-              className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-            />
-          </div>
-
-          {/* Emergency contact (used by SOS feature) */}
-          <div className="pt-4 border-t border-border space-y-3">
-            <div>
-              <h4 className="font-bold text-foreground flex items-center gap-2">
-                🆘 {isRTL ? "جهة اتصال الطوارئ" : "Emergency Contact"}
-              </h4>
-              <p className="text-xs text-muted-foreground mt-1">
-                {isRTL
-                  ? "بيانات أقرب شخص للاتصال به وقت الطوارئ — ستُستخدم في ميزة SOS وفي حال تفويت جرعتين متتاليتين."
-                  : "Closest person to contact in an emergency — used by the SOS feature and after 2 consecutive missed doses."}
-              </p>
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-foreground block mb-2">
-                {isRTL ? "الاسم وصلة القرابة" : "Name & Relation"}
-              </label>
-              <input
-                value={settings.emergencyContact?.name || ""}
-                onChange={(e) =>
-                  update({
-                    emergencyContact: {
-                      name: e.target.value,
-                      phone: settings.emergencyContact?.phone || "",
-                      method: settings.emergencyContact?.method || "whatsapp",
-                    },
-                  })
-                }
-                placeholder={isRTL ? "مثال: أحمد - الابن" : "e.g. Ahmed - Son"}
-                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-foreground block mb-2">
-                {isRTL ? "رقم الهاتف (مع رمز الدولة)" : "Phone (with country code)"}
-              </label>
-              <input
-                type="tel"
-                dir="ltr"
-                value={settings.emergencyContact?.phone || ""}
-                onChange={(e) =>
-                  update({
-                    emergencyContact: {
-                      name: settings.emergencyContact?.name || "",
-                      phone: e.target.value,
-                      method: settings.emergencyContact?.method || "whatsapp",
-                    },
-                  })
-                }
-                placeholder="+966XXXXXXXXX"
-                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-semibold text-foreground block mb-2">
-                {isRTL ? "طريقة التواصل" : "Contact Method"}
-              </label>
-              <div className="flex gap-2">
-                {(["whatsapp", "sms"] as const).map((m) => {
-                  const selected = (settings.emergencyContact?.method || "whatsapp") === m;
-                  return (
-                    <button
-                      key={m}
-                      type="button"
-                      onClick={() =>
-                        update({
-                          emergencyContact: {
-                            name: settings.emergencyContact?.name || "",
-                            phone: settings.emergencyContact?.phone || "",
-                            method: m,
-                          },
-                        })
-                      }
-                      className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${
-                        selected
-                          ? "border-primary bg-chip-active text-chip-active-foreground"
-                          : "border-border bg-chip text-chip-foreground"
-                      }`}
-                    >
-                      {m === "whatsapp" ? "WhatsApp" : "SMS"}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Blood Sugar Tracking (optional, for diabetic users) */}
-        <div className="bg-card rounded-2xl border border-border p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1">
-              <h3 className="font-bold text-foreground">🩸 {isRTL ? "تتبع السكر" : "Blood Sugar Tracking"}</h3>
-              <p className="text-sm text-muted-foreground">
-                {isRTL ? "فعّله إذا كنت تعاني من السكر لإضافة قياس السكر في الصفحة الرئيسية" : "Enable to show blood sugar logging on the home screen"}
-              </p>
-            </div>
-            <button
-              onClick={() => update({ bloodSugarTracking: !settings.bloodSugarTracking })}
-              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarTracking ? "bg-primary" : "bg-border"}`}>
-              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarTracking ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Medication Notifications */}
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-          <h3 className="font-bold text-foreground">{t.notifications}</h3>
-
-          {/* Medication reminders toggle */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1">
-              <p className="font-semibold text-foreground">⏰ {t.medicationReminders}</p>
-              <p className="text-sm text-muted-foreground">{t.medicationRemindersDesc}</p>
-            </div>
-            <button onClick={() => update({ notifications: !settings.notifications })}
-              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.notifications ? "bg-primary" : "bg-border"}`}>
-              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-            </button>
-          </div>
-
-          {settings.notifications && (
-            <div className="pt-3 border-t border-border">
-              <label className="text-sm font-semibold text-foreground block mb-3">{t.reminderBefore}</label>
-              <ChipSelector options={reminderLabels} value={reminderMap[settings.reminderBefore] || settings.reminderBefore}
-                onChange={(v) => update({ reminderBefore: reminderKeys[reminderLabels.indexOf(v)] || v })} />
-            </div>
-          )}
-        </div>
-
-        {/* Blood Pressure Reminders */}
-        <div className="bg-card rounded-2xl border border-border p-5 space-y-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex-1">
-              <h3 className="font-bold text-foreground">❤️‍🩹 {t.bpReminders}</h3>
-              <p className="text-sm text-muted-foreground">{t.bpRemindersDesc}</p>
-            </div>
-            <button onClick={() => {
-                const enabling = !settings.bpReminders;
-                const patch: Partial<AppSettings> = { bpReminders: enabling };
-                if (enabling && (!settings.bpCustomTimes || settings.bpCustomTimes.length === 0)) {
-                  patch.bpCustomTimes = ['10:00', '21:00'];
-                }
-                update(patch);
-              }}
-              className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bpReminders ? "bg-primary" : "bg-border"}`}>
-              <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bpReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
-            </button>
-          </div>
-
-          {settings.bpReminders && (
-            <div className="space-y-3 pt-2 border-t border-border">
-              <div>
-                <p className="text-sm font-semibold text-foreground">{t.bpCustomTimes}</p>
-                <p className="text-xs text-muted-foreground">{t.bpCustomTimesDesc}</p>
-              </div>
-
-              <div className="space-y-2">
-                {(settings.bpCustomTimes || []).map((time, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <input
-                      type="time"
-                      value={time}
-                      onChange={(e) => {
-                        const next = [...(settings.bpCustomTimes || [])];
-                        next[idx] = e.target.value;
-                        update({ bpCustomTimes: next });
-                      }}
-                      className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <button
-                      onClick={() => {
-                        const next = (settings.bpCustomTimes || []).filter((_, i) => i !== idx);
-                        update({ bpCustomTimes: next });
-                      }}
-                      className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
-                      aria-label="remove"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-
-              <button
-                onClick={() => {
-                  const next = [...(settings.bpCustomTimes || []), "08:00"];
-                  update({ bpCustomTimes: next });
-                }}
-                className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm"
-              >
-                + {t.addTime}
+        {/* Language Dialog */}
+        <Dialog open={languageOpen} onOpenChange={setLanguageOpen}>
+          <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>{t.language}</DialogTitle></DialogHeader>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => { setLang("ar"); update({ language: "ar" }); setLanguageOpen(false); }}
+                className={`flex-1 py-3 rounded-xl border text-center font-semibold transition-colors ${lang === "ar" ? "border-primary bg-chip-active text-chip-active-foreground" : "border-border bg-chip text-chip-foreground"}`}>
+                العربية
+              </button>
+              <button onClick={() => { setLang("en"); update({ language: "en" }); setLanguageOpen(false); }}
+                className={`flex-1 py-3 rounded-xl border text-center font-semibold transition-colors ${lang === "en" ? "border-primary bg-chip-active text-chip-active-foreground" : "border-border bg-chip text-chip-foreground"}`}>
+                English
               </button>
             </div>
-          )}
-        </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Theme Dialog */}
+        <Dialog open={themeOpen} onOpenChange={setThemeOpen}>
+          <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>{t.theme}</DialogTitle></DialogHeader>
+            <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center gap-3">
+                {theme === "dark" ? <Moon className="w-5 h-5 text-primary" /> : <Sun className="w-5 h-5 text-primary" />}
+                <p className="text-sm text-muted-foreground">{theme === "dark" ? t.darkMode : t.lightMode}</p>
+              </div>
+              <button onClick={toggleTheme}
+                className={`w-12 h-7 rounded-full transition-colors relative ${theme === "dark" ? "bg-primary" : "bg-border"}`}>
+                <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${theme === "dark" ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Profile Dialog */}
+        <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>{isRTL ? "بيانات المستخدم" : "User Profile"}</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div>
+                <label className="text-sm font-semibold text-foreground block mb-2">{t.userName}</label>
+                <input value={settings.userName} onChange={(e) => update({ userName: e.target.value })}
+                  placeholder={isRTL ? "الاسم الكامل..." : "Full name..."}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "تاريخ الميلاد" : "Date of Birth"}</label>
+                <input type="date" value={settings.dateOfBirth || ""} onChange={(e) => update({ dateOfBirth: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "الحساسية من أدوية" : "Drug Allergies"}</label>
+                <p className="text-xs text-muted-foreground mb-2">
+                  {isRTL ? "اذكر أي دواء تعاني من حساسية تجاهه (مثل: بنسلين، أسبرين)" : "List any medications you are allergic to (e.g. Penicillin, Aspirin)"}
+                </p>
+                <textarea value={settings.allergies || ""} onChange={(e) => update({ allergies: e.target.value })}
+                  placeholder={isRTL ? "لا يوجد" : "None"} rows={2}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "الأمراض المزمنة" : "Chronic Diseases"}</label>
+                <p className="text-xs text-muted-foreground mb-2">{isRTL ? "اختر من القائمة الأمراض التي تعاني منها" : "Select any conditions you have"}</p>
+                <div className="flex flex-wrap gap-2">
+                  {(isRTL
+                    ? ["السكري", "ضغط الدم", "الكوليسترول", "القلب", "الربو", "الغدة الدرقية", "الكلى", "الكبد", "الروماتيزم", "فقر الدم"]
+                    : ["Diabetes", "Hypertension", "Cholesterol", "Heart Disease", "Asthma", "Thyroid", "Kidney", "Liver", "Rheumatism", "Anemia"]
+                  ).map((disease, i) => {
+                    const keys = ["diabetes", "hypertension", "cholesterol", "heart", "asthma", "thyroid", "kidney", "liver", "rheumatism", "anemia"];
+                    const key = keys[i];
+                    const selected = (settings.chronicDiseases || []).includes(key);
+                    return (
+                      <button key={key} type="button"
+                        onClick={() => {
+                          const current = settings.chronicDiseases || [];
+                          const next = selected ? current.filter((k) => k !== key) : [...current, key];
+                          update({ chronicDiseases: next });
+                        }}
+                        className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${selected ? "bg-chip-active text-chip-active-foreground border-chip-active" : "bg-chip text-chip-foreground border-border hover:border-primary/50"}`}>
+                        {disease}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "فصيلة الدم" : "Blood Type"}</label>
+                <div className="flex flex-wrap gap-2">
+                  {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map((bt) => {
+                    const selected = settings.bloodType === bt;
+                    return (
+                      <button key={bt} type="button"
+                        onClick={() => update({ bloodType: selected ? undefined : bt })}
+                        className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors ${selected ? "bg-chip-active text-chip-active-foreground border-chip-active" : "bg-chip text-chip-foreground border-border hover:border-primary/50"}`}>
+                        {bt}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "أمراض أخرى (تخصيص)" : "Other Conditions (custom)"}</label>
+                <p className="text-xs text-muted-foreground mb-2">{isRTL ? "اكتب أي مرض خاص غير موجود في القائمة" : "Write any condition not listed above"}</p>
+                <textarea value={settings.customDiseases || ""} onChange={(e) => update({ customDiseases: e.target.value })}
+                  placeholder={isRTL ? "اكتب هنا..." : "Write here..."} rows={2}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+              </div>
+
+              <div className="pt-4 border-t border-border space-y-3">
+                <div>
+                  <h4 className="font-bold text-foreground flex items-center gap-2">🆘 {isRTL ? "جهة اتصال الطوارئ" : "Emergency Contact"}</h4>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {isRTL ? "بيانات أقرب شخص للاتصال به وقت الطوارئ — ستُستخدم في ميزة SOS وفي حال تفويت جرعتين متتاليتين." : "Closest person to contact in an emergency — used by the SOS feature and after 2 consecutive missed doses."}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "الاسم وصلة القرابة" : "Name & Relation"}</label>
+                  <input value={settings.emergencyContact?.name || ""}
+                    onChange={(e) => update({ emergencyContact: { name: e.target.value, phone: settings.emergencyContact?.phone || "", method: settings.emergencyContact?.method || "whatsapp" } })}
+                    placeholder={isRTL ? "مثال: أحمد - الابن" : "e.g. Ahmed - Son"}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "رقم الهاتف (مع رمز الدولة)" : "Phone (with country code)"}</label>
+                  <input type="tel" dir="ltr" value={settings.emergencyContact?.phone || ""}
+                    onChange={(e) => update({ emergencyContact: { name: settings.emergencyContact?.name || "", phone: e.target.value, method: settings.emergencyContact?.method || "whatsapp" } })}
+                    placeholder="+966XXXXXXXXX"
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+
+                <div>
+                  <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "طريقة التواصل" : "Contact Method"}</label>
+                  <div className="flex gap-2">
+                    {(["whatsapp", "sms"] as const).map((m) => {
+                      const selected = (settings.emergencyContact?.method || "whatsapp") === m;
+                      return (
+                        <button key={m} type="button"
+                          onClick={() => update({ emergencyContact: { name: settings.emergencyContact?.name || "", phone: settings.emergencyContact?.phone || "", method: m } })}
+                          className={`flex-1 py-2.5 rounded-xl border text-sm font-semibold transition-colors ${selected ? "border-primary bg-chip-active text-chip-active-foreground" : "border-border bg-chip text-chip-foreground"}`}>
+                          {m === "whatsapp" ? "WhatsApp" : "SMS"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Blood Sugar Dialog */}
+        <Dialog open={bloodSugarOpen} onOpenChange={setBloodSugarOpen}>
+          <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>🩸 {isRTL ? "تتبع السكر" : "Blood Sugar Tracking"}</DialogTitle></DialogHeader>
+            <div className="flex items-center justify-between gap-3 pt-2">
+              <p className="text-sm text-muted-foreground flex-1">
+                {isRTL ? "فعّله إذا كنت تعاني من السكر لإضافة قياس السكر في الصفحة الرئيسية" : "Enable to show blood sugar logging on the home screen"}
+              </p>
+              <button onClick={() => update({ bloodSugarTracking: !settings.bloodSugarTracking })}
+                className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bloodSugarTracking ? "bg-primary" : "bg-border"}`}>
+                <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bloodSugarTracking ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+              </button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Notifications Dialog */}
+        <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+          <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>{t.notifications}</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">⏰ {t.medicationReminders}</p>
+                  <p className="text-sm text-muted-foreground">{t.medicationRemindersDesc}</p>
+                </div>
+                <button onClick={() => update({ notifications: !settings.notifications })}
+                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.notifications ? "bg-primary" : "bg-border"}`}>
+                  <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.notifications ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+                </button>
+              </div>
+
+              {settings.notifications && (
+                <div className="pt-3 border-t border-border">
+                  <label className="text-sm font-semibold text-foreground block mb-3">{t.reminderBefore}</label>
+                  <ChipSelector options={reminderLabels} value={reminderMap[settings.reminderBefore] || settings.reminderBefore}
+                    onChange={(v) => update({ reminderBefore: reminderKeys[reminderLabels.indexOf(v)] || v })} />
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Blood Pressure Dialog */}
+        <Dialog open={bpOpen} onOpenChange={setBpOpen}>
+          <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+            <DialogHeader><DialogTitle>❤️‍🩹 {t.bpReminders}</DialogTitle></DialogHeader>
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm text-muted-foreground flex-1">{t.bpRemindersDesc}</p>
+                <button onClick={() => {
+                    const enabling = !settings.bpReminders;
+                    const patch: Partial<AppSettings> = { bpReminders: enabling };
+                    if (enabling && (!settings.bpCustomTimes || settings.bpCustomTimes.length === 0)) {
+                      patch.bpCustomTimes = ['10:00', '21:00'];
+                    }
+                    update(patch);
+                  }}
+                  className={`w-12 h-7 rounded-full transition-colors relative flex-shrink-0 ${settings.bpReminders ? "bg-primary" : "bg-border"}`}>
+                  <span className={`absolute top-0.5 w-6 h-6 rounded-full bg-card shadow transition-all ${settings.bpReminders ? "ltr:right-0.5 rtl:left-0.5" : "ltr:left-0.5 rtl:right-0.5"}`} />
+                </button>
+              </div>
+
+              {settings.bpReminders && (
+                <div className="space-y-3 pt-3 border-t border-border">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{t.bpCustomTimes}</p>
+                    <p className="text-xs text-muted-foreground">{t.bpCustomTimesDesc}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    {(settings.bpCustomTimes || []).map((time, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <input type="time" value={time}
+                          onChange={(e) => {
+                            const next = [...(settings.bpCustomTimes || [])];
+                            next[idx] = e.target.value;
+                            update({ bpCustomTimes: next });
+                          }}
+                          className="flex-1 px-3 py-2 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                        <button onClick={() => {
+                            const next = (settings.bpCustomTimes || []).filter((_, i) => i !== idx);
+                            update({ bpCustomTimes: next });
+                          }}
+                          className="w-10 h-10 rounded-xl bg-destructive/10 text-destructive flex items-center justify-center"
+                          aria-label="remove">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button onClick={() => { const next = [...(settings.bpCustomTimes || []), "08:00"]; update({ bpCustomTimes: next }); }}
+                    className="w-full py-2.5 rounded-xl border border-dashed border-primary/50 text-primary font-semibold text-sm">
+                    + {t.addTime}
+                  </button>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
 
 
 
