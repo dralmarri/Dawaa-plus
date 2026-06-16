@@ -226,11 +226,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           const bpSummary = settings.bpReminders
             ? `${isRTL ? "مفعّلة" : "On"} · ${(settings.bpCustomTimes || []).join(" · ") || "—"}`
             : (isRTL ? "متوقفة" : "Off");
+          const bsSummary = settings.bloodSugarReminders
+            ? `${isRTL ? "مفعّلة" : "On"} · ${(settings.bloodSugarCustomTimes || []).join(" · ") || "—"}`
+            : (isRTL ? "متوقفة" : "Off");
           const rows = [
             { icon: Languages, label: t.language, value: lang === "ar" ? "العربية" : "English", onClick: () => setLanguageOpen(true) },
             { icon: theme === "dark" ? Moon : Sun, label: t.theme, value: theme === "dark" ? t.darkMode : t.lightMode, onClick: () => setThemeOpen(true) },
             { icon: User, label: isRTL ? "بيانات المستخدم" : "User Profile", value: `${profileFilled}/${profileTotal} ${isRTL ? "حقول" : "fields"}`, onClick: () => setProfileOpen(true) },
-            { icon: Droplet, label: isRTL ? "تتبع السكر" : "Blood Sugar Tracking", value: settings.bloodSugarTracking ? (isRTL ? "مفعّل" : "On") : (isRTL ? "متوقف" : "Off"), onClick: () => setBloodSugarOpen(true) },
+            { icon: Droplet, label: t.bloodSugarReminders, value: bsSummary, onClick: () => setBloodSugarOpen(true) },
             { icon: Bell, label: t.notifications, value: notifSummary, onClick: () => setNotificationsOpen(true) },
             { icon: Heart, label: t.bpReminders, value: bpSummary, onClick: () => setBpOpen(true) },
           ];
