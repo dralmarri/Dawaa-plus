@@ -262,15 +262,6 @@ const HomePage = () => {
             <span className="text-sm font-semibold text-foreground">{link.label}</span>
           </button>
         ))}
-        <button
-          onClick={() => navigate("/reports")}
-          className="col-span-2 bg-card rounded-2xl p-5 flex flex-row items-center justify-center gap-3 border border-border hover:border-primary/30 transition-colors"
-        >
-          <FileText className="w-7 h-7 text-primary" />
-          <span className="text-sm font-semibold text-foreground">
-            {isRTL ? "التقارير الصحية" : "Health Reports"}
-          </span>
-        </button>
       </div>
 
       <button
