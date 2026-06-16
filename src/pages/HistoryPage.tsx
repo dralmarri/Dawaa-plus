@@ -115,6 +115,13 @@ const HistoryPage = () => {
               <div className="text-sm text-muted-foreground mt-1">{isRTL ? "معلقة" : "Pending"}</div>
             </div>
           </div>
+          <button
+            onClick={() => setResetConfirm(true)}
+            className="mt-3 w-full flex items-center justify-center gap-2 rounded-2xl border border-destructive text-destructive py-3 font-semibold text-sm hover:bg-destructive/10 transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            {t.resetDoseCounter}
+          </button>
         </div>
       )}
 
