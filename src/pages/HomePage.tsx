@@ -90,9 +90,11 @@ const HomePage = () => {
     setTodayDoses(generateTodayDoses());
   };
 
+  const bloodSugarEnabled = store.getSettings().bloodSugarTracking;
   const quickLinks = [
     { label: t.medications, icon: Pill, path: "/medications", color: "text-primary" },
     { label: t.bloodPressure, icon: Heart, path: "/blood-pressure", color: "text-heart" },
+    ...(bloodSugarEnabled ? [{ label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "text-warning" }] : []),
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "text-warning" },
     { label: t.labTests, icon: FlaskConical, path: "/lab-tests", color: "text-primary" },
   ];
