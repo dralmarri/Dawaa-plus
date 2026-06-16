@@ -107,13 +107,8 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "إخلاء المسؤولية الطبية",
-          body: (
-            <p>
-              تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
-              الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
-            </p>
-          ),
+          h: t.clinicalDisclaimer,
+          body: <p>{t.disclaimerText}</p>,
         },
         {
           h: "التواصل",
@@ -237,14 +232,8 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "Medical disclaimer",
-          body: (
-            <p>
-              Dawaa+ is an aid for organizing medications and measurements only and is not a substitute for
-              consultation with your doctor or pharmacist. Always consult a qualified professional before making
-              any decision about your health or treatment.
-            </p>
-          ),
+          h: t.clinicalDisclaimer,
+          body: <p>{t.disclaimerText}</p>,
         },
         {
           h: "Contact",
