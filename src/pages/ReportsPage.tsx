@@ -20,6 +20,7 @@ const ReportsPage = () => {
   const appointments = store.getAppointments?.() || [];
   const labs = store.getLabTests?.() || [];
   const settings = store.getSettings();
+  const bsReadings = store.getBloodSugarReadings?.() || [];
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
