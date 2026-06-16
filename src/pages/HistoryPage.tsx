@@ -27,6 +27,13 @@ const HistoryPage = () => {
 
   const refresh = () => setRecords([...store.getDoseRecords()]);
 
+  const handleReset = async () => {
+    await store.resetDoseRecords();
+    refresh();
+    setResetConfirm(false);
+    toast.success(t.resetDoseCounterSuccess);
+  };
+
 
   // Group records by date
   const grouped = useMemo(() => {
