@@ -163,6 +163,7 @@ const AppRoutes = () => {
         <Route path="/history" element={<ProtectedRoute guestMode={guestMode}><HistoryPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute guestMode={guestMode}><SettingsPage onSwitchToAuth={() => setGuestMode(false)} /></ProtectedRoute>} />
         <Route path="/blood-pressure" element={<ProtectedRoute guestMode={guestMode}><BloodPressurePage /></ProtectedRoute>} />
+        <Route path="/blood-sugar" element={<ProtectedRoute guestMode={guestMode}><BloodSugarPage /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute guestMode={guestMode}><AppointmentsPage /></ProtectedRoute>} />
         <Route path="/lab-tests" element={<ProtectedRoute guestMode={guestMode}><LabTestsPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute guestMode={guestMode}><ReportsPage /></ProtectedRoute>} />
