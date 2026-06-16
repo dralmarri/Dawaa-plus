@@ -158,6 +158,10 @@ export const cloudStore = {
     await supabase.from("dose_records").delete().eq("user_id", uid).eq("medication_id", medicationId).eq("date", date);
   },
 
+  deleteAllDoseRecords: async (uid: string) => {
+    await supabase.from("dose_records").delete().eq("user_id", uid);
+  },
+
   // Settings
   getSettings: async (uid: string): Promise<AppSettings | null> => {
     const { data } = await supabase.from("user_settings").select("*").eq("user_id", uid).single();

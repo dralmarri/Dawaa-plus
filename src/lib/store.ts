@@ -171,6 +171,12 @@ export const store = {
     if (currentUid) await cloudStore.deleteDoseRecordsForMedDate(currentUid, medicationId, date);
   },
 
+  /** Clear all dose records (reset counters) */
+  clearDoseRecords: async () => {
+    await setCache(KEYS.doseRecords, []);
+    if (currentUid) await cloudStore.deleteAllDoseRecords(currentUid);
+  },
+
   getSettings: (): AppSettings =>
     getCache(KEYS.settings, defaultSettings),
 
