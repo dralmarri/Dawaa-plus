@@ -35,7 +35,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [profileOpen, setProfileOpen] = useState(false);
   
   const [notificationsOpen, setNotificationsOpen] = useState(false);
-  const [bpOpen, setBpOpen] = useState(false);
+  
 
   // Local draft for the profile dialog; saved only when the user presses Save
   const [draftProfile, setDraftProfile] = useState<AppSettings>(settings);
