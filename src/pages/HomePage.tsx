@@ -305,9 +305,11 @@ const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: any; isRTL: boole
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
 
+  const bsEnabled = store.getSettings().bloodSugarTracking;
   const items = [
     { label: t.addMedication, icon: Pill, path: "/medications/add", color: "bg-primary" },
     { label: t.bloodPressure, icon: Heart, path: "/blood-pressure", color: "bg-heart" },
+    ...(bsEnabled ? [{ label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "bg-warning" }] : []),
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "bg-warning" },
     { label: t.labTests, icon: FlaskConical, path: "/lab-tests", color: "bg-primary" },
   ];
