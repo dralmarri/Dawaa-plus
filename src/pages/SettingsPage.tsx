@@ -37,6 +37,32 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [bpOpen, setBpOpen] = useState(false);
 
+  // Local draft for the profile dialog; saved only when the user presses Save
+  const [draftProfile, setDraftProfile] = useState<AppSettings>(settings);
+  useEffect(() => {
+    if (profileOpen) setDraftProfile(settings);
+  }, [profileOpen, settings]);
+
+  const diseaseOptions = [
+    { key: "diabetes", ar: "السكري", en: "Diabetes" },
+    { key: "hypertension", ar: "ضغط الدم", en: "Hypertension" },
+    { key: "cholesterol", ar: "الكوليسترول", en: "Cholesterol" },
+    { key: "heart", ar: "القلب", en: "Heart Disease" },
+    { key: "asthma", ar: "الربو", en: "Asthma" },
+    { key: "thyroid", ar: "الغدة الدرقية", en: "Thyroid" },
+    { key: "kidney", ar: "الكلى", en: "Kidney" },
+    { key: "liver", ar: "الكبد", en: "Liver" },
+    { key: "rheumatism", ar: "الروماتيزم", en: "Rheumatism" },
+    { key: "anemia", ar: "فقر الدم", en: "Anemia" },
+  ];
+  const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+
+  const saveProfile = () => {
+    update(draftProfile);
+    setProfileOpen(false);
+    toast.success(isRTL ? "تم حفظ بيانات المستخدم" : "Profile saved");
+  };
+
   const SHARE_URL = "https://dawaaplus.net";
   // TODO: replace the placeholder ID below once the app is live on the App Store.
   const APP_STORE_URL = "https://apps.apple.com/app/dawaa-plus/id0000000000";
