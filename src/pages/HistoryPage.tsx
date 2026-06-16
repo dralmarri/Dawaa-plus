@@ -1,8 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Check, X, Clock, ArrowLeft, Pill } from "lucide-react";
+import { CalendarDays, Check, X, Clock, ArrowLeft, Pill, RotateCcw } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { store } from "@/lib/store";
-import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
+import { generateTodayDoses, markDoseTaken, markDoseMissed } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
 import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -19,8 +23,16 @@ const HistoryPage = () => {
   });
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
   const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
+  const [resetConfirm, setResetConfirm] = useState(false);
 
   const refresh = () => setRecords([...store.getDoseRecords()]);
+
+  const handleReset = async () => {
+    await store.resetDoseRecords();
+    refresh();
+    setResetConfirm(false);
+    toast.success(t.resetDoseCounterSuccess);
+  };
 
 
   // Group records by date
@@ -103,6 +115,13 @@ const HistoryPage = () => {
               <div className="text-sm text-muted-foreground mt-1">{isRTL ? "معلقة" : "Pending"}</div>
             </div>
           </div>
+          <button
+            onClick={() => setResetConfirm(true)}
+            className="mt-3 w-full flex items-center justify-center gap-2 rounded-2xl border border-destructive text-destructive py-3 font-semibold text-sm hover:bg-destructive/10 transition-colors"
+          >
+            <RotateCcw className="w-4 h-4" />
+            {t.resetDoseCounter}
+          </button>
         </div>
       )}
 
@@ -197,6 +216,21 @@ const HistoryPage = () => {
           ))}
         </div>
       )}
+
+      <AlertDialog open={resetConfirm} onOpenChange={setResetConfirm}>
+        <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.resetDoseCounterConfirmTitle}</AlertDialogTitle>
+            <AlertDialogDescription>{t.resetDoseCounterConfirmBody}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setResetConfirm(false)}>{t.cancel}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleReset} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {t.resetDoseCounter}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
