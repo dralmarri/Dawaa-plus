@@ -49,6 +49,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         case "add-medication": return "/medications/add"
         case "blood-pressure": return "/blood-pressure"
         case "blood-sugar":    return "/blood-sugar"
+        case "appointment":    return "/appointments"
         case "today-doses":    return "/"
         default:               return "/"
         }
