@@ -119,6 +119,15 @@ struct DawaaPlusShortcuts: AppShortcutsProvider {
             shortTitle: "Today's Doses",
             systemImageName: "clock.fill"
         )
+        AppShortcut(
+            intent: AppointmentIntent(),
+            phrases: [
+                "Medical appointment in \(.applicationName)",
+                "موعد طبي في \(.applicationName)"
+            ],
+            shortTitle: "Medical Appointment",
+            systemImageName: "calendar"
+        )
     }
 }
 #endif
