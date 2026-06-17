@@ -101,6 +101,16 @@
 			<key>UIApplicationShortcutItemIconType</key>
 			<string>UIApplicationShortcutIconTypeTime</string>
 		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>appointment</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>موعد طبي</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Medical Appointment</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeDate</string>
+		</dict>
 	</array>
 </dict>
 </plist>
