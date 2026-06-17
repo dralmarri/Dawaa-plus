@@ -74,6 +74,18 @@ const AppRoutes = () => {
     initStore();
   }, []);
 
+  // Listen for iOS Home-Screen Quick Actions / Siri App Intents dispatched by AppDelegate.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const route = (e as CustomEvent<string>).detail;
+      if (typeof route === "string" && route.startsWith("/")) {
+        navigate(route);
+      }
+    };
+    window.addEventListener("app-shortcut", handler as EventListener);
+    return () => window.removeEventListener("app-shortcut", handler as EventListener);
+  }, [navigate]);
+
   useEffect(() => {
     if (user) {
       setStoreUid(user.id);
