@@ -254,6 +254,25 @@ const ReportsPage = () => {
           </tr>`).join("")}</tbody>
         </table>`;
 
+    const bpTable = bp30.length === 0
+      ? `<p style="color:#6b7280;font-size:13px;">${isRTL ? "لا توجد قراءات ضغط في آخر 30 يوماً" : "No blood pressure readings in the last 30 days"}</p>`
+      : `<table style="width:100%;border-collapse:collapse;margin-top:12px;">
+          <thead><tr>
+            ${th(isRTL ? "التاريخ" : "Date")}
+            ${th(isRTL ? "الوقت" : "Time")}
+            ${th(isRTL ? "الانقباضي" : "Systolic")}
+            ${th(isRTL ? "الانبساطي" : "Diastolic")}
+            ${th(isRTL ? "النبض" : "Pulse")}
+          </tr></thead>
+          <tbody>${bp30.map((r: any) => `<tr>
+            ${td(r.date)}
+            ${td(r.time)}
+            ${td(`<strong>${r.systolic}</strong>`)}
+            ${td(`<strong>${r.diastolic}</strong>`)}
+            ${td(r.pulse ?? "—")}
+          </tr>`).join("")}</tbody>
+        </table>`;
+
     return `
       <div dir="${dir}" style="width:794px;padding:32px;background:#fff;font-family:'Segoe UI','Tahoma','Arial',sans-serif;color:#111827;">
         <!-- Header -->
