@@ -66,6 +66,21 @@ struct TodayDosesIntent: AppIntent {
 }
 
 @available(iOS 16.0, *)
+struct AppointmentIntent: AppIntent {
+    static var title: LocalizedStringResource = "Medical Appointment"
+    static var description = IntentDescription("Open the Appointments screen in Dawaa+")
+    static var openAppWhenRun: Bool = true
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        AppDelegate.pendingRoute = "/appointments"
+        AppDelegate.dispatchPendingRoute(window: UIApplication.shared.connectedScenes
+            .compactMap { ($0 as? UIWindowScene)?.windows.first }.first)
+        return .result()
+    }
+}
+
+@available(iOS 16.0, *)
 struct DawaaPlusShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
