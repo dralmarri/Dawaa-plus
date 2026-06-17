@@ -296,6 +296,7 @@ const ReportsPage = () => {
 
         ${sectionTitle(isRTL ? "🩺 ضغط الدم — آخر 30 يوماً" : "🩺 Blood Pressure — Last 30 Days")}
         <div style="text-align:center;">${renderBPChart()}</div>
+        ${bpTable}
 
         ${bsReadings.length > 0 ? `${sectionTitle(isRTL ? "🩸 سكر الدم — آخر 30 يوماً" : "🩸 Blood Sugar — Last 30 Days")}${bsTable}` : ""}
 
