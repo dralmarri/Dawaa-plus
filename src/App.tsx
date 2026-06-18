@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import AuthPage from "@/pages/AuthPage";
+import LanguageSelectionPage from "@/pages/LanguageSelectionPage";
 import HomePage from "@/pages/HomePage";
 import MedicationsPage from "@/pages/MedicationsPage";
 import AddMedicationPage from "@/pages/AddMedicationPage";
