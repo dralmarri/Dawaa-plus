@@ -15,7 +15,7 @@ const PageHeader = ({ title, showBack, onAdd }: PageHeaderProps) => {
   const { isRTL } = useLanguage();
 
   return (
-    <div className="flex items-center justify-between px-4 pt-4 pb-2">
+    <div className="sticky top-0 z-40 bg-background safe-top flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/50 shadow-sm">
       <div className="flex items-center gap-3">
         {showBack && (
           <button onClick={() => navigate(-1)} className="text-foreground">

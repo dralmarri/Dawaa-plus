@@ -20,7 +20,7 @@ const BottomNav = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t-2 border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-bottom print-hide">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t-2 border-border shadow-[0_-4px_12px_rgba(0,0,0,0.08)] safe-bottom print-hide pb-2">
       <div className="max-w-lg mx-auto flex items-center justify-around h-[68px]">
         {tabs.map((tab) => {
           const active = isActive(tab.path);
