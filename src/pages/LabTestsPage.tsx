@@ -163,9 +163,11 @@ const LabTestsPage = () => {
   const [listSearch, setListSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
+  const getStoredLabResults = (): Record<string, AnalyzedResult[]> => {
     try { return JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}"); } catch { return {}; }
-  })();
+  };
+
+  const allStoredResults: Record<string, AnalyzedResult[]> = getStoredLabResults();
 
   const totalAbnormal = Object.values(allStoredResults).reduce(
     (sum, arr) => sum + (Array.isArray(arr) ? arr.filter((r) => r.status !== "normal").length : 0),
@@ -349,7 +351,7 @@ const LabTestsPage = () => {
     try {
       await store.saveLabTest(test);
       if (allResults.length > 0) {
-        const stored = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+        const stored = getStoredLabResults();
         stored[testId] = allResults;
         localStorage.setItem("dawaa_lab_results", JSON.stringify(stored));
         setSavedResults((prev) => ({ ...prev, [testId]: allResults }));
@@ -362,7 +364,7 @@ const LabTestsPage = () => {
         try {
           await store.saveLabTest(test);
           if (allResults.length > 0) {
-            const stored = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+            const stored = getStoredLabResults();
             stored[testId] = allResults;
             localStorage.setItem("dawaa_lab_results", JSON.stringify(stored));
             setSavedResults((prev) => ({ ...prev, [testId]: allResults }));
@@ -397,7 +399,7 @@ const LabTestsPage = () => {
     setAttachedImage(test.fileUrl || null);
     setAttachedImageName("");
     // Load existing results into manual entries
-    const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+    const allResults = getStoredLabResults();
     const testResults = allResults[test.id] as AnalyzedResult[] | undefined;
     if (testResults && testResults.length > 0) {
       setManualEntries(testResults.map(r => ({
@@ -415,7 +417,7 @@ const LabTestsPage = () => {
   const confirmDelete = async () => {
     if (!deleteId) return;
     await store.deleteLabTest(deleteId);
-    const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+    const allResults = getStoredLabResults();
     delete allResults[deleteId];
     localStorage.setItem("dawaa_lab_results", JSON.stringify(allResults));
     setTests(store.getLabTests());
@@ -427,7 +429,7 @@ const LabTestsPage = () => {
       setShowResults(showResults === testId ? null : testId);
       return;
     }
-    const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+    const allResults = getStoredLabResults();
     if (allResults[testId]) {
       setSavedResults((prev) => ({ ...prev, [testId]: allResults[testId] }));
     }
@@ -435,7 +437,7 @@ const LabTestsPage = () => {
   };
 
   const handlePrint = async (test: LabTest) => {
-    const results = savedResults[test.id] || JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}")[test.id];
+    const results = savedResults[test.id] || getStoredLabResults()[test.id];
     const dateStr = format(new Date(test.date), "yyyy/MM/dd - hh:mm a");
     const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:");
 

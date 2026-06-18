@@ -16,11 +16,17 @@ function toMedRow(uid: string, m: Medication) {
   };
 }
 
+function safeParse<T>(val: unknown, fallback: T): T {
+  if (!val) return fallback;
+  if (typeof val !== "string") return val as T;
+  try { return JSON.parse(val) as T; } catch { return fallback; }
+}
+
 function fromMedRow(r: any): Medication {
   return {
     id: r.id, name: r.name, form: r.form, dosage: Number(r.dosage),
     concentration: r.concentration || undefined, frequency: r.frequency,
-    times: typeof r.times === "string" ? JSON.parse(r.times) : r.times,
+    times: safeParse<string[]>(r.times, []),
     startDate: r.start_date || undefined, isChronic: r.is_chronic,
     durationDays: r.duration_days || undefined, mealRelation: r.meal_relation,
     notes: r.notes || "", stock: Number(r.stock),
@@ -173,21 +179,19 @@ export const cloudStore = {
       dateOfBirth: d.date_of_birth || undefined,
       bloodType: d.blood_type || undefined,
       allergies: d.allergies || undefined,
-      chronicDiseases: d.chronic_diseases ? JSON.parse(d.chronic_diseases) : undefined,
+      chronicDiseases: safeParse<string[]>(d.chronic_diseases, []) || undefined,
       customDiseases: d.custom_diseases || undefined,
       notifications: d.notifications,
       voiceNotifications: d.voice_notifications,
       reminderBefore: d.reminder_before,
       escalationOnMissed: d.escalation_on_missed,
-      emergencyContact: d.emergency_contact
-        ? (typeof d.emergency_contact === "string" ? JSON.parse(d.emergency_contact) : d.emergency_contact)
-        : undefined,
+      emergencyContact: safeParse<any>(d.emergency_contact, undefined),
       dailySummary: d.daily_summary,
       dailySummaryTime: d.daily_summary_time,
       bpReminders: d.bp_reminders ?? false,
-      bpCustomTimes: d.bp_custom_times ? JSON.parse(d.bp_custom_times) : undefined,
+      bpCustomTimes: safeParse<string[]>(d.bp_custom_times, []) || undefined,
       bloodSugarReminders: d.blood_sugar_reminders ?? false,
-      bloodSugarCustomTimes: d.blood_sugar_custom_times ? JSON.parse(d.blood_sugar_custom_times) : undefined,
+      bloodSugarCustomTimes: safeParse<string[]>(d.blood_sugar_custom_times, []) || undefined,
     };
   },
   saveSettings: async (uid: string, s: AppSettings) => {

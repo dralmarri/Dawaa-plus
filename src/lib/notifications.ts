@@ -188,7 +188,7 @@ export async function scheduleMedicationNotifications() {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const takenToday = new Set<string>();
   try {
-    const records = store.getDoseRecords?.() || [];
+    const records = store.getDoseRecords() || [];
     records.forEach((r: any) => {
       if (r.date === todayStr && r.status === 'taken') {
         takenToday.add(`${r.medicationId}|${r.scheduledTime}`);
@@ -405,7 +405,7 @@ export async function scheduleMedicationNotifications() {
   }
 
   // === Appointment Reminders (1 day before + 2 hours before) ===
-  const appointments: Appointment[] = store.getAppointments?.() || [];
+  const appointments: Appointment[] = store.getAppointments() || [];
   const upcomingAppts = appointments.filter(a => !a.completed);
 
   upcomingAppts.forEach((appt) => {
