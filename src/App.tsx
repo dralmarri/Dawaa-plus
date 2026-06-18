@@ -66,6 +66,9 @@ const AppRoutes = () => {
   const navigate = useNavigate();
   const [guestMode, setGuestMode] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [needsLangChoice, setNeedsLangChoice] = useState(
+    () => !localStorage.getItem("dawaa_lang_selected")
+  );
   const pendingUserId = useRef<string | null>(null);
   const { reschedule } = useNotifications();
 
