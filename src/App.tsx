@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import AuthPage from "@/pages/AuthPage";
+import LanguageSelectionPage from "@/pages/LanguageSelectionPage";
 import HomePage from "@/pages/HomePage";
 import MedicationsPage from "@/pages/MedicationsPage";
 import AddMedicationPage from "@/pages/AddMedicationPage";
@@ -65,6 +66,9 @@ const AppRoutes = () => {
   const navigate = useNavigate();
   const [guestMode, setGuestMode] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [needsLangChoice, setNeedsLangChoice] = useState(
+    () => !localStorage.getItem("dawaa_lang_selected")
+  );
   const pendingUserId = useRef<string | null>(null);
   const { reschedule } = useNotifications();
 
@@ -148,6 +152,12 @@ const AppRoutes = () => {
       </div>
     );
   }
+
+  if (needsLangChoice) {
+    return <LanguageSelectionPage onSelect={() => setNeedsLangChoice(false)} />;
+  }
+
+
 
   return (
     <>
