@@ -153,6 +153,12 @@ const AppRoutes = () => {
     );
   }
 
+  if (needsLangChoice) {
+    return <LanguageSelectionPage onSelect={() => setNeedsLangChoice(false)} />;
+  }
+
+
+
   return (
     <>
     <AlertDialog open={importDialogOpen} onOpenChange={(open) => { if (!open) handleImportCancel(); }}>
