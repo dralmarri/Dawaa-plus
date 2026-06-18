@@ -68,7 +68,7 @@ const HistoryPage = () => {
 
   return (
     <div className="pb-28">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+      <div className="sticky top-0 z-40 bg-background safe-top flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/50 shadow-sm">
         <button onClick={() => navigate(-1)} className="text-foreground" aria-label="back">
           <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
         </button>
