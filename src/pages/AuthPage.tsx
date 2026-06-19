@@ -28,12 +28,12 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
     if (!email.trim()) return;
     setLocalError(null);
     if (mode === "register") {
-      if (password.length < 6) {
-        setLocalError("كلمة المرور يجب أن تكون 6 أحرف على الأقل");
+      if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+        setLocalError("Password must be at least 8 characters, include one uppercase letter and one number");
         return;
       }
       if (password !== confirmPassword) {
-        setLocalError("كلمتا المرور غير متطابقتين");
+        setLocalError("Passwords do not match");
         return;
       }
     }
@@ -130,7 +130,7 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={mode === "register" ? "6 أحرف على الأقل" : "••••••••"}
+                placeholder="••••••••"
                 className="w-full px-4 py-3 rounded-xl bg-accent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 style={{
                   [isRTL ? "paddingRight" : "paddingLeft"]: "36px",
@@ -148,6 +148,19 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
+            {mode === "register" && (
+              <div className="mt-2 space-y-1">
+                <p className={`text-xs flex items-center gap-1.5 ${password.length >= 8 ? "text-green-600" : "text-muted-foreground"}`}>
+                  {password.length >= 8 ? "✓" : "•"} 8 characters minimum
+                </p>
+                <p className={`text-xs flex items-center gap-1.5 ${/[A-Z]/.test(password) ? "text-green-600" : "text-muted-foreground"}`}>
+                  {/[A-Z]/.test(password) ? "✓" : "•"} One uppercase letter (A-Z)
+                </p>
+                <p className={`text-xs flex items-center gap-1.5 ${/[0-9]/.test(password) ? "text-green-600" : "text-muted-foreground"}`}>
+                  {/[0-9]/.test(password) ? "✓" : "•"} One number (0-9)
+                </p>
+              </div>
+            )}
           </div>
         )}
 

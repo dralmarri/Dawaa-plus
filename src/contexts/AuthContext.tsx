@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { error: err } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: "https://dawaaplus.net/" },
+        options: { emailRedirectTo: "https://dawaaplus.net/confirm" },
       });
       if (err) {
         const msg = getErrorMessage(err.message);

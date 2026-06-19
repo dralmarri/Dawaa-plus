@@ -31,6 +31,7 @@ import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import ContactUsPage from "@/pages/ContactUsPage";
 import ReportsPage from "@/pages/ReportsPage";
+import EmailConfirmedPage from "@/pages/EmailConfirmedPage";
 
 import NotFound from "@/pages/NotFound";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -194,6 +195,7 @@ const AppRoutes = () => {
         <Route path="/terms" element={<TermsOfUsePage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/confirm" element={<EmailConfirmedPage />} />
         <Route path="/contact" element={<ContactUsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
