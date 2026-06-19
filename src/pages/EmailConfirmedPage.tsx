@@ -6,13 +6,33 @@ const EmailConfirmedPage = () => {
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setStatus(session ? "success" : "error");
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) setStatus("success");
-    });
-    return () => subscription.unsubscribe();
+    const tryOpenApp = () => {
+      window.location.href = "dawaaplus://";
+    };
+
+    const confirm = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setStatus("success");
+        tryOpenApp();
+        return;
+      }
+      // Listen for auth state change (Supabase processes the hash token)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+        if (s) {
+          setStatus("success");
+          tryOpenApp();
+          subscription.unsubscribe();
+        }
+      });
+      // Timeout fallback
+      setTimeout(() => {
+        setStatus((prev) => prev === "loading" ? "error" : prev);
+        subscription.unsubscribe();
+      }, 5000);
+    };
+
+    confirm();
   }, []);
 
   return (
@@ -25,7 +45,7 @@ const EmailConfirmedPage = () => {
       {status === "loading" && (
         <div className="mt-6">
           <div className="w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Verifying your email...</p>
+          <p className="text-muted-foreground">Confirming your email...</p>
         </div>
       )}
 
@@ -33,7 +53,7 @@ const EmailConfirmedPage = () => {
         <div className="mt-6 space-y-4 max-w-sm">
           <div className="text-5xl">✅</div>
           <h2 className="text-xl font-bold text-foreground">Email Confirmed!</h2>
-          <p className="text-muted-foreground">Your account is now active. You can return to the app and sign in.</p>
+          <p className="text-muted-foreground">Opening the app...</p>
           <a
             href="dawaaplus://"
             className="block w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-center"
@@ -41,7 +61,7 @@ const EmailConfirmedPage = () => {
             Open Dawaa+ App
           </a>
           <p className="text-xs text-muted-foreground">
-            If the button above doesn't work, open the Dawaa+ app manually and sign in with your email and password.
+            If the app doesn't open automatically, tap the button above.
           </p>
         </div>
       )}
@@ -50,7 +70,7 @@ const EmailConfirmedPage = () => {
         <div className="mt-6 space-y-4 max-w-sm">
           <div className="text-5xl">⚠️</div>
           <h2 className="text-xl font-bold text-foreground">Link Expired</h2>
-          <p className="text-muted-foreground">This confirmation link has expired or already been used. Open the app and try signing in.</p>
+          <p className="text-muted-foreground">This link has expired or already been used. Open the app and sign in.</p>
           <a
             href="dawaaplus://"
             className="block w-full py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-center"
