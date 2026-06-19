@@ -44,8 +44,12 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
         await signIn(email.trim(), password);
         onSignedIn?.();
       } else if (mode === "register") {
-        await signUp(email.trim(), password);
-        setSignupSent(true);
+        const { confirmationRequired } = await signUp(email.trim(), password);
+        if (confirmationRequired) {
+          setSignupSent(true);
+        } else {
+          onSignedIn?.();
+        }
       } else {
         await resetPassword(email.trim());
         setResetSent(true);
