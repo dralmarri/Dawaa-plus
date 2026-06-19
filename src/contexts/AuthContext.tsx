@@ -59,58 +59,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signIn = async (email: string, password: string) => {
-    try {
-      setError(null);
-      const { error: err } = await supabase.auth.signInWithPassword({ email, password });
-      if (err) {
-        const msg = getErrorMessage(err.message);
-        setError(msg);
-        throw new Error(msg);
-      }
-    } catch (e: any) {
-      if (!error) {
-        const msg = getErrorMessage(e.message);
-        setError(msg);
-      }
-      throw e;
+    setError(null);
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    if (err) {
+      const msg = getErrorMessage(err.message);
+      setError(msg);
+      throw new Error(msg);
     }
   };
 
   const logOut = async () => {
-    try {
-      setError(null);
-      const { error: err } = await supabase.auth.signOut();
-      if (err) {
-        const msg = getErrorMessage(err.message);
-        setError(msg);
-        throw new Error(msg);
-      }
-    } catch (e: any) {
-      if (!error) {
-        const msg = getErrorMessage(e.message);
-        setError(msg);
-      }
-      throw e;
+    setError(null);
+    const { error: err } = await supabase.auth.signOut();
+    if (err) {
+      const msg = getErrorMessage(err.message);
+      setError(msg);
+      throw new Error(msg);
     }
   };
 
   const resetPassword = async (email: string) => {
-    try {
-      setError(null);
-      const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: AUTH_REDIRECT_BASE + "/reset-password",
-      });
-      if (err) {
-        const msg = getErrorMessage(err.message);
-        setError(msg);
-        throw new Error(msg);
-      }
-    } catch (e: any) {
-      if (!error) {
-        const msg = getErrorMessage(e.message);
-        setError(msg);
-      }
-      throw e;
+    setError(null);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: AUTH_REDIRECT_BASE + "/reset-password",
+    });
+    if (err) {
+      const msg = getErrorMessage(err.message);
+      setError(msg);
+      throw new Error(msg);
     }
   };
 
