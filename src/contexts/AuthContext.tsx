@@ -44,24 +44,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signUp = async (email: string, password: string) => {
-    try {
-      setError(null);
-      const { error: err } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { emailRedirectTo: "https://dawaaplus.net/confirm" },
-      });
-      if (err) {
-        const msg = getErrorMessage(err.message);
-        setError(msg);
-        throw new Error(msg);
-      }
-    } catch (e: any) {
-      if (!error) {
-        const msg = getErrorMessage(e.message);
-        setError(msg);
-      }
-      throw e;
+    setError(null);
+    const { error: err } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: "https://dawaaplus.net/confirm" },
+    });
+    if (err) {
+      const msg = getErrorMessage(err.message);
+      setError(msg);
+      throw new Error(msg);
     }
   };
 
@@ -141,18 +133,22 @@ export const useAuth = () => {
 function getErrorMessage(message: string): string {
   const lower = (message || "").toLowerCase();
   if (lower.includes("already registered") || lower.includes("already in use") || lower.includes("user_already_exists") || lower.includes("user already") || lower.includes("422"))
-    return "البريد الإلكتروني مستخدم بالفعل — جرّب تسجيل الدخول";
+    return "This email is already registered — try signing in";
   if (lower.includes("invalid email"))
-    return "البريد الإلكتروني غير صحيح";
-  if (lower.includes("weak password") || lower.includes("at least") || lower.includes("password should"))
-    return "كلمة المرور ضعيفة جداً (6 أحرف على الأقل)";
+    return "Invalid email address";
+  if (lower.includes("weak password") || lower.includes("at least") || lower.includes("password should") || lower.includes("password"))
+    return "Password must be at least 8 characters, include one uppercase letter and one number";
   if (lower.includes("invalid login") || lower.includes("invalid credentials"))
-    return "البريد الإلكتروني أو كلمة المرور غير صحيحة";
+    return "Incorrect email or password";
   if (lower.includes("rate limit") || lower.includes("too many"))
-    return "تم تجاوز عدد المحاولات، حاول لاحقاً";
+    return "Too many attempts — please try again later";
   if (lower.includes("not found") || lower.includes("user not found"))
-    return "لا يوجد حساب بهذا البريد الإلكتروني";
+    return "No account found with this email";
   if (lower.includes("email not confirmed"))
-    return "يرجى تأكيد البريد الإلكتروني أولاً";
-  return "حدث خطأ، حاول مرة أخرى";
+    return "Please confirm your email first — check your inbox";
+  if (lower.includes("redirect") || lower.includes("uri"))
+    return "Configuration error — please contact support";
+  if (lower.includes("network") || lower.includes("fetch"))
+    return "Network error — check your connection and try again";
+  return `Error: ${message || "Unknown error"}`;
 }
