@@ -91,7 +91,8 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
         {/* Signup sent message */}
         {signupSent && (
           <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
-            <p className="text-sm text-green-600 font-medium">✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني. افتح الرسالة لتفعيل حسابك.</p>
+            <p className="text-sm text-green-600 font-medium">✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني.</p>
+            <p className="text-xs text-green-700 mt-1">افتح الرسالة واضغط على الرابط لتفعيل حسابك، ثم ارجع للتطبيق وسجّل دخولك.</p>
           </div>
         )}
 
