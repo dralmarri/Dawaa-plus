@@ -8,6 +8,16 @@ const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
+if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
+  // Surface a clear message instead of a blank white screen when the .env
+  // file is missing or the VITE_SUPABASE_* variables were not picked up at
+  // build time.
+  console.error(
+    "Missing Supabase env vars — check .env: VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY",
+    { url: SUPABASE_URL, hasKey: !!SUPABASE_PUBLISHABLE_KEY }
+  );
+}
+
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     storage: localStorage,
