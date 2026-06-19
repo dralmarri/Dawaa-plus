@@ -10,7 +10,7 @@ const AUTH_REDIRECT_BASE = "https://dawaaplus.net";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signUp: (email: string, password: string) => Promise<boolean>;
+  signUp: (email: string, password: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   logOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
@@ -43,9 +43,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string): Promise<boolean> => {
+  const signUp = async (email: string, password: string) => {
     setError(null);
-    const { data, error: err } = await supabase.auth.signUp({
+    const { error: err } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: "https://dawaaplus.net/confirm" },
@@ -55,8 +55,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setError(msg);
       throw new Error(msg);
     }
-    // Returns true if user is immediately active (no email confirmation needed)
-    return !!data.session;
   };
 
   const signIn = async (email: string, password: string) => {
