@@ -64,8 +64,39 @@ export function hasLocalData(): boolean {
   return (meds.length + readings.length + appts.length + labs.length + doses.length) > 0;
 }
 
-/** Wipe all local cached data (used when user declines to import guest data). */
+/** Save a recoverable backup of all local data before any destructive action. */
+export async function backupLocalData(): Promise<void> {
+  for (const key of Object.values(KEYS)) {
+    const value = cache[key];
+    if (value !== undefined && value !== null) {
+      await Preferences.set({ key: `${key}__backup`, value: JSON.stringify(value) });
+    }
+  }
+  await Preferences.set({ key: 'dawaa_backup_at', value: new Date().toISOString() });
+}
+
+/** Restore the most recent local backup (if any). Returns true if data was restored. */
+export async function restoreLocalBackup(): Promise<boolean> {
+  let restored = false;
+  for (const key of Object.values(KEYS)) {
+    const { value } = await Preferences.get({ key: `${key}__backup` });
+    if (value) {
+      try {
+        cache[key] = JSON.parse(value);
+        await Preferences.set({ key, value });
+        restored = true;
+      } catch { /* skip corrupt backup */ }
+    }
+  }
+  return restored;
+}
+
+/**
+ * Wipe all local cached data (used when user declines to import guest data).
+ * Always takes a recoverable backup first so data is never lost permanently.
+ */
 export async function clearLocalData() {
+  await backupLocalData();
   for (const key of Object.values(KEYS)) {
     cache[key] = undefined;
     await Preferences.remove({ key });

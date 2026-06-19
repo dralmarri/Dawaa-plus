@@ -162,17 +162,17 @@ const AppRoutes = () => {
 
   return (
     <>
-    <AlertDialog open={importDialogOpen} onOpenChange={(open) => { if (!open) handleImportCancel(); }}>
-      <AlertDialogContent>
+    <AlertDialog open={importDialogOpen}>
+      <AlertDialogContent onEscapeKeyDown={(e) => e.preventDefault()}>
         <AlertDialogHeader>
-          <AlertDialogTitle>استيراد بيانات وضع الضيف</AlertDialogTitle>
+          <AlertDialogTitle>استيراد بياناتك إلى الحساب؟</AlertDialogTitle>
           <AlertDialogDescription>
-            تم العثور على بيانات محفوظة من وضع الضيف. هل تريد استيرادها إلى هذا الحساب؟
+            تم العثور على بيانات محفوظة على هذا الجهاز (أدوية ومواعيد وتحاليل). ننصح باستيرادها إلى حسابك حتى لا تفقدها. "بدء حساب فارغ" سيخفي هذه البيانات (تُحفظ نسخة احتياطية يمكن استرجاعها).
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleImportCancel}>بدء حساب جديد فارغ</AlertDialogCancel>
-          <AlertDialogAction onClick={handleImportConfirm}>استيراد البيانات</AlertDialogAction>
+          <AlertDialogCancel onClick={handleImportCancel}>بدء حساب فارغ</AlertDialogCancel>
+          <AlertDialogAction onClick={handleImportConfirm}>استيراد بياناتي</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
