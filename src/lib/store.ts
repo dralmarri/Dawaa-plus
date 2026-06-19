@@ -105,7 +105,7 @@ export const store = {
     getCache(KEYS.readings, []),
 
   saveReading: async (r: BloodPressureReading) => {
-    const all = store.getReadings();
+    const all = store.getReadings().filter(x => x.id !== r.id);
     all.unshift(r);
     await setCache(KEYS.readings, all);
     if (currentUid) await cloudStore.saveReading(currentUid, r);
@@ -136,8 +136,8 @@ export const store = {
     getCache(KEYS.labTests, []),
 
   saveLabTest: async (t: LabTest) => {
-    const all = store.getLabTests();
-    all.push(t);
+    const all = store.getLabTests().filter(x => x.id !== t.id);
+    all.unshift(t);
     await setCache(KEYS.labTests, all);
     if (currentUid) await cloudStore.saveLabTest(currentUid, t);
   },
@@ -190,7 +190,7 @@ export const store = {
     getCache(KEYS.bloodSugar, []),
 
   saveBloodSugarReading: async (r: BloodSugarReading) => {
-    const all = store.getBloodSugarReadings();
+    const all = store.getBloodSugarReadings().filter(x => x.id !== r.id);
     all.unshift(r);
     await setCache(KEYS.bloodSugar, all);
   },
