@@ -3,7 +3,6 @@ import {
   requestNotificationPermission,
   scheduleMedicationNotifications,
   startNotificationLoop,
-  getPermissionStatus,
 } from '@/lib/notifications';
 import { store } from '@/lib/store';
 import { App as CapApp } from '@capacitor/app';
@@ -70,5 +69,5 @@ export function useNotifications() {
     await scheduleMedicationNotifications();
   }, []);
 
-  return { reschedule, getPermissionStatus };
+  return { reschedule };
 }

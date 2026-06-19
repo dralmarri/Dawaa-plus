@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FileText, Download } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
@@ -6,19 +6,38 @@ import { format, subDays, isAfter, parseISO } from "date-fns";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { store } from "@/lib/store";
+import { supabase } from "@/integrations/supabase/client";
 import appIcon from "@/assets/app-icon.png";
 import { toast } from "sonner";
 
 const ReportsPage = () => {
   const { isRTL } = useLanguage();
   const [loading, setLoading] = useState(false);
+  const [authName, setAuthName] = useState<string>("");
 
   const meds = store.getMedications();
   const readings = store.getReadings();
   const appointments = store.getAppointments?.() || [];
   const labs = store.getLabTests?.() || [];
   const settings = store.getSettings();
-  const patientName = settings.userName || (isRTL ? "غير محدد" : "Not specified");
+  const bsReadings = store.getBloodSugarReadings?.() || [];
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const u = data.user;
+      if (!u) return;
+      const meta: any = u.user_metadata || {};
+      const name =
+        meta.full_name ||
+        meta.name ||
+        meta.display_name ||
+        (u.email ? u.email.split("@")[0] : "");
+      setAuthName(name || "");
+    });
+  }, []);
+
+  const patientName =
+    settings.userName || authName || (isRTL ? "غير محدد" : "Not specified");
 
   // last 30 days of BP readings
   const cutoff = subDays(new Date(), 30);
@@ -139,18 +158,118 @@ const ReportsPage = () => {
           </tr>`).join("")}</tbody>
         </table>`;
 
-    const labsTable = labs.length === 0
+    const renderLabAttachment = (fileUrl?: string) => {
+      if (!fileUrl) return "";
+      if (fileUrl.startsWith("data:image") || fileUrl.startsWith("http")) {
+        return `<div style="margin-top:8px;padding:8px 12px;background:#ecfdf5;border:1px dashed #14532d;border-radius:8px;font-size:12px;color:#14532d;">
+          🖼️ ${isRTL ? "صورة التحليل مرفقة في صفحة منفصلة" : "Lab image attached on a separate page"}
+        </div>`;
+      }
+      if (fileUrl.startsWith("pdfdata:")) {
+        const name = fileUrl.slice(8).split("|||")[0] || "PDF";
+        return `<div style="margin-top:8px;padding:8px 12px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-size:12px;color:#374151;">
+          📄 ${isRTL ? "ملف PDF مرفق:" : "PDF attached:"} <strong>${name}</strong>
+        </div>`;
+      }
+      if (fileUrl.startsWith("pdf:")) {
+        const name = fileUrl.slice(4);
+        return `<div style="margin-top:8px;padding:8px 12px;background:#f3f4f6;border:1px dashed #9ca3af;border-radius:8px;font-size:12px;color:#374151;">
+          📄 ${isRTL ? "ملف PDF مرفق:" : "PDF attached:"} <strong>${name}</strong>
+        </div>`;
+      }
+      return "";
+    };
+
+    const labsBlock = labs.length === 0
       ? `<p style="color:#6b7280;font-size:13px;">${isRTL ? "لا توجد تحاليل مسجلة" : "No lab results recorded"}</p>`
+      : labs.slice(0, 20).map((l) => `
+          <div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-bottom:12px;background:#fafafa;page-break-inside:avoid;">
+            <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;">
+              <strong style="font-size:14px;color:#14532d;">${l.name}</strong>
+              <span style="font-size:12px;color:#6b7280;">${l.date}</span>
+            </div>
+            ${l.notes ? `<div style="font-size:12px;color:#1f2937;white-space:pre-wrap;background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:8px;">${l.notes.replace(/</g, "&lt;")}</div>` : `<div style="font-size:12px;color:#9ca3af;font-style:italic;">${isRTL ? "لا توجد بيانات يدوية" : "No manual data"}</div>`}
+            ${renderLabAttachment(l.fileUrl)}
+          </div>
+        `).join("");
+
+    // ── Patient profile block ─────────────────────────────
+    const diseaseLabels: Record<string, { ar: string; en: string }> = {
+      diabetes: { ar: "السكري", en: "Diabetes" },
+      hypertension: { ar: "ضغط الدم", en: "Hypertension" },
+      cholesterol: { ar: "الكوليسترول", en: "Cholesterol" },
+      heart: { ar: "أمراض القلب", en: "Heart Disease" },
+      asthma: { ar: "الربو", en: "Asthma" },
+      thyroid: { ar: "الغدة الدرقية", en: "Thyroid" },
+      kidney: { ar: "الكلى", en: "Kidney" },
+      liver: { ar: "الكبد", en: "Liver" },
+      rheumatism: { ar: "الروماتيزم", en: "Rheumatism" },
+      anemia: { ar: "فقر الدم", en: "Anemia" },
+    };
+    const dash = isRTL ? "—" : "—";
+    const ec = settings.emergencyContact;
+    const diseasesList = [
+      ...((settings.chronicDiseases || []).map((k) => diseaseLabels[k]?.[isRTL ? "ar" : "en"] || k)),
+      ...(settings.customDiseases ? [settings.customDiseases] : []),
+    ];
+    const profileRow = (label: string, value: string) =>
+      `<tr>${td(`<strong>${label}</strong>`)}${td(value || dash)}</tr>`;
+    const profileTable = `<table style="width:100%;border-collapse:collapse;">
+      <tbody>
+        ${profileRow(isRTL ? "الاسم" : "Name", patientName)}
+        ${profileRow(isRTL ? "تاريخ الميلاد" : "Date of Birth", settings.dateOfBirth || "")}
+        ${profileRow(isRTL ? "فصيلة الدم" : "Blood Type", settings.bloodType || "")}
+        ${profileRow(isRTL ? "الحساسية من الأدوية" : "Drug Allergies", settings.allergies || (isRTL ? "لا يوجد" : "None"))}
+        ${profileRow(isRTL ? "الأمراض المزمنة" : "Chronic Diseases", diseasesList.length ? diseasesList.join("، ") : (isRTL ? "لا يوجد" : "None"))}
+        ${profileRow(isRTL ? "جهة اتصال الطوارئ" : "Emergency Contact",
+          ec && ec.name ? `${ec.name} — <span dir="ltr">${ec.phone}</span> (${ec.method === "whatsapp" ? "WhatsApp" : "SMS"})` : "")}
+      </tbody>
+    </table>`;
+
+    // ── Blood sugar last 30 days ──────────────────────────
+    const bs30 = bsReadings
+      .filter((r) => { try { return isAfter(parseISO(r.date), cutoff); } catch { return false; } })
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+    const bsPeriodLabel: Record<string, { ar: string; en: string }> = {
+      "Fasting": { ar: "صائم", en: "Fasting" },
+      "Before meal": { ar: "قبل الأكل", en: "Before meal" },
+      "After meal": { ar: "بعد الأكل", en: "After meal" },
+      "Bedtime": { ar: "قبل النوم", en: "Bedtime" },
+      "Random": { ar: "عشوائي", en: "Random" },
+    };
+    const bsTable = bs30.length === 0
+      ? `<p style="color:#6b7280;font-size:13px;">${isRTL ? "لا توجد قراءات سكر في آخر 30 يوماً" : "No blood sugar readings in the last 30 days"}</p>`
       : `<table style="width:100%;border-collapse:collapse;">
           <thead><tr>
             ${th(isRTL ? "التاريخ" : "Date")}
-            ${th(isRTL ? "اسم التحليل" : "Test Name")}
-            ${th(isRTL ? "ملاحظات" : "Notes")}
+            ${th(isRTL ? "الوقت" : "Time")}
+            ${th(isRTL ? "القراءة (mg/dL)" : "Value (mg/dL)")}
+            ${th(isRTL ? "وقت القياس" : "When")}
           </tr></thead>
-          <tbody>${labs.slice(0, 20).map((l) => `<tr>
-            ${td(l.date)}
-            ${td(l.name)}
-            ${td(l.notes || "—")}
+          <tbody>${bs30.map((r) => `<tr>
+            ${td(r.date)}
+            ${td(r.time)}
+            ${td(`<strong>${r.value}</strong>`)}
+            ${td(bsPeriodLabel[r.period]?.[isRTL ? "ar" : "en"] || r.period)}
+          </tr>`).join("")}</tbody>
+        </table>`;
+
+    const bpTable = bp30.length === 0
+      ? `<p style="color:#6b7280;font-size:13px;">${isRTL ? "لا توجد قراءات ضغط في آخر 30 يوماً" : "No blood pressure readings in the last 30 days"}</p>`
+      : `<table style="width:100%;border-collapse:collapse;margin-top:12px;">
+          <thead><tr>
+            ${th(isRTL ? "التاريخ" : "Date")}
+            ${th(isRTL ? "الوقت" : "Time")}
+            ${th(isRTL ? "الانقباضي" : "Systolic")}
+            ${th(isRTL ? "الانبساطي" : "Diastolic")}
+            ${th(isRTL ? "النبض" : "Pulse")}
+          </tr></thead>
+          <tbody>${bp30.map((r: any) => `<tr>
+            ${td(r.date)}
+            ${td(r.time)}
+            ${td(`<strong>${r.systolic}</strong>`)}
+            ${td(`<strong>${r.diastolic}</strong>`)}
+            ${td(r.pulse ?? "—")}
           </tr>`).join("")}</tbody>
         </table>`;
 
@@ -169,17 +288,23 @@ const ReportsPage = () => {
           </div>
         </div>
 
+        ${sectionTitle(isRTL ? "👤 بيانات المريض" : "👤 Patient Profile")}
+        ${profileTable}
+
         ${sectionTitle(isRTL ? "💊 الأدوية الحالية" : "💊 Current Medications")}
         ${medsTable}
 
         ${sectionTitle(isRTL ? "🩺 ضغط الدم — آخر 30 يوماً" : "🩺 Blood Pressure — Last 30 Days")}
         <div style="text-align:center;">${renderBPChart()}</div>
+        ${bpTable}
+
+        ${bsReadings.length > 0 ? `${sectionTitle(isRTL ? "🩸 سكر الدم — آخر 30 يوماً" : "🩸 Blood Sugar — Last 30 Days")}${bsTable}` : ""}
 
         ${sectionTitle(isRTL ? "📅 المواعيد القادمة" : "📅 Upcoming Appointments")}
         ${apptsTable}
 
         ${sectionTitle(isRTL ? "🧪 ملخص التحاليل" : "🧪 Lab Results Summary")}
-        ${labsTable}
+        ${labsBlock}
 
         <div style="margin-top:32px;padding-top:12px;border-top:1px solid #e5e7eb;text-align:center;font-size:11px;color:#9ca3af;">
           ${isRTL ? "تم إنشاء هذا التقرير بواسطة تطبيق Dawaa+" : "Generated by Dawaa+ app"}
@@ -231,6 +356,52 @@ const ReportsPage = () => {
         pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
+
+      // Append a separate page for each lab image at natural fit
+      const imageLabs = labs.filter(
+        (l) => l.fileUrl && (l.fileUrl.startsWith("data:image") || l.fileUrl.startsWith("http"))
+      );
+
+      const loadImg = (src: string) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          img.onload = () => resolve(img);
+          img.onerror = reject;
+          img.src = src;
+        });
+
+      const marginMm = 10;
+      const headerH = 14;
+      const maxW = pageWidth - marginMm * 2;
+      const maxH = pageHeight - marginMm * 2 - headerH;
+
+      for (const lab of imageLabs) {
+        try {
+          const img = await loadImg(lab.fileUrl!);
+          // fit while preserving aspect ratio
+          const ratio = Math.min(maxW / (img.width / 3.7795), maxH / (img.height / 3.7795));
+          // convert px → mm using 96dpi (1mm = 3.7795 px)
+          const wMm = Math.min((img.width / 3.7795) * ratio, maxW);
+          const hMm = Math.min((img.height / 3.7795) * ratio, maxH);
+          const x = (pageWidth - wMm) / 2;
+          const y = marginMm + headerH + (maxH - hMm) / 2;
+
+          pdf.addPage();
+          // Header for the attachment page
+          pdf.setFontSize(11);
+          pdf.setTextColor(20, 83, 45);
+          const label = `${lab.name}  •  ${lab.date}`;
+          pdf.text(label, pageWidth / 2, marginMm + 8, { align: "center" });
+
+          const fmt = lab.fileUrl!.startsWith("data:image/png") ? "PNG" : "JPEG";
+          pdf.addImage(lab.fileUrl!, fmt, x, y, wMm, hMm);
+        } catch (err) {
+          console.warn("Failed to attach lab image", lab.id, err);
+        }
+      }
+
+
 
       const fileName = `dawaa-plus-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
 
@@ -285,8 +456,10 @@ const ReportsPage = () => {
           </div>
 
           <ul className="text-sm text-foreground/80 space-y-1.5 mb-4 ms-2">
+            <li>• {isRTL ? "بيانات المريض (الاسم، العمر، فصيلة الدم، الحساسية، الأمراض، جهة الطوارئ)" : "Patient profile (name, DOB, blood type, allergies, conditions, emergency contact)"}</li>
             <li>• {isRTL ? "قائمة الأدوية مع الجرعات والمواعيد" : "Medications list with dosage & schedule"}</li>
-            <li>• {isRTL ? "مخطط ضغط الدم لآخر 30 يوماً" : "Blood pressure chart (last 30 days)"}</li>
+            <li>• {isRTL ? "مخطط ضغط الدم لآخر 30 يوماً (في حال تسجيلها)" : "Blood pressure chart (last 30 days, if recorded)"}</li>
+            <li>• {isRTL ? "قراءات السكر لآخر 30 يوماً (في حال تسجيلها)" : "Blood sugar readings (last 30 days, if recorded)"}</li>
             <li>• {isRTL ? "المواعيد الطبية القادمة" : "Upcoming appointments"}</li>
             <li>• {isRTL ? "ملخص نتائج التحاليل" : "Lab results summary"}</li>
           </ul>

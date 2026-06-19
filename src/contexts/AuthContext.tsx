@@ -2,6 +2,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
+// Always use the production web URL for email redirects so links work from
+// iOS/Android native builds (where window.location.origin is capacitor://localhost
+// and would be rejected by Supabase as an invalid redirect URL).
+const AUTH_REDIRECT_BASE = "https://dawaaplus.net";
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -100,7 +105,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setError(null);
       const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: AUTH_REDIRECT_BASE + "/reset-password",
       });
       if (err) {
         const msg = getErrorMessage(err.message);

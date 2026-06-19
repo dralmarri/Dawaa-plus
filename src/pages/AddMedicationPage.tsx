@@ -214,6 +214,27 @@ const AddMedicationPage = () => {
 
   const isNonDaily = ["Every week", "Every 2 weeks", "Every month"].includes(frequency);
 
+  // Auto-adjust times array length based on frequency
+  useEffect(() => {
+    const defaults: Record<string, string[]> = {
+      "Once daily": ["08:00"],
+      "Twice daily": ["08:00", "20:00"],
+      "Three times daily": ["08:00", "14:00", "20:00"],
+      "Four times daily": ["08:00", "13:00", "18:00", "22:00"],
+      "Every week": ["08:00"],
+      "Every 2 weeks": ["08:00"],
+      "Every month": ["08:00"],
+    };
+    const target = defaults[frequency];
+    if (!target) return;
+    setTimes((prev) => {
+      if (prev.length === target.length) return prev;
+      // Preserve user-entered times where possible, fill the rest from defaults
+      const next = target.map((d, i) => prev[i] ?? d);
+      return next;
+    });
+  }, [frequency]);
+
   const computedDurationDays = durationUnit === 'weeks' ? durationDays * 7 : durationUnit === 'months' ? durationDays * 30 : durationDays;
 
   const handleSave = async () => {
@@ -244,7 +265,11 @@ const AddMedicationPage = () => {
       await store.deleteDosesForMedDate(med.id, today);
     }
 
-    await scheduleMedicationNotifications();
+    try {
+      await scheduleMedicationNotifications();
+    } catch (err) {
+      console.warn("Failed to schedule notifications:", err);
+    }
     navigate("/medications");
   };
   const canNext = () => {

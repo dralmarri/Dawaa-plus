@@ -1,24 +1,29 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Check, X, Clock, ArrowLeft } from "lucide-react";
+import { CalendarDays, Check, X, Clock, ArrowLeft, Pill, RotateCcw } from "lucide-react";
 import { store } from "@/lib/store";
-import { generateTodayDoses, markDoseTaken, undoDose } from "@/lib/dose-tracker";
+import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import EmptyState from "@/components/EmptyState";
 import AdherenceStats from "@/components/AdherenceStats";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const HistoryPage = () => {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
 
-  // Ensure today's doses are generated
-  generateTodayDoses();
-
-  const records = store.getDoseRecords();
+  const [records, setRecords] = useState(() => {
+    generateTodayDoses();
+    return store.getDoseRecords();
+  });
   const [filter, setFilter] = useState<"all" | "taken" | "missed">("all");
   const [adherencePeriod, setAdherencePeriod] = useState<"week" | "month">("week");
+  const [resetOpen, setResetOpen] = useState(false);
+
+  const refresh = () => setRecords([...store.getDoseRecords()]);
+
 
   // Group records by date
   const grouped = useMemo(() => {
@@ -63,11 +68,16 @@ const HistoryPage = () => {
 
   return (
     <div className="pb-28">
-      <div className="flex items-center gap-3 px-4 pt-6 pb-4">
+      <div className="sticky top-0 z-40 bg-background safe-top flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/50 shadow-sm">
         <button onClick={() => navigate(-1)} className="text-foreground" aria-label="back">
           <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
         </button>
         <h1 className="text-3xl font-bold text-foreground">{t.doseHistory}</h1>
+        <img
+          src="/app-icon.png"
+          alt=""
+          className="w-9 h-9 rounded-xl object-cover shadow-sm border border-border"
+        />
       </div>
 
       {/* Adherence stats */}
@@ -81,39 +91,49 @@ const HistoryPage = () => {
       {/* Summary bar */}
       {records.length > 0 && (
         <div className="px-4 mb-4">
-          <div className="flex gap-3">
-            <div className="flex-1 bg-summary-taken rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-summary-taken-foreground">{totalTaken}</div>
-              <div className="text-xs text-muted-foreground">{t.taken}</div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-summary-taken rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-summary-taken-foreground">{totalTaken}</div>
+              <div className="text-sm text-muted-foreground mt-1">{t.taken}</div>
             </div>
-            <div className="flex-1 bg-summary-missed rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-summary-missed-foreground">{totalMissed}</div>
-              <div className="text-xs text-muted-foreground">{t.missed}</div>
+            <div className="bg-summary-missed rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-summary-missed-foreground">{totalMissed}</div>
+              <div className="text-sm text-muted-foreground mt-1">{t.missed}</div>
             </div>
-            <div className="flex-1 bg-secondary rounded-xl p-3 text-center">
-              <div className="text-xl font-bold text-summary-schedule">{totalPending}</div>
-              <div className="text-xs text-muted-foreground">{isRTL ? "معلقة" : "Pending"}</div>
+            <div className="bg-secondary rounded-2xl p-4 text-center">
+              <div className="text-3xl font-bold text-summary-schedule">{totalPending}</div>
+              <div className="text-sm text-muted-foreground mt-1">{isRTL ? "معلقة" : "Pending"}</div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Filter chips */}
+      {/* Filter chips + reset counter */}
       {records.length > 0 && (
-        <div className="px-4 flex gap-2 mb-4">
-          {(["all", "taken", "missed"] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
-                filter === f
-                  ? "bg-chip-active text-chip-active-foreground border-chip-active"
-                  : "bg-chip text-chip-foreground border-border"
-              }`}
-            >
-              {filterLabels[f]}
-            </button>
-          ))}
+        <div className="px-4 flex items-center gap-2 mb-4">
+          <div className="flex-1 flex gap-2 flex-wrap">
+            {(["all", "taken", "missed"] as const).map((f) => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
+                  filter === f
+                    ? "bg-chip-active text-chip-active-foreground border-chip-active"
+                    : "bg-chip text-chip-foreground border-border"
+                }`}
+              >
+                {filterLabels[f]}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setResetOpen(true)}
+            className="px-4 py-2 rounded-full text-sm font-medium border border-destructive text-destructive hover:bg-destructive/10 transition-colors flex items-center gap-1.5 whitespace-nowrap"
+            aria-label={t.resetCounter}
+          >
+            <RotateCcw className="w-4 h-4" />
+            {isRTL ? "تصفير" : "Reset"}
+          </button>
         </div>
       )}
 
@@ -134,20 +154,15 @@ const HistoryPage = () => {
           {grouped.map(({ date, records: dayRecords }) => (
             <div key={date}>
               <h3 className="text-sm font-bold text-muted-foreground mb-2">{formatDate(date)}</h3>
-              <div className="bg-card rounded-2xl border border-border divide-y divide-border">
+              <div className="bg-card rounded-3xl border-2 border-primary/30 shadow-sm divide-y divide-border">
                 {dayRecords.map((rec) => (
-                  <div key={rec.id} className="flex items-center justify-between p-4">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        rec.status === "taken" ? "bg-summary-taken" :
-                        rec.status === "missed" ? "bg-summary-missed" : "bg-secondary"
-                      }`}>
-                        {rec.status === "taken" ? <Check className="w-4 h-4 text-summary-taken-foreground" /> :
-                         rec.status === "missed" ? <X className="w-4 h-4 text-summary-missed-foreground" /> :
-                         <Clock className="w-4 h-4 text-summary-schedule" />}
+                  <div key={rec.id} className="flex items-center justify-between gap-3 p-4">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                      <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Pill className="w-7 h-7 text-primary" />
                       </div>
-                      <div>
-                        <p className="font-semibold text-foreground">{rec.medicationName}</p>
+                      <div className="min-w-0">
+                        <p className="text-lg font-bold text-foreground truncate">{rec.medicationName}</p>
                         <p className="text-sm text-muted-foreground">
                           {rec.scheduledTime}
                           {rec.takenAt && ` → ${rec.takenAt}`}
@@ -156,30 +171,34 @@ const HistoryPage = () => {
                     </div>
                     {rec.status === "missed" ? (
                       <button
-                        onClick={() => {
-                          markDoseTaken(rec.id);
+                        onClick={async () => {
+                          await markDoseTaken(rec.id);
+                          refresh();
                           toast.success(isRTL ? "تم تسجيل الجرعة ✓" : "Dose recorded ✓");
-                          window.location.reload();
                         }}
-                        className="text-xs font-medium px-2 py-1 rounded-full bg-summary-missed text-summary-missed-foreground hover:bg-summary-taken hover:text-summary-taken-foreground transition-colors cursor-pointer"
+                        className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                         title={isRTL ? "اضغط لتسجيلها كمأخوذة" : "Click to mark as taken"}
                       >
+                        <X className="w-4 h-4" />
                         {isRTL ? "فائتة" : "Missed"}
                       </button>
                     ) : rec.status === "taken" ? (
                       <button
                         onClick={async () => {
-                          await undoDose(rec.id);
-                          toast(isRTL ? "تم التراجع — الجرعة لم تؤخذ" : "Reverted — dose not taken");
-                          window.location.reload();
+                          await markDoseMissed(rec.id);
+                          refresh();
+                          toast(isRTL ? "تم التغيير إلى فائتة" : "Marked as missed");
                         }}
-                        className="text-xs font-medium px-2 py-1 rounded-full bg-summary-taken text-summary-taken-foreground hover:bg-secondary hover:text-summary-schedule transition-colors cursor-pointer"
-                        title={isRTL ? "اضغط للتراجع" : "Click to undo"}
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
+                        title={isRTL ? "اضغط لتغييرها إلى فائتة" : "Click to mark as missed"}
                       >
-                        {isRTL ? "تم ↶" : "Taken ↶"}
+                        <Check className="w-4 h-4" />
+                        {isRTL ? "تم أخذها" : "Taken"}
                       </button>
+
                     ) : (
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-secondary text-summary-schedule">
+                      <span className="rounded-xl bg-secondary text-summary-schedule py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5">
+                        <Clock className="w-4 h-4" />
                         {isRTL ? "معلقة" : "Pending"}
                       </span>
                     )}
@@ -190,6 +209,44 @@ const HistoryPage = () => {
           ))}
         </div>
       )}
+      <AlertDialog open={resetOpen} onOpenChange={setResetOpen}>
+        <AlertDialogContent dir={isRTL ? "rtl" : "ltr"}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t.resetCounter}
+              <span className="block text-sm text-muted-foreground font-normal mt-1">
+                {isRTL ? "Reset Counter" : "تصفير العداد"}
+              </span>
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              <div className="space-y-1">
+                <p>{t.resetCounterConfirmDesc}</p>
+                <p className="text-muted-foreground">
+                  {isRTL
+                    ? "This will clear all dose records. This action cannot be undone."
+                    : "سيتم حذف جميع سجلات الجرعات. لا يمكن التراجع عن هذا الإجراء."}
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {isRTL ? "إلغاء / Cancel" : "Cancel / إلغاء"}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                await store.clearDoseRecords();
+                refresh();
+                setResetOpen(false);
+                toast.success(isRTL ? "تم تصفير العداد" : "Counter reset");
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isRTL ? "تصفير / Reset" : "Reset / تصفير"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

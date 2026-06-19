@@ -59,5 +59,58 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>add-medication</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>إضافة دواء</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Add Medication</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeAdd</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>blood-pressure</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>تسجيل ضغط</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Log Blood Pressure</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeFavorite</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>blood-sugar</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>تسجيل سكر</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Log Blood Sugar</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeCapturePhoto</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>today-doses</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>جرعات اليوم</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Today's Doses</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeTime</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>appointment</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>موعد طبي</string>
+			<key>UIApplicationShortcutItemSubtitle</key>
+			<string>Medical Appointment</string>
+			<key>UIApplicationShortcutItemIconType</key>
+			<string>UIApplicationShortcutIconTypeDate</string>
+		</dict>
+	</array>
 </dict>
 </plist>

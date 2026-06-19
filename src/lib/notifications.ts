@@ -188,7 +188,7 @@ export async function scheduleMedicationNotifications() {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   const takenToday = new Set<string>();
   try {
-    const records = store.getDoseRecords?.() || [];
+    const records = store.getDoseRecords() || [];
     records.forEach((r: any) => {
       if (r.date === todayStr && r.status === 'taken') {
         takenToday.add(`${r.medicationId}|${r.scheduledTime}`);
@@ -292,21 +292,55 @@ export async function scheduleMedicationNotifications() {
     });
   });
 
-  // === Blood Pressure Reminders (10 AM and 9 PM daily) ===
-  const bpTimes = [{ hour: 10, min: 0, id: 9990 }, { hour: 21, min: 0, id: 9991 }];
-  bpTimes.forEach(({ hour, min, id }) => {
-    scheduledIds.push(id);
-    notifications.push({
-      id,
-      title: isArabic ? '🩺 تذكير قياس الضغط' : '🩺 Blood Pressure Reminder',
-      body: isArabic
-        ? `حان وقت قياس ضغط الدم (${hour === 10 ? 'الصباح' : 'المساء'})`
-        : `Time to measure your blood pressure (${hour === 10 ? 'Morning' : 'Evening'})`,
-      schedule: { on: { hour, minute: min }, allowWhileIdle: true },
-      sound: 'default',
-      smallIcon: 'ic_stat_icon_config_sample',
+  // === Blood Pressure Reminders — opt-in. User-editable list (defaults seeded: 10 AM + 9 PM) ===
+  if (settings.bpReminders) {
+    const bpTimes = (settings.bpCustomTimes && settings.bpCustomTimes.length > 0)
+      ? settings.bpCustomTimes
+      : ['10:00', '21:00'];
+
+    bpTimes.forEach((t) => {
+      const [h, m] = t.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) return;
+      const id = stableId('bp-time', t);
+      scheduledIds.push(id);
+      const timeLabel = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      notifications.push({
+        id,
+        title: isArabic ? '🩺 تذكير قياس الضغط' : '🩺 Blood Pressure Reminder',
+        body: isArabic
+          ? `حان وقت قياس ضغط الدم (${timeLabel})`
+          : `Time to measure your blood pressure (${timeLabel})`,
+        schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
+        sound: 'default',
+        smallIcon: 'ic_stat_icon_config_sample',
+      });
     });
-  });
+  }
+
+  // === Blood Sugar Reminders — opt-in. User-editable list (defaults seeded: 8 AM + 9 PM) ===
+  if (settings.bloodSugarReminders) {
+    const bsTimes = (settings.bloodSugarCustomTimes && settings.bloodSugarCustomTimes.length > 0)
+      ? settings.bloodSugarCustomTimes
+      : ['08:00', '21:00'];
+
+    bsTimes.forEach((t) => {
+      const [h, m] = t.split(':').map(Number);
+      if (isNaN(h) || isNaN(m)) return;
+      const id = stableId('bs-time', t);
+      scheduledIds.push(id);
+      const timeLabel = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+      notifications.push({
+        id,
+        title: isArabic ? '🩸 تذكير قياس السكر' : '🩸 Blood Sugar Reminder',
+        body: isArabic
+          ? `حان وقت قياس مستوى السكر (${timeLabel})`
+          : `Time to measure your blood sugar (${timeLabel})`,
+        schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
+        sound: 'default',
+        smallIcon: 'ic_stat_icon_config_sample',
+      });
+    });
+  }
 
   // === Low Stock Alert (≤20% of 2-month supply) — daily at 9 AM ===
   const lowStockMeds = medications.filter(med => {
@@ -371,7 +405,7 @@ export async function scheduleMedicationNotifications() {
   }
 
   // === Appointment Reminders (1 day before + 2 hours before) ===
-  const appointments: Appointment[] = store.getAppointments?.() || [];
+  const appointments: Appointment[] = store.getAppointments() || [];
   const upcomingAppts = appointments.filter(a => !a.completed);
 
   upcomingAppts.forEach((appt) => {

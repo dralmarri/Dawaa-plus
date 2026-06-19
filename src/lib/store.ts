@@ -1,5 +1,5 @@
 import { Preferences } from '@capacitor/preferences';
-import { Medication, BloodPressureReading, Appointment, LabTest, DoseRecord, AppSettings } from '@/types';
+import { Medication, BloodPressureReading, Appointment, LabTest, DoseRecord, AppSettings, BloodSugarReading } from '@/types';
 import { cloudStore } from '@/lib/cloudStore';
 
 const KEYS = {
@@ -9,6 +9,7 @@ const KEYS = {
   labTests: 'dawaa_labTests',
   doseRecords: 'dawaa_doseRecords',
   settings: 'dawaa_settings',
+  bloodSugar: 'dawaa_bloodSugar',
 };
 
 // AuthPage UI is in Arabic, so default the app language to Arabic
@@ -22,8 +23,10 @@ const defaultSettings: AppSettings = {
   voiceNotifications: false,
   reminderBefore: '5',
   escalationOnMissed: false,
-  dailySummary: true,
-  dailySummaryTime: '08:00',
+  bpReminders: false,
+  bpCustomTimes: ['10:00', '21:00'],
+  bloodSugarReminders: false,
+  bloodSugarCustomTimes: ['08:00', '21:00'],
 };
 
 // ── Sync cache (in-memory) ─────────────────────────────────────────
@@ -168,12 +171,32 @@ export const store = {
     if (currentUid) await cloudStore.deleteDoseRecordsForMedDate(currentUid, medicationId, date);
   },
 
+  /** Clear all dose records (reset counters) */
+  clearDoseRecords: async () => {
+    await setCache(KEYS.doseRecords, []);
+    if (currentUid) await cloudStore.deleteAllDoseRecords(currentUid);
+  },
+
   getSettings: (): AppSettings =>
     getCache(KEYS.settings, defaultSettings),
 
   saveSettings: async (s: AppSettings) => {
     await setCache(KEYS.settings, s);
     if (currentUid) await cloudStore.saveSettings(currentUid, s);
+  },
+
+  // Blood sugar readings (local only)
+  getBloodSugarReadings: (): BloodSugarReading[] =>
+    getCache(KEYS.bloodSugar, []),
+
+  saveBloodSugarReading: async (r: BloodSugarReading) => {
+    const all = store.getBloodSugarReadings();
+    all.unshift(r);
+    await setCache(KEYS.bloodSugar, all);
+  },
+
+  deleteBloodSugarReading: async (id: string) => {
+    await setCache(KEYS.bloodSugar, store.getBloodSugarReadings().filter(r => r.id !== id));
   },
 };
 
@@ -210,9 +233,31 @@ export async function syncFromCloud(uid: string) {
 }
 
 // ── Migrate local data to cloud ──────────────────────────────────
+export async function getMigratedFlag(uid: string): Promise<string | null> {
+  const key = `dawaa_migrated_${uid}`;
+  const { value } = await Preferences.get({ key });
+  if (value) return value;
+  // Backward compat: fall back to localStorage, then migrate it forward
+  try {
+    const legacy = localStorage.getItem(key);
+    if (legacy) {
+      await Preferences.set({ key, value: legacy });
+      return legacy;
+    }
+  } catch {}
+  return null;
+}
+
+export async function setMigratedFlag(uid: string, value: string): Promise<void> {
+  const key = `dawaa_migrated_${uid}`;
+  await Preferences.set({ key, value });
+  try { localStorage.setItem(key, value); } catch {}
+}
+
 export async function migrateLocalToCloud(uid: string): Promise<number> {
-  const MIGRATED_KEY = `dawaa_migrated_${uid}`;
-  if (localStorage.getItem(MIGRATED_KEY)) return 0;
+  if (await getMigratedFlag(uid)) return 0;
+
+
 
   let count = 0;
   try {
@@ -234,7 +279,7 @@ export async function migrateLocalToCloud(uid: string): Promise<number> {
       count++;
     }
 
-    localStorage.setItem(MIGRATED_KEY, "true");
+    await setMigratedFlag(uid, "true");
   } catch (err) {
     console.error("Migration error:", err);
   }

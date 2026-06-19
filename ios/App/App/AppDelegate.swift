@@ -5,45 +5,66 @@ import Capacitor
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
+    static var pendingRoute: String?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        if let shortcut = launchOptions?[.shortcutItem] as? UIApplicationShortcutItem {
+            AppDelegate.pendingRoute = AppDelegate.route(for: shortcut.type)
+        }
         return true
     }
 
-    func applicationWillResignActive(_ application: UIApplication) {
-        // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
-        // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
-    }
-
-    func applicationDidEnterBackground(_ application: UIApplication) {
-        // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
-        // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    }
-
-    func applicationWillEnterForeground(_ application: UIApplication) {
-        // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-    }
+    func applicationWillResignActive(_ application: UIApplication) {}
+    func applicationDidEnterBackground(_ application: UIApplication) {}
+    func applicationWillEnterForeground(_ application: UIApplication) {}
 
     func applicationDidBecomeActive(_ application: UIApplication) {
-        // Restart any tasks that were paused (or not yet started) while the application was inactive. If the application was previously in the background, optionally refresh the user interface.
+        AppDelegate.dispatchPendingRoute(window: window)
     }
 
-    func applicationWillTerminate(_ application: UIApplication) {
-        // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
+    func applicationWillTerminate(_ application: UIApplication) {}
+
+    func application(_ application: UIApplication, performActionFor shortcutItem: UIApplicationShortcutItem, completionHandler: @escaping (Bool) -> Void) {
+        AppDelegate.pendingRoute = AppDelegate.route(for: shortcutItem.type)
+        AppDelegate.dispatchPendingRoute(window: window)
+        completionHandler(true)
     }
 
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey: Any] = [:]) -> Bool {
-        // Called when the app was launched with a url. Feel free to add additional processing here,
-        // but if you want the App API to support tracking app url opens, make sure to keep this call
+        if url.scheme == "dawaaplus" {
+            let route = "/" + (url.host ?? "") + url.path
+            AppDelegate.pendingRoute = route
+            AppDelegate.dispatchPendingRoute(window: window)
+            return true
+        }
         return ApplicationDelegateProxy.shared.application(app, open: url, options: options)
     }
 
     func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        // Called when the app was launched with an activity, including Universal Links.
-        // Feel free to add additional processing here, but if you want the App API to support
-        // tracking app url opens, make sure to keep this call
         return ApplicationDelegateProxy.shared.application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
 
+    static func route(for type: String) -> String {
+        switch type {
+        case "add-medication": return "/medications/add"
+        case "blood-pressure": return "/blood-pressure"
+        case "blood-sugar":    return "/blood-sugar"
+        case "appointment":    return "/appointments"
+        case "today-doses":    return "/"
+        default:               return "/"
+        }
+    }
+
+    static func dispatchPendingRoute(window: UIWindow?) {
+        guard let route = pendingRoute else { return }
+        guard let bridgeVC = window?.rootViewController as? CAPBridgeViewController,
+              let webView = bridgeVC.bridge?.webView else { return }
+        let escaped = route.replacingOccurrences(of: "'", with: "\\'")
+        let js = "window.dispatchEvent(new CustomEvent('app-shortcut', { detail: '\(escaped)' }))"
+        // Delay slightly to ensure JS listener is registered after cold launch.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            webView.evaluateJavaScript(js, completionHandler: nil)
+        }
+        pendingRoute = nil
+    }
 }

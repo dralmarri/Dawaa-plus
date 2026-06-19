@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function PrivacyPolicyPage() {
   const navigate = useNavigate();
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t } = useLanguage();
   const ar = lang === "ar";
   const Back = isRTL ? ChevronRight : ChevronLeft;
 
@@ -70,7 +70,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc ps-6 space-y-1">
               <li><strong>Supabase</strong>: مزوّد قاعدة البيانات السحابية والمصادقة. يلتزم بمعايير حماية البيانات الدولية (GDPR/SOC2).</li>
               
-              <li><strong>Apple Push Notifications</strong>: لتسليم تنبيهات الأدوية على iOS.</li>
+              <li><strong>Apple Push Notifications</strong>: لتسليم تنبيهات الأدوية والمواعيد الطبية والتحاليل وقياسات الضغط والسكر على iOS.</li>
             </ul>
           ),
         },
@@ -78,7 +78,7 @@ export default function PrivacyPolicyPage() {
           h: "التنبيهات",
           body: (
             <p>
-              يستخدم التطبيق التنبيهات المحلية فقط لتذكيركم بمواعيد الأدوية وقياسات الضغط والمواعيد الطبية.
+              يستخدم التطبيق التنبيهات المحلية فقط لتذكيركم بمواعيد الأدوية وقياسات الضغط والسكر والمواعيد الطبية والتحاليل.
               لا تُرسَل أي بيانات صحية مع التنبيهات، ويمكن إيقاف التنبيهات من شاشة الإعدادات في أي وقت.
             </p>
           ),
@@ -107,12 +107,15 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "إخلاء المسؤولية الطبية",
+          h: t.clinicalDisclaimer,
           body: (
-            <p>
-              تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
-              الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
-            </p>
+            <>
+              <p>
+                تطبيق دواء+ أداة مساعدة لتنظيم الأدوية والقياسات فقط، ولا يُعتبر بديلاً عن استشارة الطبيب أو
+                الصيدلي. يجب دائماً مراجعة المختص قبل اتخاذ أي قرار يتعلق بصحتكم أو علاجكم.
+              </p>
+              <p className="mt-2">{t.disclaimerText}</p>
+            </>
           ),
         },
         {
@@ -199,7 +202,7 @@ export default function PrivacyPolicyPage() {
             <ul className="list-disc ps-6 space-y-1">
               <li><strong>Supabase</strong>: cloud database and authentication provider, compliant with GDPR/SOC2 standards.</li>
               
-              <li><strong>Apple Push Notifications</strong>: used to deliver medication reminders on iOS.</li>
+              <li><strong>Apple Push Notifications</strong>: used to deliver medication, appointment, lab, blood pressure and blood sugar reminders on iOS.</li>
             </ul>
           ),
         },
@@ -207,8 +210,8 @@ export default function PrivacyPolicyPage() {
           h: "Notifications",
           body: (
             <p>
-              The app uses local notifications only to remind you about medications, blood pressure
-              measurements, and appointments. No health data is sent with the notifications, and notifications
+              The app uses local notifications only to remind you about medications, blood pressure and blood sugar
+              measurements, appointments, and lab tests. No health data is sent with the notifications, and notifications
               can be disabled from Settings at any time.
             </p>
           ),
@@ -237,13 +240,16 @@ export default function PrivacyPolicyPage() {
           ),
         },
         {
-          h: "Medical disclaimer",
+          h: t.clinicalDisclaimer,
           body: (
-            <p>
-              Dawaa+ is an aid for organizing medications and measurements only and is not a substitute for
-              consultation with your doctor or pharmacist. Always consult a qualified professional before making
-              any decision about your health or treatment.
-            </p>
+            <>
+              <p>
+                Dawaa+ is an aid for organizing medications and measurements only and is not a substitute for
+                consultation with your doctor or pharmacist. Always consult a qualified professional before making
+                any decision about your health or treatment.
+              </p>
+              <p className="mt-2">{t.disclaimerText}</p>
+            </>
           ),
         },
         {

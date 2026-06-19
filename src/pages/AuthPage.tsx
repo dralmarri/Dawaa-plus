@@ -58,7 +58,7 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
   };
 
   return (
-    <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-4" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="h-[100dvh] overflow-hidden bg-background flex flex-col items-center justify-center px-4 py-4" dir={isRTL ? "rtl" : "ltr"}>
       {/* Logo */}
       <div className="mb-8 text-center">
         <div className="w-20 h-20 rounded-3xl overflow-hidden mx-auto mb-4 shadow-lg">

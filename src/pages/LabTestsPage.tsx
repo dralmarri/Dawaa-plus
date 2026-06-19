@@ -163,9 +163,11 @@ const LabTestsPage = () => {
   const [listSearch, setListSearch] = useState("");
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
-  const allStoredResults: Record<string, AnalyzedResult[]> = (() => {
+  const getStoredLabResults = (): Record<string, AnalyzedResult[]> => {
     try { return JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}"); } catch { return {}; }
-  })();
+  };
+
+  const allStoredResults: Record<string, AnalyzedResult[]> = getStoredLabResults();
 
   const totalAbnormal = Object.values(allStoredResults).reduce(
     (sum, arr) => sum + (Array.isArray(arr) ? arr.filter((r) => r.status !== "normal").length : 0),
@@ -349,7 +351,7 @@ const LabTestsPage = () => {
     try {
       await store.saveLabTest(test);
       if (allResults.length > 0) {
-        const stored = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+        const stored = getStoredLabResults();
         stored[testId] = allResults;
         localStorage.setItem("dawaa_lab_results", JSON.stringify(stored));
         setSavedResults((prev) => ({ ...prev, [testId]: allResults }));
@@ -362,7 +364,7 @@ const LabTestsPage = () => {
         try {
           await store.saveLabTest(test);
           if (allResults.length > 0) {
-            const stored = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+            const stored = getStoredLabResults();
             stored[testId] = allResults;
             localStorage.setItem("dawaa_lab_results", JSON.stringify(stored));
             setSavedResults((prev) => ({ ...prev, [testId]: allResults }));
@@ -397,7 +399,7 @@ const LabTestsPage = () => {
     setAttachedImage(test.fileUrl || null);
     setAttachedImageName("");
     // Load existing results into manual entries
-    const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+    const allResults = getStoredLabResults();
     const testResults = allResults[test.id] as AnalyzedResult[] | undefined;
     if (testResults && testResults.length > 0) {
       setManualEntries(testResults.map(r => ({
@@ -415,7 +417,7 @@ const LabTestsPage = () => {
   const confirmDelete = async () => {
     if (!deleteId) return;
     await store.deleteLabTest(deleteId);
-    const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+    const allResults = getStoredLabResults();
     delete allResults[deleteId];
     localStorage.setItem("dawaa_lab_results", JSON.stringify(allResults));
     setTests(store.getLabTests());
@@ -427,7 +429,7 @@ const LabTestsPage = () => {
       setShowResults(showResults === testId ? null : testId);
       return;
     }
-    const allResults = JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}");
+    const allResults = getStoredLabResults();
     if (allResults[testId]) {
       setSavedResults((prev) => ({ ...prev, [testId]: allResults[testId] }));
     }
@@ -435,7 +437,7 @@ const LabTestsPage = () => {
   };
 
   const handlePrint = async (test: LabTest) => {
-    const results = savedResults[test.id] || JSON.parse(localStorage.getItem("dawaa_lab_results") || "{}")[test.id];
+    const results = savedResults[test.id] || getStoredLabResults()[test.id];
     const dateStr = format(new Date(test.date), "yyyy/MM/dd - hh:mm a");
     const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:");
 
@@ -759,7 +761,7 @@ const LabTestsPage = () => {
             const pdfDataName = hasPdfData ? (test.fileUrl!.slice("pdfdata:".length).split("|||")[0] || "PDF") : "";
 
             return (
-              <div key={test.id} className="bg-card rounded-2xl border border-border overflow-hidden">
+              <div key={test.id} className="bg-card rounded-3xl border-2 border-primary/30 shadow-sm overflow-hidden">
                 <div className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -774,12 +776,16 @@ const LabTestsPage = () => {
                       </p>
                       {test.notes && <p className="text-sm text-muted-foreground mt-1">📝 {test.notes}</p>}
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => openEdit(test)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
-                        <Pencil className="w-3.5 h-3.5" />
+                    <div className="flex flex-col gap-2 shrink-0">
+                      <button onClick={() => openEdit(test)}
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                        <Pencil className="w-4 h-4" />
+                        {isRTL ? "تعديل" : "Edit"}
                       </button>
-                      <button onClick={() => setDeleteId(test.id)} className="text-destructive/60 hover:text-destructive p-1">
+                      <button onClick={() => setDeleteId(test.id)}
+                        className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
                         <Trash2 className="w-4 h-4" />
+                        {isRTL ? "حذف" : "Delete"}
                       </button>
                     </div>
                   </div>

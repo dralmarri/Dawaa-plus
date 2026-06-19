@@ -47,7 +47,7 @@ const MedicationsPage = () => {
       ) : (
         <div className="px-4 space-y-3 mt-4">
           {medications.map((med) => (
-            <div key={med.id} className="bg-card rounded-2xl border border-border p-4">
+            <div key={med.id} className="bg-card rounded-3xl border-2 border-primary/30 p-4 shadow-sm">
               <div className="flex items-start gap-3">
                 {med.imageUrl ? (
                   <img src={med.imageUrl} alt={med.name} className="w-16 h-16 rounded-xl object-cover border border-border flex-shrink-0" />
@@ -149,20 +149,20 @@ const MedicationsPage = () => {
                         );
                       })()}
                     </div>
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex flex-col gap-2 flex-shrink-0">
                       <button
                         onClick={() => navigate(`/medications/add?edit=${med.id}`)}
-                        className="p-2 rounded-lg bg-primary/10 text-primary hover:bg-primary/20"
-                        aria-label={isRTL ? "تعديل الدواء" : "Edit medication"}
+                        className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                       >
                         <Pencil className="w-4 h-4" />
+                        {isRTL ? "تعديل" : "Edit"}
                       </button>
                       <button
                         onClick={() => setDeleteId(med.id)}
-                        className="p-2 rounded-lg bg-destructive/10 text-destructive hover:bg-destructive/20"
-                        aria-label={isRTL ? "حذف الدواء" : "Delete medication"}
+                        className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity"
                       >
                         <Trash2 className="w-4 h-4" />
+                        {isRTL ? "حذف" : "Delete"}
                       </button>
                     </div>
                   </div>

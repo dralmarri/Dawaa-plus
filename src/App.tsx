@@ -1,12 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import BottomNav from "@/components/BottomNav";
-import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData } from "@/lib/store";
+import { setStoreUid, syncFromCloud, migrateLocalToCloud, initStore, hasLocalData, clearLocalData, getMigratedFlag, setMigratedFlag } from "@/lib/store";
 import { useNotifications } from "@/hooks/useNotifications";
 import { toast } from "sonner";
 import {
@@ -15,12 +15,14 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import AuthPage from "@/pages/AuthPage";
+import LanguageSelectionPage from "@/pages/LanguageSelectionPage";
 import HomePage from "@/pages/HomePage";
 import MedicationsPage from "@/pages/MedicationsPage";
 import AddMedicationPage from "@/pages/AddMedicationPage";
 import HistoryPage from "@/pages/HistoryPage";
 import SettingsPage from "@/pages/SettingsPage";
 import BloodPressurePage from "@/pages/BloodPressurePage";
+import BloodSugarPage from "@/pages/BloodSugarPage";
 import AppointmentsPage from "@/pages/AppointmentsPage";
 import LabTestsPage from "@/pages/LabTestsPage";
 import EmergencyContactPage from "@/pages/EmergencyContactPage";
@@ -31,6 +33,7 @@ import ContactUsPage from "@/pages/ContactUsPage";
 import ReportsPage from "@/pages/ReportsPage";
 
 import NotFound from "@/pages/NotFound";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -49,59 +52,96 @@ const ProtectedRoute = ({ children, guestMode }: { children: React.ReactNode; gu
 
 const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolean) => void }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const fromSettings = (location.state as any)?.fromSettings;
   if (user && !fromSettings) return <Navigate to="/" replace />;
-  return <AuthPage onSkip={() => setGuestMode(true)} onSignedIn={() => setGuestMode(false)} />;
+  return <AuthPage
+    onSkip={() => { setGuestMode(true); navigate("/", { replace: true }); }}
+    onSignedIn={() => { setGuestMode(false); navigate("/", { replace: true, state: {} }); }}
+  />;
 };
 
 const AppRoutes = () => {
   const { user, loading } = useAuth();
+  const navigate = useNavigate();
   const [guestMode, setGuestMode] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [needsLangChoice, setNeedsLangChoice] = useState(
+    () => !localStorage.getItem("dawaa_lang_selected")
+  );
   const pendingUserId = useRef<string | null>(null);
   const { reschedule } = useNotifications();
+
 
   // Wire up cloud sync when user logs in
   useEffect(() => {
     initStore();
   }, []);
 
+  // Listen for iOS Home-Screen Quick Actions / Siri App Intents dispatched by AppDelegate.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const route = (e as CustomEvent<string>).detail;
+      if (typeof route === "string" && route.startsWith("/")) {
+        navigate(route);
+      }
+    };
+    window.addEventListener("app-shortcut", handler as EventListener);
+    return () => window.removeEventListener("app-shortcut", handler as EventListener);
+  }, [navigate]);
+
   useEffect(() => {
     if (user) {
       setStoreUid(user.id);
-      const MIGRATED_KEY = `dawaa_migrated_${user.id}`;
-      const alreadyHandled = localStorage.getItem(MIGRATED_KEY);
-      const guestDataExists = !alreadyHandled && hasLocalData();
-
-      if (guestDataExists) {
-        pendingUserId.current = user.id;
-        setImportDialogOpen(true);
-      } else {
-        syncFromCloud(user.id);
-      }
+      (async () => {
+        const alreadyHandled = await getMigratedFlag(user.id);
+        const guestDataExists = !alreadyHandled && hasLocalData();
+        if (guestDataExists) {
+          pendingUserId.current = user.id;
+          setImportDialogOpen(true);
+        } else {
+          if (!alreadyHandled) await setMigratedFlag(user.id, "no-guest-data");
+          syncFromCloud(user.id);
+        }
+      })();
     } else {
       setStoreUid(null);
     }
   }, [user]);
 
+  const handlingRef = useRef(false);
+
   const handleImportConfirm = async () => {
+    if (handlingRef.current) return;
+    handlingRef.current = true;
     const uid = pendingUserId.current;
-    if (!uid) return;
+    if (!uid) { handlingRef.current = false; return; }
     setImportDialogOpen(false);
     const count = await migrateLocalToCloud(uid);
     if (count > 0) toast.success(`تم ترحيل ${count} عنصر إلى السحابة`);
+    await setMigratedFlag(uid, "imported");
     await syncFromCloud(uid);
+    setGuestMode(false);
+    navigate("/", { replace: true });
+    handlingRef.current = false;
   };
 
   const handleImportCancel = async () => {
+    if (handlingRef.current) return;
+    handlingRef.current = true;
     const uid = pendingUserId.current;
     setImportDialogOpen(false);
     if (uid) {
       await clearLocalData();
-      localStorage.setItem(`dawaa_migrated_${uid}`, "skipped");
+      await setMigratedFlag(uid, "skipped");
       await syncFromCloud(uid);
     }
+    setGuestMode(false);
+    navigate("/", { replace: true });
+    handlingRef.current = false;
   };
+
+
 
   const isLoggedIn = !!user || guestMode;
 
@@ -112,6 +152,12 @@ const AppRoutes = () => {
       </div>
     );
   }
+
+  if (needsLangChoice) {
+    return <LanguageSelectionPage onSelect={() => setNeedsLangChoice(false)} />;
+  }
+
+
 
   return (
     <>
@@ -129,7 +175,8 @@ const AppRoutes = () => {
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-    <div className="min-h-[100dvh] bg-background pb-20">
+    <ScrollToTop />
+    <div className={`min-h-[100dvh] bg-background ${isLoggedIn ? "pb-20" : ""}`}>
       <Routes>
         <Route path="/auth" element={<AuthRoute user={user} setGuestMode={setGuestMode} />} />
         <Route path="/" element={<ProtectedRoute guestMode={guestMode}><HomePage /></ProtectedRoute>} />
@@ -138,6 +185,7 @@ const AppRoutes = () => {
         <Route path="/history" element={<ProtectedRoute guestMode={guestMode}><HistoryPage /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute guestMode={guestMode}><SettingsPage onSwitchToAuth={() => setGuestMode(false)} /></ProtectedRoute>} />
         <Route path="/blood-pressure" element={<ProtectedRoute guestMode={guestMode}><BloodPressurePage /></ProtectedRoute>} />
+        <Route path="/blood-sugar" element={<ProtectedRoute guestMode={guestMode}><BloodSugarPage /></ProtectedRoute>} />
         <Route path="/appointments" element={<ProtectedRoute guestMode={guestMode}><AppointmentsPage /></ProtectedRoute>} />
         <Route path="/lab-tests" element={<ProtectedRoute guestMode={guestMode}><LabTestsPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute guestMode={guestMode}><ReportsPage /></ProtectedRoute>} />

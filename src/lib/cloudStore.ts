@@ -16,11 +16,17 @@ function toMedRow(uid: string, m: Medication) {
   };
 }
 
+function safeParse<T>(val: unknown, fallback: T): T {
+  if (!val) return fallback;
+  if (typeof val !== "string") return val as T;
+  try { return JSON.parse(val) as T; } catch { return fallback; }
+}
+
 function fromMedRow(r: any): Medication {
   return {
     id: r.id, name: r.name, form: r.form, dosage: Number(r.dosage),
     concentration: r.concentration || undefined, frequency: r.frequency,
-    times: typeof r.times === "string" ? JSON.parse(r.times) : r.times,
+    times: safeParse<string[]>(r.times, []),
     startDate: r.start_date || undefined, isChronic: r.is_chronic,
     durationDays: r.duration_days || undefined, mealRelation: r.meal_relation,
     notes: r.notes || "", stock: Number(r.stock),
@@ -158,20 +164,34 @@ export const cloudStore = {
     await supabase.from("dose_records").delete().eq("user_id", uid).eq("medication_id", medicationId).eq("date", date);
   },
 
+  deleteAllDoseRecords: async (uid: string) => {
+    await supabase.from("dose_records").delete().eq("user_id", uid);
+  },
+
   // Settings
   getSettings: async (uid: string): Promise<AppSettings | null> => {
     const { data } = await supabase.from("user_settings").select("*").eq("user_id", uid).single();
     if (!data) return null;
+    const d = data as any;
     return {
-      language: data.language as "en" | "ar",
-      userName: data.user_name || "",
-      notifications: data.notifications,
-      voiceNotifications: data.voice_notifications,
-      reminderBefore: data.reminder_before,
-      escalationOnMissed: data.escalation_on_missed,
-      emergencyContact: data.emergency_contact as any,
-      dailySummary: data.daily_summary,
-      dailySummaryTime: data.daily_summary_time,
+      language: d.language as "en" | "ar",
+      userName: d.user_name || "",
+      dateOfBirth: d.date_of_birth || undefined,
+      bloodType: d.blood_type || undefined,
+      allergies: d.allergies || undefined,
+      chronicDiseases: safeParse<string[]>(d.chronic_diseases, []) || undefined,
+      customDiseases: d.custom_diseases || undefined,
+      notifications: d.notifications,
+      voiceNotifications: d.voice_notifications,
+      reminderBefore: d.reminder_before,
+      escalationOnMissed: d.escalation_on_missed,
+      emergencyContact: safeParse<any>(d.emergency_contact, undefined),
+      dailySummary: d.daily_summary,
+      dailySummaryTime: d.daily_summary_time,
+      bpReminders: d.bp_reminders ?? false,
+      bpCustomTimes: safeParse<string[]>(d.bp_custom_times, []) || undefined,
+      bloodSugarReminders: d.blood_sugar_reminders ?? false,
+      bloodSugarCustomTimes: safeParse<string[]>(d.blood_sugar_custom_times, []) || undefined,
     };
   },
   saveSettings: async (uid: string, s: AppSettings) => {
@@ -180,13 +200,22 @@ export const cloudStore = {
         user_id: uid,
         language: s.language,
         user_name: s.userName,
+        date_of_birth: s.dateOfBirth || null,
+        blood_type: s.bloodType || null,
+        allergies: s.allergies || null,
+        chronic_diseases: s.chronicDiseases ? JSON.stringify(s.chronicDiseases) : null,
+        custom_diseases: s.customDiseases || null,
         notifications: s.notifications,
         voice_notifications: s.voiceNotifications,
         reminder_before: s.reminderBefore,
         escalation_on_missed: s.escalationOnMissed,
-        emergency_contact: s.emergencyContact as any || null,
+        emergency_contact: s.emergencyContact || null,
         daily_summary: s.dailySummary,
         daily_summary_time: s.dailySummaryTime,
+        bp_reminders: s.bpReminders,
+        bp_custom_times: s.bpCustomTimes ? JSON.stringify(s.bpCustomTimes) : null,
+        blood_sugar_reminders: s.bloodSugarReminders ?? false,
+        blood_sugar_custom_times: s.bloodSugarCustomTimes ? JSON.stringify(s.bloodSugarCustomTimes) : null,
       },
       { onConflict: "user_id" }
     );

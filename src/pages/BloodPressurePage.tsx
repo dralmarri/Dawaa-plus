@@ -25,6 +25,9 @@ const BloodPressurePage = () => {
   const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [printing, setPrinting] = useState(false);
+
+
 
   const latestReading = readings[0];
   const last7 = readings.slice(0, 7);
@@ -82,7 +85,14 @@ const BloodPressurePage = () => {
   };
 
   const handlePrintReport = async () => {
-    if (!readings.length) return;
+    if (printing) return;
+    if (!readings.length) {
+      toast.error(isRTL ? "لا توجد قراءات للطباعة" : "No readings to print");
+      return;
+    }
+
+    setPrinting(true);
+    const loadingId = toast.loading(isRTL ? "جارٍ إنشاء التقرير..." : "Generating report...");
 
     const header = isRTL ? "تقرير ضغط الدم" : "Blood Pressure Report";
     const tempDiv = document.createElement("div");
@@ -91,34 +101,34 @@ const BloodPressurePage = () => {
     tempDiv.style.left = "-99999px";
     tempDiv.style.top = "0";
     tempDiv.style.width = "794px";
-    tempDiv.style.background = "white";
+    tempDiv.style.background = "#ffffff";
     tempDiv.style.color = "#111827";
     tempDiv.style.padding = "32px";
     tempDiv.style.fontFamily = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 
     tempDiv.innerHTML = `
-      <h1 style="margin:0 0 8px;font-size:28px;">${header}</h1>
+      <h1 style="margin:0 0 8px;font-size:28px;color:#111827;">${header}</h1>
       <p style="margin:0 0 24px;color:#6b7280;">${isRTL ? "سجل القراءات الطبية لضغط الدم" : "Medical blood pressure readings report"}</p>
-      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;color:#111827;">
         <thead>
           <tr>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "التاريخ" : "Date"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الوقت" : "Time"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الانقباضي" : "Systolic"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الانبساطي" : "Diastolic"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "النبض" : "Heart rate"}</th>
-            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"}">${isRTL ? "الفترة" : "Period"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "التاريخ" : "Date"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الوقت" : "Time"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الانقباضي" : "Systolic"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الانبساطي" : "Diastolic"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "النبض" : "Heart rate"}</th>
+            <th style="border:1px solid #d1d5db;background:#f3f4f6;padding:10px;text-align:${isRTL ? "right" : "left"};color:#111827;">${isRTL ? "الفترة" : "Period"}</th>
           </tr>
         </thead>
         <tbody>
           ${readings.map((r) => `
             <tr>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.date}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.time}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.systolic}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.diastolic}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.heartRate}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;">${r.period}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.date}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.time}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.systolic}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.diastolic}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.heartRate}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.period}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -128,6 +138,7 @@ const BloodPressurePage = () => {
     document.body.appendChild(tempDiv);
 
     try {
+      await new Promise((r) => setTimeout(r, 50));
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
         import("html2canvas"),
         import("jspdf"),
@@ -159,7 +170,7 @@ const BloodPressurePage = () => {
         heightLeft -= pageHeight;
       }
 
-      const fileName = "blood-pressure-report.pdf";
+      const fileName = `blood-pressure-report-${format(new Date(), "yyyy-MM-dd")}.pdf`;
 
       if (Capacitor.isNativePlatform()) {
         const pdfDataUri = pdf.output("datauristring");
@@ -185,11 +196,16 @@ const BloodPressurePage = () => {
       } else {
         pdf.save(fileName);
       }
+
+      toast.dismiss(loadingId);
+      toast.success(isRTL ? "تم إنشاء التقرير" : "Report generated");
     } catch (error) {
       console.error("Failed to export blood pressure report", error);
+      toast.dismiss(loadingId);
       toast.error(isRTL ? "تعذر إنشاء ملف التقرير الآن. حاول مرة أخرى." : "Unable to generate the report right now. Please try again.");
     } finally {
-      document.body.removeChild(tempDiv);
+      if (tempDiv.parentNode) document.body.removeChild(tempDiv);
+      setPrinting(false);
     }
   };
 
@@ -219,13 +235,6 @@ const BloodPressurePage = () => {
           </div>
         )}
 
-        <BPChart readings={readings} />
-
-        {readings.length > 0 && (
-          <button onClick={handlePrintReport} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide">
-            🖨️ {t.printReport}
-          </button>
-        )}
 
         <div className="bg-card rounded-2xl border border-border p-4 sm:p-5 space-y-3 sm:space-y-4 print-hide">
           <div className="flex items-center gap-3">
@@ -237,6 +246,8 @@ const BloodPressurePage = () => {
               <p className="text-sm text-muted-foreground">{t.enterBP}</p>
             </div>
           </div>
+
+
 
           <div>
             <label className="text-sm font-bold text-foreground flex items-center gap-1">
@@ -340,16 +351,29 @@ const BloodPressurePage = () => {
                       {getCategory(r.systolic, r.diastolic).emoji} {getCategory(r.systolic, r.diastolic).label}
                     </span>
                   </div>
-                  <div className="flex flex-col gap-1 ms-2">
-                    <button onClick={() => openEdit(r)} className="p-1.5 rounded-lg bg-primary/10 text-primary hover:bg-primary/20">
-                      <Pencil className="w-3.5 h-3.5" />
+                  <div className="flex flex-col gap-2 ms-2 shrink-0">
+                    <button onClick={() => openEdit(r)}
+                      className="rounded-xl bg-primary text-primary-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                      <Pencil className="w-4 h-4" />
+                      {isRTL ? "تعديل" : "Edit"}
                     </button>
-                    <button onClick={() => setDeleteId(r.id)} className="text-destructive/60 hover:text-destructive p-1">🗑️</button>
+                    <button onClick={() => setDeleteId(r.id)}
+                      className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
+                      🗑️ {isRTL ? "حذف" : "Delete"}
+                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        )}
+
+        <BPChart readings={readings} />
+
+        {readings.length > 0 && (
+          <button onClick={handlePrintReport} disabled={printing} className="w-full py-3 rounded-2xl bg-info text-info-foreground font-semibold text-center print-hide disabled:opacity-60">
+            🖨️ {printing ? (isRTL ? "جارٍ الإنشاء..." : "Generating...") : t.printReport}
+          </button>
         )}
       </div>
     </div>
