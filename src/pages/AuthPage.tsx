@@ -28,8 +28,8 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
     if (!email.trim()) return;
     setLocalError(null);
     if (mode === "register") {
-      if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
-        setLocalError("Password must be at least 8 characters, include one uppercase letter and one number");
+      if (password.length < 6) {
+        setLocalError("Password must be at least 6 characters");
         return;
       }
       if (password !== confirmPassword) {
@@ -149,15 +149,9 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
               </button>
             </div>
             {mode === "register" && (
-              <div className="mt-2 space-y-1">
-                <p className={`text-xs flex items-center gap-1.5 ${password.length >= 8 ? "text-green-600" : "text-muted-foreground"}`}>
-                  {password.length >= 8 ? "✓" : "•"} 8 characters minimum
-                </p>
-                <p className={`text-xs flex items-center gap-1.5 ${/[A-Z]/.test(password) ? "text-green-600" : "text-muted-foreground"}`}>
-                  {/[A-Z]/.test(password) ? "✓" : "•"} One uppercase letter (A-Z)
-                </p>
-                <p className={`text-xs flex items-center gap-1.5 ${/[0-9]/.test(password) ? "text-green-600" : "text-muted-foreground"}`}>
-                  {/[0-9]/.test(password) ? "✓" : "•"} One number (0-9)
+              <div className="mt-2">
+                <p className={`text-xs flex items-center gap-1.5 ${password.length >= 6 ? "text-green-600" : "text-muted-foreground"}`}>
+                  {password.length >= 6 ? "✓" : "•"} At least 6 characters
                 </p>
               </div>
             )}
