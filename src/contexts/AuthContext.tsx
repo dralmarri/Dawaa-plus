@@ -137,7 +137,7 @@ function getErrorMessage(message: string): string {
   if (lower.includes("invalid email"))
     return "Invalid email address";
   if (lower.includes("weak password") || lower.includes("at least") || lower.includes("password should") || lower.includes("password"))
-    return "Password must be at least 8 characters, include one uppercase letter and one number";
+    return message; // show exact Supabase message
   if (lower.includes("invalid login") || lower.includes("invalid credentials"))
     return "Incorrect email or password";
   if (lower.includes("rate limit") || lower.includes("too many"))
