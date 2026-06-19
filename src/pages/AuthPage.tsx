@@ -44,8 +44,13 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
         await signIn(email.trim(), password);
         onSignedIn?.();
       } else if (mode === "register") {
-        await signUp(email.trim(), password);
-        setSignupSent(true);
+        const hasSession = await signUp(email.trim(), password);
+        if (hasSession) {
+          // Email confirmation disabled — user is logged in immediately
+          onSignedIn?.();
+        } else {
+          setSignupSent(true);
+        }
       } else {
         await resetPassword(email.trim());
         setResetSent(true);
@@ -90,9 +95,15 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
 
         {/* Signup sent message */}
         {signupSent && (
-          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center">
-            <p className="text-sm text-green-600 font-medium">✅ تم إرسال رابط التأكيد إلى بريدك الإلكتروني.</p>
-            <p className="text-xs text-green-700 mt-1">افتح الرسالة واضغط على الرابط لتفعيل حسابك، ثم ارجع للتطبيق وسجّل دخولك.</p>
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3 text-center space-y-2">
+            <p className="text-sm text-green-600 font-bold">✅ Account created successfully!</p>
+            <p className="text-xs text-green-700">Please check your email and click the confirmation link, then sign in.</p>
+            <button
+              onClick={() => { setMode("login"); setSignupSent(false); setPassword(""); setConfirmPassword(""); }}
+              className="w-full py-2 rounded-xl bg-primary text-primary-foreground text-sm font-bold mt-1"
+            >
+              Go to Sign In
+            </button>
           </div>
         )}
 
