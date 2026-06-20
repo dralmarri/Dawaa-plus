@@ -65,8 +65,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   };
 
   const SHARE_URL = "https://dawaaplus.net";
-  // TODO: replace the placeholder ID below once the app is live on the App Store.
-  const APP_STORE_URL = "https://apps.apple.com/app/dawaa-plus/id0000000000";
+  const APP_STORE_URL = "https://apps.apple.com/app/dawaa-plus/id6759831259";
   const SHARE_TEXT = isRTL
     ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك"
     : "Try dawaa+ app to manage your medications and health";
