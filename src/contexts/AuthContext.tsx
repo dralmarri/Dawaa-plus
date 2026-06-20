@@ -110,22 +110,22 @@ export const useAuth = () => {
 function getErrorMessage(message: string): string {
   const lower = (message || "").toLowerCase();
   if (lower.includes("already registered") || lower.includes("already in use") || lower.includes("user_already_exists") || lower.includes("user already") || lower.includes("422"))
-    return "This email is already registered — try signing in";
+    return "هذا البريد مسجّل مسبقاً — حاول تسجيل الدخول";
   if (lower.includes("invalid email"))
-    return "Invalid email address";
+    return "البريد الإلكتروني غير صحيح";
   if (lower.includes("weak password") || lower.includes("at least") || lower.includes("password should") || lower.includes("password"))
-    return message; // show exact Supabase message
+    return "كلمة المرور ضعيفة — يجب أن تكون 6 أحرف على الأقل";
   if (lower.includes("invalid login") || lower.includes("invalid credentials"))
-    return "Incorrect email or password";
+    return "البريد الإلكتروني أو كلمة المرور غير صحيحة";
   if (lower.includes("rate limit") || lower.includes("too many"))
-    return "Too many attempts — please try again later";
+    return "محاولات كثيرة — يرجى الانتظار قليلاً والمحاولة مجدداً";
   if (lower.includes("not found") || lower.includes("user not found"))
-    return "No account found with this email";
+    return "لا يوجد حساب بهذا البريد الإلكتروني";
   if (lower.includes("email not confirmed"))
-    return "Please confirm your email first — check your inbox";
+    return "يرجى تأكيد بريدك الإلكتروني أولاً — تحقق من صندوق الوارد";
   if (lower.includes("redirect") || lower.includes("uri"))
-    return "Configuration error — please contact support";
+    return "خطأ في الإعدادات — يرجى التواصل مع الدعم";
   if (lower.includes("network") || lower.includes("fetch"))
-    return "Network error — check your connection and try again";
-  return `Error: ${message || "Unknown error"}`;
+    return "خطأ في الشبكة — تحقق من اتصالك بالإنترنت وحاول مجدداً";
+  return `خطأ: ${message || "حدث خطأ غير معروف"}`;
 }
