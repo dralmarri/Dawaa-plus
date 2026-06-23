@@ -15,7 +15,7 @@ const PageHeader = ({ title, showBack, onAdd }: PageHeaderProps) => {
   const { isRTL } = useLanguage();
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full z-40 bg-background safe-top flex items-center justify-between px-4 pt-4 pb-3 border-b border-border/50 shadow-sm">
+    <div className="fixed top-0 left-0 right-0 w-full z-40 bg-background safe-top flex items-center justify-between px-4 pt-5 pb-4 border-b border-border/50 shadow-sm">
       <div className="flex items-center gap-3">
         {showBack && (
           <button onClick={() => navigate(-1)} className="text-foreground">
@@ -25,13 +25,13 @@ const PageHeader = ({ title, showBack, onAdd }: PageHeaderProps) => {
         <img
           src="/app-icon.png"
           alt=""
-          className="w-9 h-9 rounded-xl object-cover shadow-sm border border-border"
+          className="w-10 h-10 rounded-xl object-cover shadow-sm border border-border"
         />
-        <h1 className="text-2xl font-bold text-foreground">{title}</h1>
+        <h1 className="text-3xl font-bold text-foreground">{title}</h1>
       </div>
 
       {onAdd && (
-        <button onClick={onAdd} className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+        <button onClick={onAdd} className="w-11 h-11 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
           <Plus className="w-5 h-5" />
         </button>
       )}
