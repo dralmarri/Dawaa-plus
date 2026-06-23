@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, ChevronDown, Check, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, ArrowLeft, Globe, Smartphone, User, Bell, Languages } from "lucide-react";
+import PageHeader from "@/components/PageHeader";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, ChevronDown, Check, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, Globe, Smartphone, User, Bell, Languages } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -66,7 +67,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
   const SHARE_URL = "https://dawaaplus.net";
   // TODO: replace the placeholder ID below once the app is live on the App Store.
-  const APP_STORE_URL = "https://apps.apple.com/app/dawaa-plus/id0000000000";
+  const APP_STORE_URL = "https://apps.apple.com/app/dawaa-plus/id6759831259";
   const SHARE_TEXT = isRTL
     ? "جرب تطبيق دواء+ لإدارة أدويتك وصحتك"
     : "Try dawaa+ app to manage your medications and health";
@@ -183,7 +184,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     { icon: FileText, label: t.termsOfUse, path: "/terms" },
     { icon: Shield, label: t.privacyPolicy, path: "/privacy" },
     { icon: Mail, label: t.contactUs, action: () => navigate("/contact") },
-    { icon: Info, label: t.version, value: "1.0.7" },
+    { icon: Info, label: t.version, value: "1.0.9" },
   ];
 
   const reminderMap: Record<string, string> = {
@@ -197,18 +198,8 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   }
 
   return (
-    <div className="pb-28">
-      <div className="sticky top-0 z-40 bg-background safe-top flex items-center gap-3 px-4 pt-4 pb-3 border-b border-border/50 shadow-sm">
-        <button onClick={() => navigate(-1)} className="text-foreground" aria-label="back">
-          <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
-        </button>
-        <h1 className="text-3xl font-bold text-foreground">{t.settings}</h1>
-        <img
-          src="/app-icon.png"
-          alt=""
-          className="w-9 h-9 rounded-xl object-cover shadow-sm border border-border"
-        />
-      </div>
+    <div className="pb-28 pt-header">
+      <PageHeader title={t.settings} showBack />
 
       <div className="px-4 space-y-4">
         {(() => {

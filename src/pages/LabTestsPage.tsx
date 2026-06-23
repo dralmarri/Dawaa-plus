@@ -634,7 +634,7 @@ const LabTestsPage = () => {
   const manualResults = getManualResults();
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 pt-header">
       <PageHeader title={t.labTests} showBack onAdd={() => setShowForm(true)} />
 
       {fullscreenImage && (

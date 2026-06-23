@@ -193,6 +193,11 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Fixed header offset — content starts below the fixed page header */
+.pt-header {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 64px);
+}
+
 /* Hide Lovable badge */
 [data-lovable-badge], .lovable-badge, iframe[src*="lovable"], a[href*="lovable.dev"] {
   display: none !important;
