@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,20 +21,21 @@ import MedicationsPage from "@/pages/MedicationsPage";
 import AddMedicationPage from "@/pages/AddMedicationPage";
 import HistoryPage from "@/pages/HistoryPage";
 import SettingsPage from "@/pages/SettingsPage";
-import BloodPressurePage from "@/pages/BloodPressurePage";
-import BloodSugarPage from "@/pages/BloodSugarPage";
-import AppointmentsPage from "@/pages/AppointmentsPage";
-import LabTestsPage from "@/pages/LabTestsPage";
 import EmergencyContactPage from "@/pages/EmergencyContactPage";
 import TermsOfUsePage from "@/pages/TermsOfUsePage";
 import PrivacyPolicyPage from "@/pages/PrivacyPolicyPage";
 import ResetPasswordPage from "@/pages/ResetPasswordPage";
 import ContactUsPage from "@/pages/ContactUsPage";
-import ReportsPage from "@/pages/ReportsPage";
 import EmailConfirmedPage from "@/pages/EmailConfirmedPage";
-
 import NotFound from "@/pages/NotFound";
 import ScrollToTop from "@/components/ScrollToTop";
+
+// Lazy-load heavy pages (contain jspdf / html2canvas / pdf.js — ~930 KB)
+const BloodPressurePage = lazy(() => import("@/pages/BloodPressurePage"));
+const BloodSugarPage    = lazy(() => import("@/pages/BloodSugarPage"));
+const AppointmentsPage  = lazy(() => import("@/pages/AppointmentsPage"));
+const LabTestsPage      = lazy(() => import("@/pages/LabTestsPage"));
+const ReportsPage       = lazy(() => import("@/pages/ReportsPage"));
 
 const queryClient = new QueryClient();
 
@@ -161,6 +162,7 @@ const AppRoutes = () => {
 
 
   return (
+    <Suspense fallback={<div className="flex min-h-[100dvh] items-center justify-center bg-background"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>}>
     <>
     <AlertDialog open={importDialogOpen}>
       <AlertDialogContent onEscapeKeyDown={(e) => e.preventDefault()}>
@@ -202,6 +204,7 @@ const AppRoutes = () => {
       {isLoggedIn && <BottomNav />}
     </div>
     </>
+    </Suspense>
   );
 };
 
