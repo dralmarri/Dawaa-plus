@@ -279,7 +279,7 @@ const AddMedicationPage = () => {
 
   return (
     <div className="min-h-screen flex flex-col max-w-lg mx-auto">
-      <div className="flex items-center px-4 pt-4 pb-2">
+      <div className="sticky top-0 z-40 bg-background safe-top flex items-center px-4 pt-4 pb-2 border-b border-border/50 shadow-sm">
         <button onClick={() => (step > 1 ? setStep(step - 1) : navigate(-1))} className="text-foreground">
           <ArrowLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
         </button>
