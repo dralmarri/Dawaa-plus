@@ -203,7 +203,7 @@
 
 /* Fixed header offset — content starts below the fixed page header */
 .pt-header {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 76px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 60px);
 }
 
 /* Hide Lovable badge */
