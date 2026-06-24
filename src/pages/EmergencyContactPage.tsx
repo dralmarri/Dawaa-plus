@@ -41,7 +41,7 @@ const EmergencyContactPage = () => {
   };
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 overflow-x-hidden">
       <div className="px-4 pt-6 pb-4 flex items-center gap-3">
         <button onClick={() => navigate(-1)} className="p-1">
           <ChevronLeft className={`w-6 h-6 text-foreground ${isRTL ? "rotate-180" : ""}`} />

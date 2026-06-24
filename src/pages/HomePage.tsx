@@ -140,7 +140,7 @@ const HomePage = () => {
   const minsLeft = nextDose ? minutesUntil(nextDose.scheduledTime) : 0;
 
   return (
-    <div className="pb-28 px-4 pt-header">
+    <div className="pb-28 px-4 pt-header overflow-x-hidden">
       <PageHeader title={isRTL ? "دواء+" : "Dawaa+"} />
 
       {/* Greeting card */}

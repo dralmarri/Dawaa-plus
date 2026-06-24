@@ -224,7 +224,7 @@ export default function TermsOfUsePage() {
       ];
 
   return (
-    <div className="min-h-[100dvh] bg-background pb-28">
+    <div className="min-h-[100dvh] bg-background pb-28 overflow-x-hidden">
       <header className="border-b border-border bg-card/80 backdrop-blur-sm">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-5">
           <button
