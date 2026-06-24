@@ -191,7 +191,7 @@ const AppRoutes = () => {
       </AlertDialogContent>
     </AlertDialog>
     <ScrollToTop />
-    <div className="min-h-[100dvh] bg-background">
+    <div id="app-scroll" className="fixed inset-0 bg-background overflow-y-auto overflow-x-hidden overscroll-none">
       <Routes>
         <Route path="/auth" element={<AuthRoute user={user} setGuestMode={setGuestMode} />} />
         <Route path="/" element={<ProtectedRoute guestMode={guestMode}><HomePage /></ProtectedRoute>} />
@@ -213,8 +213,8 @@ const AppRoutes = () => {
         <Route path="/contact" element={<ContactUsPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
-      {isLoggedIn && <BottomNav />}
     </div>
+    {isLoggedIn && <BottomNav />}
     </>
     </Suspense>
   );
