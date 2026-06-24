@@ -27,6 +27,9 @@
     --accent: 140 30% 94%;
     --accent-foreground: 152 52% 24%;
 
+    --nav-bg: 140 45% 90%;
+    --nav-border: 140 35% 80%;
+
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
@@ -89,6 +92,9 @@
 
     --accent: 152 20% 18%;
     --accent-foreground: 140 15% 92%;
+
+    --nav-bg: 152 22% 14%;
+    --nav-border: 152 18% 24%;
 
     --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;

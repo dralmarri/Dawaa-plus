@@ -16,14 +16,14 @@ const PageHeader = ({ title, showBack, onAdd }: PageHeaderProps) => {
   const BackIcon = isRTL ? ChevronRight : ChevronLeft;
 
   return (
-    <div className="fixed top-0 left-0 right-0 w-full z-40 bg-background/95 backdrop-blur-sm safe-top border-b border-border/40">
+    <div className="fixed top-0 left-0 right-0 w-full z-40 bg-[hsl(var(--nav-bg))] safe-top border-b border-[hsl(var(--nav-border))]">
       <div className="flex items-center justify-between px-3 py-3">
         {/* Left slot */}
         <div className="w-10 flex justify-start">
           {showBack ? (
             <button
               onClick={() => navigate(-1)}
-              className="w-9 h-9 rounded-xl bg-accent flex items-center justify-center text-foreground"
+              className="w-9 h-9 rounded-xl bg-card border border-[hsl(var(--nav-border))] flex items-center justify-center text-foreground"
             >
               <BackIcon className="w-5 h-5" />
             </button>
