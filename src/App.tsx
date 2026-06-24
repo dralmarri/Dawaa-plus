@@ -191,7 +191,7 @@ const AppRoutes = () => {
       </AlertDialogContent>
     </AlertDialog>
     <ScrollToTop />
-    <div className={`min-h-[100dvh] bg-background ${isLoggedIn ? "pb-20" : ""}`}>
+    <div className="min-h-[100dvh] bg-background">
       <Routes>
         <Route path="/auth" element={<AuthRoute user={user} setGuestMode={setGuestMode} />} />
         <Route path="/" element={<ProtectedRoute guestMode={guestMode}><HomePage /></ProtectedRoute>} />

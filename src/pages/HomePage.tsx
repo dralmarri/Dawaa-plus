@@ -305,14 +305,14 @@ const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: any; isRTL: boole
   ];
 
   return (
-    <div ref={menuRef} className="fixed bottom-20 ltr:right-4 rtl:left-4 z-40">
+    <div ref={menuRef} className="fixed bottom-[calc(env(safe-area-inset-bottom,0px)+90px)] ltr:right-4 rtl:left-4 z-40">
       {open && (
-        <div className="absolute bottom-16 ltr:right-0 rtl:left-0 flex flex-col gap-3 mb-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="absolute bottom-16 ltr:right-0 rtl:left-0 flex flex-col items-end gap-3 mb-2 animate-in fade-in slide-in-from-bottom-4 duration-200">
           {items.map((item) => (
             <button
               key={item.path}
               onClick={() => { setOpen(false); navigate(item.path); }}
-              className="flex items-center gap-3 ltr:flex-row rtl:flex-row-reverse"
+              className="flex items-center gap-3"
             >
               <span className="text-sm font-semibold text-foreground bg-card border border-border rounded-xl px-3 py-2 shadow-md whitespace-nowrap">
                 {item.label}
