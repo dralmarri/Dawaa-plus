@@ -21,26 +21,22 @@ const BottomNav = () => {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-[hsl(var(--nav-bg))] border-t border-[hsl(var(--nav-border))] safe-bottom print-hide">
-      <div className="max-w-lg mx-auto flex items-center justify-around px-2 py-2">
+      <div className="max-w-lg mx-auto flex items-center justify-around px-2 pt-2 pb-1">
         {tabs.map((tab) => {
           const active = isActive(tab.path);
           return (
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className="flex flex-col items-center gap-1 flex-1 py-1"
+              className="flex flex-col items-center gap-1.5 flex-1 py-1"
             >
-              <div className={`flex flex-col items-center gap-1 px-5 py-1.5 rounded-2xl transition-all duration-200 ${
-                active ? "bg-primary/10" : ""
-              }`}>
-                <tab.icon
-                  className={`w-6 h-6 transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
-                  strokeWidth={active ? 2.5 : 1.8}
-                />
-                <span className={`text-[11px] font-medium transition-colors ${active ? "text-primary font-semibold" : "text-muted-foreground"}`}>
-                  {tab.label}
-                </span>
-              </div>
+              <tab.icon
+                className={`w-7 h-7 transition-colors ${active ? "text-primary" : "text-muted-foreground"}`}
+                strokeWidth={active ? 2.5 : 1.8}
+              />
+              <span className={`text-[11px] transition-colors ${active ? "text-primary font-bold" : "text-muted-foreground font-medium"}`}>
+                {tab.label}
+              </span>
             </button>
           );
         })}

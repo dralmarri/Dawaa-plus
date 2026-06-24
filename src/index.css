@@ -212,6 +212,11 @@
   padding-top: calc(env(safe-area-inset-top, 0px) + 60px);
 }
 
+/* Branded (home) header offset — taller header with icon + name + tagline */
+.pt-header-brand {
+  padding-top: calc(env(safe-area-inset-top, 0px) + 128px);
+}
+
 /* Hide Lovable badge */
 [data-lovable-badge], .lovable-badge, iframe[src*="lovable"], a[href*="lovable.dev"] {
   display: none !important;

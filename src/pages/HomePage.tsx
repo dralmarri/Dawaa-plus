@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, Droplet } from "lucide-react";
-import PageHeader from "@/components/PageHeader";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import { format } from "date-fns";
@@ -140,20 +139,26 @@ const HomePage = () => {
   const minsLeft = nextDose ? minutesUntil(nextDose.scheduledTime) : 0;
 
   return (
-    <div className="pb-28 px-4 pt-header overflow-x-hidden">
-      <PageHeader title={isRTL ? "دواء+" : "Dawaa+"} />
-
-      {/* Greeting card */}
-      <div className="rounded-3xl p-5 text-primary-foreground shadow-lg relative overflow-hidden mb-4"
-           style={{ background: "linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(152 52% 18%) 100%)" }}>
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0 flex-1 text-end">
-            <p className="text-sm opacity-80">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
-            <h1 className="text-3xl font-bold mt-2 truncate">
-              {isRTL ? `أهلاً، ${displayName}` : `Hello, ${displayName}`}
-            </h1>
-          </div>
+    <div className="pb-28 px-4 pt-header-brand overflow-x-hidden">
+      {/* Branded fixed header (icon + name + tagline) */}
+      <div className="fixed top-0 left-0 right-0 z-40 bg-[hsl(var(--nav-bg))] safe-top border-b border-[hsl(var(--nav-border))]">
+        <div className="flex flex-col items-center py-3">
+          <img
+            src="/app-icon.png"
+            alt=""
+            className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-[hsl(var(--nav-border))]"
+          />
+          <h1 className="text-xl font-bold text-foreground mt-1.5" dir="ltr">Dawaa+</h1>
+          <p className="text-xs text-muted-foreground mt-0.5">{isRTL ? "رفيقك الصحي" : "Your health companion"}</p>
         </div>
+      </div>
+
+      {/* Personalized greeting line */}
+      <div className="text-center mb-4">
+        <p className="text-base font-bold text-foreground">
+          {isRTL ? `أهلاً، ${displayName}` : `Hello, ${displayName}`}
+        </p>
+        <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
       </div>
 
       {/* Next dose hero */}
