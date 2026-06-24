@@ -260,6 +260,18 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
           </div>
         </div>
 
+        {/* Login button shown directly under account row for guest users */}
+        {!user && (
+          <button onClick={() => navigate("/auth", { state: { fromSettings: true } })}
+            className="bg-card rounded-2xl border border-primary w-full flex items-center justify-between px-5 py-4">
+            <div className="flex items-center gap-3">
+              <LogIn className="w-5 h-5 text-primary" />
+              <span className="text-primary font-bold">{isRTL ? "تسجيل الدخول للمزامنة" : "Sign in to sync"}</span>
+            </div>
+            <Chevron className="w-5 h-5 text-muted-foreground" />
+          </button>
+        )}
+
         {/* Language Dialog */}
         <Dialog open={languageOpen} onOpenChange={setLanguageOpen}>
           <DialogContent className="max-w-md" dir={isRTL ? "rtl" : "ltr"}>
@@ -642,21 +654,12 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
         </div>
 
 
-        {user ? (
+        {user && (
           <button onClick={() => setSignOutConfirm(true)}
             className="bg-card rounded-2xl border border-border w-full flex items-center justify-between px-5 py-4 mb-4">
             <div className="flex items-center gap-3">
               <LogOut className="w-5 h-5 text-destructive" />
               <span className="text-destructive font-medium">{t.signOut}</span>
-            </div>
-            <Chevron className="w-5 h-5 text-muted-foreground" />
-          </button>
-        ) : (
-          <button onClick={() => navigate("/auth", { state: { fromSettings: true } })}
-            className="bg-card rounded-2xl border border-primary w-full flex items-center justify-between px-5 py-4 mb-4">
-            <div className="flex items-center gap-3">
-              <LogIn className="w-5 h-5 text-primary" />
-              <span className="text-primary font-bold">{isRTL ? "تسجيل الدخول للمزامنة" : "Sign in to sync"}</span>
             </div>
             <Chevron className="w-5 h-5 text-muted-foreground" />
           </button>
