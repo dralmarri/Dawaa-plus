@@ -33,7 +33,7 @@ const MedicationsPage = () => {
   };
 
   return (
-    <div className="pb-28 pt-header">
+    <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={t.medications} showBack onAdd={() => navigate("/medications/add")} />
 
       {medications.length === 0 ? (

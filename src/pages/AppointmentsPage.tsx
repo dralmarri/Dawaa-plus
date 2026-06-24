@@ -128,7 +128,7 @@ const AppointmentsPage = () => {
   };
 
   return (
-    <div className="pb-28 pt-header">
+    <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={t.appointments} showBack onAdd={openAdd} />
 
       <div className="px-4 flex gap-2 mb-4">

@@ -197,7 +197,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
   }
 
   return (
-    <div className="pb-28 pt-header">
+    <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={t.settings} showBack />
 
       <div className="px-4 space-y-4">

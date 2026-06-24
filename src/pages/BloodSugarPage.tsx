@@ -78,7 +78,7 @@ const BloodSugarPage = () => {
   };
 
   return (
-    <div className="pb-28 pt-header">
+    <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={isRTL ? "قياس السكر" : "Blood Sugar"} showBack onAdd={() => setShowForm(true)} />
 
       {showForm && (

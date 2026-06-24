@@ -436,7 +436,7 @@ const ReportsPage = () => {
   };
 
   return (
-    <div className="pb-28 pt-header">
+    <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={isRTL ? "التقارير" : "Reports"} showBack />
 
       <div className="px-4 space-y-4">
