@@ -140,7 +140,7 @@
     height: 100%;
     width: 100%;
     overflow-x: hidden;
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
     touch-action: pan-y;
   }
 
@@ -152,7 +152,7 @@
     overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-    overscroll-behavior-x: none;
+    overscroll-behavior: none;
   }
 
   #root {
