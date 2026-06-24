@@ -139,17 +139,17 @@ const HomePage = () => {
   const minsLeft = nextDose ? minutesUntil(nextDose.scheduledTime) : 0;
 
   return (
-    <div className="pb-28 px-4 pt-header-brand overflow-x-hidden">
-      {/* Branded fixed header (icon + name + tagline) */}
+    <div className="pb-28 px-4 pt-header overflow-x-hidden">
+      {/* Branded fixed header (icon + name on one line) */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-[hsl(var(--nav-bg))] safe-top border-b border-[hsl(var(--nav-border))]">
-        <div className="flex flex-col items-center pt-2 pb-3.5">
+        <div className="flex items-center gap-2.5 px-3 py-3">
           <img
             src="/app-icon.png"
             alt=""
-            className="w-20 h-20 rounded-3xl object-cover shadow-md border border-[hsl(var(--nav-border))]"
+            className="w-9 h-9 rounded-xl object-cover shadow-sm border border-[hsl(var(--nav-border))]"
           />
-          <h1 className="text-2xl font-bold text-foreground mt-2" dir="ltr">Dawaa+</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">{isRTL ? "رفيقك الصحي" : "Your health companion"}</p>
+          <h1 className="text-xl font-bold text-foreground" dir="ltr">Dawaa+</h1>
+          <span className="text-xs text-muted-foreground">{isRTL ? "رفيقك الصحي" : "Your health companion"}</span>
         </div>
       </div>
 
