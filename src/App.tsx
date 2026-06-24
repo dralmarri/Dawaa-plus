@@ -66,13 +66,24 @@ const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolea
 const AppRoutes = () => {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [guestMode, setGuestMode] = useState(false);
+  const [guestMode, setGuestModeState] = useState(
+    () => localStorage.getItem("dawaa_guest_mode") === "true"
+  );
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [needsLangChoice, setNeedsLangChoice] = useState(
     () => !localStorage.getItem("dawaa_lang_selected")
   );
   const pendingUserId = useRef<string | null>(null);
   const { reschedule } = useNotifications();
+
+  const setGuestMode = (value: boolean) => {
+    if (value) {
+      localStorage.setItem("dawaa_guest_mode", "true");
+    } else {
+      localStorage.removeItem("dawaa_guest_mode");
+    }
+    setGuestModeState(value);
+  };
 
 
   // Wire up cloud sync when user logs in
@@ -94,6 +105,7 @@ const AppRoutes = () => {
 
   useEffect(() => {
     if (user) {
+      setGuestMode(false);
       setStoreUid(user.id);
       (async () => {
         const alreadyHandled = await getMigratedFlag(user.id);
