@@ -148,6 +148,7 @@
     overflow-x: hidden;
     overscroll-behavior: none;
     touch-action: pan-y;
+    background-color: hsl(var(--nav-bg));
   }
 
   body {
@@ -214,7 +215,7 @@
 
 /* Branded (home) header offset — taller header with icon + name + tagline */
 .pt-header-brand {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 128px);
+  padding-top: calc(env(safe-area-inset-top, 0px) + 162px);
 }
 
 /* Hide Lovable badge */

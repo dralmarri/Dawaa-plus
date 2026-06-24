@@ -142,23 +142,25 @@ const HomePage = () => {
     <div className="pb-28 px-4 pt-header-brand overflow-x-hidden">
       {/* Branded fixed header (icon + name + tagline) */}
       <div className="fixed top-0 left-0 right-0 z-40 bg-[hsl(var(--nav-bg))] safe-top border-b border-[hsl(var(--nav-border))]">
-        <div className="flex flex-col items-center py-3">
+        <div className="flex flex-col items-center pt-2 pb-3.5">
           <img
             src="/app-icon.png"
             alt=""
-            className="w-14 h-14 rounded-2xl object-cover shadow-sm border border-[hsl(var(--nav-border))]"
+            className="w-20 h-20 rounded-3xl object-cover shadow-md border border-[hsl(var(--nav-border))]"
           />
-          <h1 className="text-xl font-bold text-foreground mt-1.5" dir="ltr">Dawaa+</h1>
-          <p className="text-xs text-muted-foreground mt-0.5">{isRTL ? "رفيقك الصحي" : "Your health companion"}</p>
+          <h1 className="text-2xl font-bold text-foreground mt-2" dir="ltr">Dawaa+</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">{isRTL ? "رفيقك الصحي" : "Your health companion"}</p>
         </div>
       </div>
 
-      {/* Personalized greeting line */}
-      <div className="text-center mb-4">
-        <p className="text-base font-bold text-foreground">
-          {isRTL ? `أهلاً، ${displayName}` : `Hello, ${displayName}`}
-        </p>
-        <p className="text-xs text-muted-foreground mt-0.5">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
+      {/* Personalized greeting */}
+      <div className="flex items-center justify-between gap-2 mb-5 mt-1">
+        <div className="min-w-0">
+          <p className="text-2xl font-bold text-foreground truncate">
+            {isRTL ? `أهلاً، ${displayName} 👋` : `Hello, ${displayName} 👋`}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">{format(new Date(), "EEEE, d MMMM yyyy")}</p>
+        </div>
       </div>
 
       {/* Next dose hero */}

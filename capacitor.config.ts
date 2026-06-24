@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Dawaa+',
   webDir: 'dist',
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     preferredContentMode: 'mobile',
   },
   android: {
