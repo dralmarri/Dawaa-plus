@@ -10,6 +10,7 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { store } from "@/lib/store";
 import ChipSelector from "@/components/ChipSelector";
+import AllergyInput from "@/components/AllergyInput";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -329,9 +330,11 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
                 <p className="text-xs text-muted-foreground mb-2">
                   {isRTL ? "اذكر أي دواء تعاني من حساسية تجاهه (مثل: بنسلين، أسبرين)" : "List any medications you are allergic to (e.g. Penicillin, Aspirin)"}
                 </p>
-                <textarea value={draftProfile.allergies || ""} onChange={(e) => setDraftProfile({ ...draftProfile, allergies: e.target.value })}
-                  placeholder={isRTL ? "لا يوجد" : "None"} rows={2}
-                  className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
+                <AllergyInput
+                  value={draftProfile.allergies || ""}
+                  onChange={(v) => setDraftProfile({ ...draftProfile, allergies: v })}
+                  isRTL={isRTL}
+                />
               </div>
 
               <div>
