@@ -22,6 +22,21 @@ async function registerListeners() {
   if (listenersRegistered) return;
   listenersRegistered = true;
 
+  // Ensure notification channel exists (Android 8+)
+  try {
+    await LocalNotifications.createChannel({
+      id: 'medication-reminders',
+      name: 'Medication Reminders',
+      description: 'Reminders for medication doses and health tracking',
+      importance: 5, // IMPORTANCE_HIGH
+      visibility: 1, // VISIBILITY_PUBLIC
+      vibration: true,
+      sound: 'default',
+    });
+  } catch {
+    // ignore — channel may already exist or not supported
+  }
+
   await LocalNotifications.addListener('localNotificationReceived', (_notification) => {
     // foreground notification received
   });
@@ -247,7 +262,7 @@ export async function scheduleMedicationNotifications() {
     notifications.push({
       id, title, body, schedule,
       sound: 'default',
-      smallIcon: 'ic_stat_icon_config_sample',
+      smallIcon: 'ic_notification',
     });
   };
 
@@ -286,7 +301,7 @@ export async function scheduleMedicationNotifications() {
           body,
           schedule: { at, allowWhileIdle: true },
           sound: 'default',
-          smallIcon: 'ic_stat_icon_config_sample',
+          smallIcon: 'ic_notification',
         });
       }
     });
@@ -312,7 +327,7 @@ export async function scheduleMedicationNotifications() {
           : `Time to measure your blood pressure (${timeLabel})`,
         schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_stat_icon_config_sample',
+        smallIcon: 'ic_notification',
       });
     });
   }
@@ -337,7 +352,7 @@ export async function scheduleMedicationNotifications() {
           : `Time to measure your blood sugar (${timeLabel})`,
         schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_stat_icon_config_sample',
+        smallIcon: 'ic_notification',
       });
     });
   }
@@ -368,7 +383,7 @@ export async function scheduleMedicationNotifications() {
         : `Low stock (below 20%): ${names}`,
       schedule: { on: { hour: 9, minute: 0 }, allowWhileIdle: true },
       sound: 'default',
-      smallIcon: 'ic_stat_icon_config_sample',
+      smallIcon: 'ic_notification',
     });
   }
 
@@ -400,7 +415,7 @@ export async function scheduleMedicationNotifications() {
         : `Medications expiring soon or expired: ${all}`,
       schedule: { on: { hour: 9, minute: 5 }, allowWhileIdle: true },
       sound: 'default',
-      smallIcon: 'ic_stat_icon_config_sample',
+      smallIcon: 'ic_notification',
     });
   }
 
@@ -429,7 +444,7 @@ export async function scheduleMedicationNotifications() {
           : `You have a ${appt.specialty}${doctorInfo} appointment tomorrow at ${appt.time}`,
         schedule: { at: dayBefore, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_stat_icon_config_sample',
+        smallIcon: 'ic_notification',
       });
     }
 
@@ -447,7 +462,7 @@ export async function scheduleMedicationNotifications() {
           : `${appt.specialty}${doctorInfo} appointment at ${appt.time}`,
         schedule: { at: twoHoursBefore, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_stat_icon_config_sample',
+        smallIcon: 'ic_notification',
       });
     }
   });
