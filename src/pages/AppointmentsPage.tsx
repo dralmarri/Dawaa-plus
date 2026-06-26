@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { CalendarDays, X, Pencil, Clock, MapPin, StickyNote, User } from "lucide-react";
 import { store } from "@/lib/store";
 import { format, differenceInCalendarDays, isPast } from "date-fns";
@@ -206,7 +207,7 @@ const AppointmentsPage = () => {
         </div>
       )}
 
-      {showForm && (
+      {showForm && createPortal(
         <div className="fixed inset-0 bg-foreground/50 z-[60] flex items-end overflow-hidden">
           <div className="bg-card w-full max-h-[88vh] rounded-t-3xl flex flex-col">
             <div className="flex items-center justify-between p-5 pb-3 shrink-0">
@@ -254,7 +255,8 @@ const AppointmentsPage = () => {
               <button onClick={handleSave} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg">{t.save}</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       <AlertDialog open={!!deleteId} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
         <AlertDialogContent>
