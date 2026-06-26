@@ -208,7 +208,7 @@ const AppointmentsPage = () => {
 
       {showForm && (
         <div className="fixed inset-0 bg-foreground/50 z-[60] flex items-end">
-          <div className="bg-card w-full max-h-[90vh] rounded-t-3xl overflow-y-auto p-5">
+          <div className="bg-card w-full max-h-[90vh] rounded-t-3xl overflow-y-auto p-5 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-foreground">{editingId ? t.editAppointment : t.addAppointment}</h2>
               <button onClick={() => { setShowForm(false); setEditingId(null); }}><X className="w-6 h-6 text-foreground" /></button>
@@ -240,7 +240,7 @@ const AppointmentsPage = () => {
                   className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
               </div>
               <div>
-                <label className="text-base font-bold text-foreground block mb-2">{t.reminderBefore}</label>
+                <label className="text-base font-bold text-foreground block mb-2">{t.reminderBeforeAppointment}</label>
                 <ChipSelector options={reminderLabels} value={reminderMap[reminder]}
                   onChange={(v) => setReminder(reminderKeys[reminderLabels.indexOf(v)])} />
               </div>
