@@ -184,7 +184,7 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
     { icon: FileText, label: t.termsOfUse, path: "/terms" },
     { icon: Shield, label: t.privacyPolicy, path: "/privacy" },
     { icon: Mail, label: t.contactUs, action: () => navigate("/contact") },
-    { icon: Info, label: t.version, value: "1.1.0" },
+    { icon: Info, label: t.version, value: "1.1.1" },
   ];
 
   const reminderMap: Record<string, string> = {
