@@ -208,12 +208,12 @@ const AppointmentsPage = () => {
 
       {showForm && (
         <div className="fixed inset-0 bg-foreground/50 z-[60] flex items-end">
-          <div className="bg-card w-full max-h-[90vh] rounded-t-3xl overflow-y-auto p-5 pb-[calc(env(safe-area-inset-bottom)+2rem)]">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-card w-full max-h-[88vh] rounded-t-3xl flex flex-col">
+            <div className="flex items-center justify-between p-5 pb-3 shrink-0">
               <h2 className="text-xl font-bold text-foreground">{editingId ? t.editAppointment : t.addAppointment}</h2>
               <button onClick={() => { setShowForm(false); setEditingId(null); }}><X className="w-6 h-6 text-foreground" /></button>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-4 overflow-y-auto px-5 flex-1">
               <div>
                 <label className="text-base font-bold text-foreground block mb-2">{isRTL ? "اسم الطبيب" : "Doctor Name"}</label>
                 <input value={doctorName} onChange={(e) => setDoctorName(e.target.value)} placeholder={isRTL ? "اختياري" : "Optional"}
@@ -249,6 +249,8 @@ const AppointmentsPage = () => {
                 <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t.notes + "..."} rows={3}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none" />
               </div>
+            </div>
+            <div className="shrink-0 p-5 pt-3 border-t border-border pb-[calc(env(safe-area-inset-bottom)+1.25rem)]">
               <button onClick={handleSave} className="w-full py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-lg">{t.save}</button>
             </div>
           </div>
