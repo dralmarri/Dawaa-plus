@@ -117,6 +117,11 @@ const AuthPage = ({ onSkip, onSignedIn }: AuthPageProps) => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="example@email.com"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              autoComplete="email"
+              inputMode="email"
               className="w-full px-4 py-3 rounded-xl bg-accent text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
               style={{ [isRTL ? "paddingRight" : "paddingLeft"]: "36px" }}
               dir="ltr"

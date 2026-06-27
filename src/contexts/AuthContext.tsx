@@ -46,7 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const signUp = async (email: string, password: string): Promise<{ confirmationRequired: boolean }> => {
     setError(null);
     const { data, error: err } = await supabase.auth.signUp({
-      email,
+      email: normalizeEmail(email),
       password,
       options: { emailRedirectTo: "https://dawaaplus.net/confirm" },
     });
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signIn = async (email: string, password: string) => {
     setError(null);
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: err } = await supabase.auth.signInWithPassword({ email: normalizeEmail(email), password });
     if (err) {
       const msg = getErrorMessage(err.message);
       setError(msg);
@@ -80,7 +80,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const resetPassword = async (email: string) => {
     setError(null);
-    const { error: err } = await supabase.auth.resetPasswordForEmail(email, {
+    const { error: err } = await supabase.auth.resetPasswordForEmail(normalizeEmail(email), {
       redirectTo: AUTH_REDIRECT_BASE + "/reset-password",
     });
     if (err) {
@@ -106,6 +106,12 @@ export const useAuth = () => {
   if (!ctx) throw new Error("useAuth must be used within AuthProvider");
   return ctx;
 };
+
+// Mobile keyboards auto-capitalize and may add whitespace. Supabase stores
+// emails lowercased, so normalize here to keep sign-in working across devices.
+function normalizeEmail(email: string): string {
+  return email.trim().toLowerCase();
+}
 
 function getErrorMessage(message: string): string {
   const lower = (message || "").toLowerCase();
