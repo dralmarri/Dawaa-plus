@@ -107,7 +107,7 @@ const AppointmentsPage = () => {
       reminderBefore: reminder, notes, completed: editingId ? (appointments.find(a => a.id === editingId)?.completed || false) : false,
     };
     store.saveAppointment(apt);
-    setAppointments(store.getAppointments());
+    setAppointments([...store.getAppointments()]);
     setShowForm(false);
     setEditingId(null);
   };
@@ -115,24 +115,22 @@ const AppointmentsPage = () => {
   const confirmDelete = () => {
     if (!deleteId) return;
     store.deleteAppointment(deleteId);
-    setAppointments(store.getAppointments());
+    setAppointments([...store.getAppointments()]);
     setDeleteId(null);
   };
 
-  const toggleComplete = (id: string) => {
+  const toggleComplete = async (id: string) => {
     const apt = appointments.find((a) => a.id === id);
-    if (apt) {
-      apt.completed = !apt.completed;
-      store.saveAppointment(apt);
-      setAppointments(store.getAppointments());
-    }
+    if (!apt) return;
+    await store.saveAppointment({ ...apt, completed: !apt.completed });
+    setAppointments([...store.getAppointments()]);
   };
 
   return (
     <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={t.appointments} showBack onAdd={openAdd} />
 
-      <div className="px-4 flex gap-2 mb-4">
+      <div className="px-4 flex gap-2 mt-4 mb-4">
         {(["upcoming", "all", "completed"] as const).map((tKey) => (
           <button key={tKey} onClick={() => setTab(tKey)}
             className={`px-4 py-2 rounded-full text-sm font-medium border transition-colors ${
