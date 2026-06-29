@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
 import PageHeader from "@/components/PageHeader";
@@ -682,14 +683,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
       </div>
 
       {/* Share app modal - unified */}
-      {shareOpen && (
+      {shareOpen && createPortal(
         <div
-          className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4"
+          className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4 overflow-y-auto"
           dir={isRTL ? "rtl" : "ltr"}
           onClick={() => setShareOpen(false)}
         >
           <div
-            className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border"
+            className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border my-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between">
@@ -805,13 +806,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
 
 
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Delete account confirmation modal */}
-      {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center z-50 p-4" dir={isRTL ? "rtl" : "ltr"}>
-          <div className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border">
+      {deleteConfirm && createPortal(
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70] p-4 overflow-y-auto" dir={isRTL ? "rtl" : "ltr"}>
+          <div className="bg-card rounded-3xl w-full max-w-md p-6 space-y-4 border border-border my-auto">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center">
                 <Trash2 className="w-6 h-6 text-destructive" />
@@ -843,7 +845,8 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <AlertDialog open={signOutConfirm} onOpenChange={setSignOutConfirm}>
