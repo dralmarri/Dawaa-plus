@@ -119,8 +119,18 @@ function getErrorMessage(message: string): string {
     return "هذا البريد مسجّل مسبقاً — حاول تسجيل الدخول";
   if (lower.includes("invalid email"))
     return "البريد الإلكتروني غير صحيح";
-  if (lower.includes("weak password") || lower.includes("at least") || lower.includes("password should") || lower.includes("password"))
-    return "كلمة المرور ضعيفة — يجب أن تكون 6 أحرف على الأقل";
+  // Password found in known data breaches (Supabase leaked-password protection)
+  if (lower.includes("pwned") || lower.includes("leaked") || lower.includes("compromise") || lower.includes("easy to guess") || lower.includes("data breach"))
+    return "كلمة المرور هذه شائعة أو ظهرت في تسريبات سابقة — اختر كلمة مرور أقوى وفريدة";
+  // Password too short
+  if (lower.includes("at least") || lower.includes("should be at least") || lower.includes("too short"))
+    return "كلمة المرور قصيرة جداً — يجب أن تكون 6 أحرف على الأقل";
+  // Password missing required character types
+  if (lower.includes("should contain") || lower.includes("must contain") || lower.includes("lowercase") || lower.includes("uppercase") || lower.includes("requires"))
+    return "كلمة المرور يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام ورموز";
+  // Generic weak password
+  if (lower.includes("weak password") || lower.includes("password"))
+    return "كلمة المرور ضعيفة — اختر كلمة مرور أقوى (6 أحرف على الأقل)";
   if (lower.includes("invalid login") || lower.includes("invalid credentials"))
     return "البريد الإلكتروني أو كلمة المرور غير صحيحة";
   if (lower.includes("rate limit") || lower.includes("too many"))

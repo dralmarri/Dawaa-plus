@@ -512,7 +512,7 @@ const AddMedicationPage = () => {
         )}
       </div>
 
-      <div className="px-4 pb-6 pt-2 flex gap-3">
+      <div className="px-4 pt-2 flex gap-3 pb-[calc(env(safe-area-inset-bottom)+6.5rem)]">
         {step > 1 && (
           <button
             onClick={() => setStep(step - 1)}
