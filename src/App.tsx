@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import type { User } from "@supabase/supabase-js";
 import { BrowserRouter, Routes, Route, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/sonner";
@@ -52,10 +53,10 @@ const ProtectedRoute = ({ children, guestMode }: { children: React.ReactNode; gu
   return <>{children}</>;
 };
 
-const AuthRoute = ({ user, setGuestMode }: { user: any; setGuestMode: (v: boolean) => void }) => {
+const AuthRoute = ({ user, setGuestMode }: { user: User | null; setGuestMode: (v: boolean) => void }) => {
   const location = useLocation();
   const navigate = useNavigate();
-  const fromSettings = (location.state as any)?.fromSettings;
+  const fromSettings = (location.state as { fromSettings?: boolean } | null)?.fromSettings;
   if (user && !fromSettings) return <Navigate to="/" replace />;
   return <AuthPage
     onSkip={() => { setGuestMode(true); navigate("/", { replace: true }); }}

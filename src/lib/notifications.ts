@@ -1,4 +1,4 @@
-import { LocalNotifications, PermissionStatus } from '@capacitor/local-notifications';
+import { LocalNotifications, PermissionStatus, type Schedule } from '@capacitor/local-notifications';
 import { store } from './store';
 import type { Medication, Appointment } from '@/types';
 
@@ -204,7 +204,7 @@ export async function scheduleMedicationNotifications() {
   const takenToday = new Set<string>();
   try {
     const records = store.getDoseRecords() || [];
-    records.forEach((r: any) => {
+    records.forEach((r) => {
       if (r.date === todayStr && r.status === 'taken') {
         takenToday.add(`${r.medicationId}|${r.scheduledTime}`);
       }
@@ -217,7 +217,7 @@ export async function scheduleMedicationNotifications() {
     id: number;
     title: string;
     body: string;
-    schedule: any;
+    schedule: Schedule;
     sound: string;
     smallIcon: string;
   }> = [];
@@ -250,7 +250,7 @@ export async function scheduleMedicationNotifications() {
     const notifyMinute = ((totalMinutes % 60) + 60) % 60;
     scheduledIds.push(id);
 
-    let schedule: any;
+    let schedule: Schedule;
     if (allTaken) {
       const tomorrow = new Date(now);
       tomorrow.setDate(tomorrow.getDate() + 1);

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, type NavigateFunction } from "react-router-dom";
 import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, Droplet } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
@@ -290,7 +290,7 @@ const HomePage = () => {
   );
 };
 
-const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: any; isRTL: boolean; t: any }) => {
+const FloatingAddButton = ({ navigate, isRTL, t }: { navigate: NavigateFunction; isRTL: boolean; t: Record<string, string> }) => {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -357,7 +357,7 @@ const DosesDialog = ({
   filter: "scheduled" | "taken" | "missed" | null;
   doses: DoseRecord[];
   isRTL: boolean;
-  t: any;
+  t: Record<string, string>;
   onTaken: (id: string, e: React.MouseEvent) => void;
   onMissed: (id: string, e: React.MouseEvent) => void;
   onUndo: (id: string, e: React.MouseEvent) => void;

@@ -26,7 +26,7 @@ const ReportsPage = () => {
     supabase.auth.getUser().then(({ data }) => {
       const u = data.user;
       if (!u) return;
-      const meta: any = u.user_metadata || {};
+      const meta = (u.user_metadata ?? {}) as Record<string, string | undefined>;
       const name =
         meta.full_name ||
         meta.name ||
@@ -264,12 +264,12 @@ const ReportsPage = () => {
             ${th(isRTL ? "الانبساطي" : "Diastolic")}
             ${th(isRTL ? "النبض" : "Pulse")}
           </tr></thead>
-          <tbody>${bp30.map((r: any) => `<tr>
+          <tbody>${bp30.map((r) => `<tr>
             ${td(r.date)}
             ${td(r.time)}
             ${td(`<strong>${r.systolic}</strong>`)}
             ${td(`<strong>${r.diastolic}</strong>`)}
-            ${td(r.pulse ?? "—")}
+            ${td(r.heartRate ?? "—")}
           </tr>`).join("")}</tbody>
         </table>`;
 

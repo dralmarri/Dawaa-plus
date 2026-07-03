@@ -67,7 +67,7 @@ const MedicationsPage = () => {
                         {t.times}: {med.times.join(", ")}
                       </p>
                       {(() => {
-                        let dosesPerCycle = med.times.length;
+                        const dosesPerCycle = med.times.length;
                         let twoMonthSupply: number;
                         switch (med.frequency) {
                           case "Every week": twoMonthSupply = dosesPerCycle * 8; break;

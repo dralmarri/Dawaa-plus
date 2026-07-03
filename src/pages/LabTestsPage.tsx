@@ -317,7 +317,7 @@ const LabTestsPage = () => {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
         const ctx = canvas.getContext("2d")!;
-        await page.render({ canvasContext: ctx, viewport } as any).promise;
+        await page.render({ canvasContext: ctx, viewport } as Parameters<typeof page.render>[0]).promise;
         pages.push(canvas.toDataURL("image/jpeg", 0.85));
       }
       setPdfViewer({ pages, name: filename, downloadUrl });
@@ -678,7 +678,7 @@ const LabTestsPage = () => {
                     const reader = new FileReader();
                     reader.onload = async () => {
                       const b64 = (reader.result as string).split(",")[1];
-                      const safeName = pdfViewer.name.replace(/[^\w.\-]/g, "_");
+                      const safeName = pdfViewer.name.replace(/[^\w.-]/g, "_");
                       const written = await Filesystem.writeFile({ path: safeName, data: b64, directory: Directory.Cache });
                       const { Share } = await import("@capacitor/share");
                       await Share.share({ title: pdfViewer.name, url: written.uri });

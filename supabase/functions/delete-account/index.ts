@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     // Delete user data from known tables (best-effort)
     const tables = ["medications", "blood_pressure_readings", "appointments", "lab_tests", "dose_records", "user_settings"];
     for (const t of tables) {
-      try { await admin.from(t).delete().eq("user_id", user.id); } catch (_) {}
+      try { await admin.from(t).delete().eq("user_id", user.id); } catch { /* best-effort */ }
     }
 
     // Delete auth user

@@ -275,14 +275,14 @@ export async function getMigratedFlag(uid: string): Promise<string | null> {
       await Preferences.set({ key, value: legacy });
       return legacy;
     }
-  } catch {}
+  } catch { /* localStorage unavailable */ }
   return null;
 }
 
 export async function setMigratedFlag(uid: string, value: string): Promise<void> {
   const key = `dawaa_migrated_${uid}`;
   await Preferences.set({ key, value });
-  try { localStorage.setItem(key, value); } catch {}
+  try { localStorage.setItem(key, value); } catch { /* localStorage unavailable */ }
 }
 
 export async function migrateLocalToCloud(uid: string): Promise<number> {

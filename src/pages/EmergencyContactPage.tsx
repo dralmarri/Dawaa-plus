@@ -34,8 +34,8 @@ const EmergencyContactPage = () => {
   };
 
   const handleRemove = () => {
-    const { emergencyContact, ...rest } = store.getSettings();
-    store.saveSettings({ ...rest, emergencyContact: undefined } as any);
+    const { emergencyContact: _removed, ...rest } = store.getSettings();
+    store.saveSettings({ ...rest, emergencyContact: undefined });
     toast.success(isRTL ? "تم حذف جهة الاتصال" : "Contact removed");
     navigate("/settings");
   };

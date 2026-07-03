@@ -1,5 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
 import type { Medication, BloodPressureReading, Appointment, LabTest, DoseRecord, AppSettings } from "@/types";
+
+// The generated Supabase types predate some columns added later via
+// migrations, so extend the row type with the newer settings fields.
+type SettingsRow = Tables<"user_settings"> & {
+  date_of_birth?: string | null;
+  blood_type?: string | null;
+  allergies?: string | null;
+  chronic_diseases?: string | null;
+  custom_diseases?: string | null;
+  bp_reminders?: boolean | null;
+  bp_custom_times?: string | null;
+  blood_sugar_reminders?: boolean | null;
+  blood_sugar_custom_times?: string | null;
+};
 
 // ── Helper: convert camelCase ↔ snake_case ──────────────────────
 
@@ -22,7 +37,7 @@ function safeParse<T>(val: unknown, fallback: T): T {
   try { return JSON.parse(val) as T; } catch { return fallback; }
 }
 
-function fromMedRow(r: any): Medication {
+function fromMedRow(r: Tables<"medications">): Medication {
   return {
     id: r.id, name: r.name, form: r.form, dosage: Number(r.dosage),
     concentration: r.concentration || undefined, frequency: r.frequency,
@@ -45,7 +60,7 @@ function toReadingRow(uid: string, r: BloodPressureReading) {
   };
 }
 
-function fromReadingRow(r: any): BloodPressureReading {
+function fromReadingRow(r: Tables<"blood_pressure_readings">): BloodPressureReading {
   return {
     id: r.id, systolic: r.systolic, diastolic: r.diastolic,
     heartRate: r.heart_rate, period: r.period, date: r.date, time: r.time,
@@ -62,7 +77,7 @@ function toApptRow(uid: string, a: Appointment) {
   };
 }
 
-function fromApptRow(r: any): Appointment {
+function fromApptRow(r: Tables<"appointments">): Appointment {
   return {
     id: r.id, doctorName: r.doctor_name || undefined, specialty: r.specialty,
     date: r.date, time: r.time, location: r.location || "",
@@ -78,7 +93,7 @@ function toLabRow(uid: string, t: LabTest) {
   };
 }
 
-function fromLabRow(r: any): LabTest {
+function fromLabRow(r: Tables<"lab_tests">): LabTest {
   return {
     id: r.id, name: r.name, notes: r.notes || "",
     fileUrl: r.file_url || undefined, date: r.date,
@@ -93,7 +108,7 @@ function toDoseRow(uid: string, d: DoseRecord) {
   };
 }
 
-function fromDoseRow(r: any): DoseRecord {
+function fromDoseRow(r: Tables<"dose_records">): DoseRecord {
   return {
     id: r.id, medicationId: r.medication_id, medicationName: r.medication_name,
     scheduledTime: r.scheduled_time, takenAt: r.taken_at || undefined,
@@ -172,7 +187,7 @@ export const cloudStore = {
   getSettings: async (uid: string): Promise<AppSettings | null> => {
     const { data } = await supabase.from("user_settings").select("*").eq("user_id", uid).single();
     if (!data) return null;
-    const d = data as any;
+    const d = data as SettingsRow;
     return {
       language: d.language as "en" | "ar",
       userName: d.user_name || "",
@@ -185,7 +200,7 @@ export const cloudStore = {
       voiceNotifications: d.voice_notifications,
       reminderBefore: d.reminder_before,
       escalationOnMissed: d.escalation_on_missed,
-      emergencyContact: safeParse<any>(d.emergency_contact, undefined),
+      emergencyContact: safeParse<AppSettings["emergencyContact"]>(d.emergency_contact, undefined),
       dailySummary: d.daily_summary,
       dailySummaryTime: d.daily_summary_time,
       bpReminders: d.bp_reminders ?? false,
@@ -222,12 +237,12 @@ export const cloudStore = {
   },
 
   // Lab Results (kept as JSON blob)
-  getLabResults: async (uid: string): Promise<Record<string, any>> => {
+  getLabResults: async (_uid: string): Promise<Record<string, unknown>> => {
     // Store lab results as a special entry in user_settings or use localStorage
     // For simplicity, lab results remain in localStorage
     return {};
   },
-  saveLabResults: async (_uid: string, _results: Record<string, any>) => {
+  saveLabResults: async (_uid: string, _results: Record<string, unknown>) => {
     // Lab results remain in localStorage for now
   },
 };
