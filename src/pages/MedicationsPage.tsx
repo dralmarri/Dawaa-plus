@@ -59,7 +59,12 @@ const MedicationsPage = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-foreground text-lg truncate">{med.name}</h3>
+                      <h3 className="font-bold text-foreground text-lg truncate">
+                        {med.name}
+                        {med.concentration && (
+                          <span className="text-primary font-bold"> {med.concentration} {t.concentrationUnit}</span>
+                        )}
+                      </h3>
                       <p className="text-sm text-muted-foreground">
                         {med.form} · {med.dosage} · {med.frequency}
                       </p>
