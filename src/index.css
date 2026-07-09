@@ -218,11 +218,6 @@
   padding-top: calc(env(safe-area-inset-top, 0px) + 162px);
 }
 
-/* Hide Lovable badge */
-[data-lovable-badge], .lovable-badge, iframe[src*="lovable"], a[href*="lovable.dev"] {
-  display: none !important;
-}
-
 /* Capacitor / iOS specific */
 body {
   -webkit-tap-highlight-color: transparent;
