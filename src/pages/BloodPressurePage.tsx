@@ -5,7 +5,6 @@ import { Directory, Filesystem } from "@capacitor/filesystem";
 import { store } from "@/lib/store";
 import { format } from "date-fns";
 import PageHeader from "@/components/PageHeader";
-import ChipSelector from "@/components/ChipSelector";
 import BPChart from "@/components/BPChart";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
@@ -22,7 +21,8 @@ const BloodPressurePage = () => {
   const [diastolic, setDiastolic] = useState("");
   const [heartRate, setHeartRate] = useState("");
   const [notes, setNotes] = useState("");
-  const [period, setPeriod] = useState<"Morning" | "Evening">("Morning");
+  const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [time, setTime] = useState(format(new Date(), "HH:mm"));
   const [editingId, setEditingId] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [printing, setPrinting] = useState(false);
@@ -46,13 +46,29 @@ const BloodPressurePage = () => {
 
   const periodLabels: Record<string, string> = { Morning: t.morning, Evening: t.evening };
 
+  // Morning = before noon, Evening = noon onward. Derived automatically
+  // from the measurement time so the user doesn't pick it manually.
+  const derivePeriod = (hhmm: string): "Morning" | "Evening" => {
+    const h = parseInt(hhmm.split(":")[0], 10);
+    return isNaN(h) || h < 12 ? "Morning" : "Evening";
+  };
+  const derivedPeriod = derivePeriod(time);
+
+  const resetForm = () => {
+    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
+    setDate(format(new Date(), "yyyy-MM-dd"));
+    setTime(format(new Date(), "HH:mm"));
+    setEditingId(null);
+  };
+
   const openEdit = (r: BloodPressureReading) => {
     setEditingId(r.id);
     setSystolic(String(r.systolic));
     setDiastolic(String(r.diastolic));
     setHeartRate(String(r.heartRate));
     setNotes(r.notes || "");
-    setPeriod(r.period);
+    setDate(r.date);
+    setTime(r.time);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -61,20 +77,18 @@ const BloodPressurePage = () => {
     const reading: BloodPressureReading = {
       id: editingId || crypto.randomUUID(),
       systolic: Number(systolic), diastolic: Number(diastolic), heartRate: Number(heartRate),
-      period,
-      date: editingId ? (readings.find(r => r.id === editingId)?.date || format(new Date(), "yyyy-MM-dd")) : format(new Date(), "yyyy-MM-dd"),
-      time: editingId ? (readings.find(r => r.id === editingId)?.time || format(new Date(), "HH:mm")) : format(new Date(), "HH:mm"),
+      period: derivePeriod(time),
+      date,
+      time,
       notes: notes.trim() || undefined,
     };
     await store.saveReading(reading);
     setReadings(store.getReadings());
-    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
-    setEditingId(null);
+    resetForm();
   };
 
   const handleCancel = () => {
-    setEditingId(null);
-    setSystolic(""); setDiastolic(""); setHeartRate(""); setNotes("");
+    resetForm();
   };
 
   const confirmDelete = async () => {
@@ -284,14 +298,24 @@ const BloodPressurePage = () => {
             <p className="text-xs text-muted-foreground mt-1">{t.normalRange}</p>
           </div>
 
-          <div>
-            <label className="text-sm font-bold text-foreground block mb-2">{t.measurementPeriod}</label>
-            <ChipSelector
-              options={[t.morning, t.evening]}
-              value={periodLabels[period]}
-              onChange={(v) => setPeriod(v === t.morning ? "Morning" : "Evening")}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-sm font-bold text-foreground block mb-1">{isRTL ? "التاريخ" : "Date"}</label>
+              <input type="date" value={date} max={format(new Date(), "yyyy-MM-dd")} onChange={(e) => setDate(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-accent text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm" />
+            </div>
+            <div>
+              <label className="text-sm font-bold text-foreground block mb-1">{isRTL ? "الوقت" : "Time"}</label>
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-xl bg-accent text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm" />
+            </div>
           </div>
+          <p className="text-xs text-muted-foreground -mt-1">
+            {isRTL ? "الفترة تُحدَّد تلقائياً: " : "Period is set automatically: "}
+            <span className="font-bold text-foreground">
+              {derivedPeriod === "Morning" ? `☀️ ${t.morning}` : `🌙 ${t.evening}`}
+            </span>
+          </p>
 
           <div>
             <label className="text-sm font-bold text-foreground block mb-1">
