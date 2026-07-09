@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from "react";
-import { FlaskConical, X, AlertTriangle, CheckCircle2, ArrowDown, ArrowUp, Plus, Trash2, Search, Image, ZoomIn, Printer, Eye, EyeOff, Pencil } from "lucide-react";
+import { FlaskConical, X, AlertTriangle, CheckCircle2, ArrowDown, ArrowUp, Plus, Trash2, Search, Image, ZoomIn, Printer, Eye, EyeOff, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { store } from "@/lib/store";
 import { format } from "date-fns";
 import PageHeader from "@/components/PageHeader";
@@ -21,9 +21,50 @@ interface ManualEntry {
   isCustom: boolean;
 }
 
-const FullscreenViewer = ({ src, onClose, isRTL }: { src: string; onClose: () => void; isRTL: boolean }) => {
+// ── Multi-file encoding ────────────────────────────────────────────
+// The `fileUrl` field / Supabase `file_url` column holds a single string.
+// To support multiple attachments without a schema change, several files
+// are packed into one string as `multi:[...]` (a JSON array). A single
+// file is stored raw so existing entries keep working unchanged.
+const MULTI_PREFIX = "multi:";
+
+const parseFiles = (fileUrl?: string): string[] => {
+  if (!fileUrl) return [];
+  if (fileUrl.startsWith(MULTI_PREFIX)) {
+    try {
+      const arr = JSON.parse(fileUrl.slice(MULTI_PREFIX.length));
+      return Array.isArray(arr) ? arr.filter((f) => typeof f === "string") : [];
+    } catch {
+      return [];
+    }
+  }
+  return [fileUrl];
+};
+
+const encodeFiles = (files: string[]): string | undefined => {
+  if (files.length === 0) return undefined;
+  if (files.length === 1) return files[0];
+  return MULTI_PREFIX + JSON.stringify(files);
+};
+
+const isPdfData = (f: string) => f.startsWith("pdfdata:");
+const isPdfLegacy = (f: string) => f.startsWith("pdf:");
+const isImageFile = (f: string) => !isPdfData(f) && !isPdfLegacy(f);
+const pdfDataName = (f: string) => f.slice("pdfdata:".length).split("|||")[0] || "PDF";
+
+const FullscreenViewer = ({ images, startIndex, onClose, isRTL }: { images: string[]; startIndex: number; onClose: () => void; isRTL: boolean }) => {
+  const [index, setIndex] = useState(startIndex);
   const [scale, setScale] = useState(1);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const src = images[index] ?? images[0];
+  const multiple = images.length > 1;
+
+  const goTo = useCallback((delta: number) => {
+    setIndex((i) => (i + delta + images.length) % images.length);
+    setScale(1);
+    setTranslate({ x: 0, y: 0 });
+  }, [images.length]);
+
   const lastDist = useRef(0);
   const lastCenter = useRef({ x: 0, y: 0 });
   const dragging = useRef(false);
@@ -101,12 +142,19 @@ const FullscreenViewer = ({ src, onClose, isRTL }: { src: string; onClose: () =>
         <button onClick={onClose} className="bg-white/20 text-white rounded-full p-2">
           <X className="w-5 h-5" />
         </button>
-        <div className="flex items-center gap-1">
-          <button onClick={zoomOut} className="bg-white/20 text-white rounded-full p-2 text-sm font-bold w-9 h-9 flex items-center justify-center">−</button>
-          <button onClick={resetZoom} className="bg-white/20 text-white rounded-full px-3 py-1.5 text-xs font-bold min-w-[50px]">
-            {Math.round(scale * 100)}%
-          </button>
-          <button onClick={zoomIn} className="bg-white/20 text-white rounded-full p-2 text-sm font-bold w-9 h-9 flex items-center justify-center">+</button>
+        <div className="flex items-center gap-2">
+          {multiple && (
+            <span className="text-white text-xs font-bold bg-white/20 rounded-full px-3 py-1.5">
+              {index + 1} / {images.length}
+            </span>
+          )}
+          <div className="flex items-center gap-1">
+            <button onClick={zoomOut} className="bg-white/20 text-white rounded-full p-2 text-sm font-bold w-9 h-9 flex items-center justify-center">−</button>
+            <button onClick={resetZoom} className="bg-white/20 text-white rounded-full px-3 py-1.5 text-xs font-bold min-w-[50px]">
+              {Math.round(scale * 100)}%
+            </button>
+            <button onClick={zoomIn} className="bg-white/20 text-white rounded-full p-2 text-sm font-bold w-9 h-9 flex items-center justify-center">+</button>
+          </div>
         </div>
       </div>
       {/* Image area */}
@@ -132,6 +180,26 @@ const FullscreenViewer = ({ src, onClose, isRTL }: { src: string; onClose: () =>
           onClick={handleDoubleTap}
           draggable={false}
         />
+        {multiple && scale <= 1 && (
+          <>
+            <button
+              onClick={(e) => { e.stopPropagation(); goTo(-1); }}
+              className="absolute top-1/2 -translate-y-1/2 bg-white/20 text-white rounded-full p-3"
+              style={{ [isRTL ? "right" : "left"]: "12px" }}
+              aria-label="Previous"
+            >
+              <ChevronLeft className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); goTo(1); }}
+              className="absolute top-1/2 -translate-y-1/2 bg-white/20 text-white rounded-full p-3"
+              style={{ [isRTL ? "left" : "right"]: "12px" }}
+              aria-label="Next"
+            >
+              <ChevronRight className={`w-6 h-6 ${isRTL ? "rotate-180" : ""}`} />
+            </button>
+          </>
+        )}
       </div>
       {/* Hint */}
       {scale <= 1 && (
@@ -155,9 +223,9 @@ const LabTestsPage = () => {
   const [showResults, setShowResults] = useState<string | null>(null);
   const [savedResults, setSavedResults] = useState<Record<string, AnalyzedResult[]>>({});
   const imageInputRef = useRef<HTMLInputElement>(null);
-  const [attachedImage, setAttachedImage] = useState<string | null>(null);
-  const [attachedImageName, setAttachedImageName] = useState("");
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [attachedFiles, setAttachedFiles] = useState<string[]>([]);
+  const [attaching, setAttaching] = useState(false);
+  const [fullscreen, setFullscreen] = useState<{ images: string[]; index: number } | null>(null);
   const [pdfViewer, setPdfViewer] = useState<{ pages: string[]; name: string; downloadUrl: string } | null>(null);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [listSearch, setListSearch] = useState("");
@@ -262,35 +330,43 @@ const LabTestsPage = () => {
     });
   };
 
+  const readAsDataUrl = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
   const handleFileAttach = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAttachedImageName(file.name);
-    if (file.type.startsWith("image/")) {
-      try {
-        const compressed = await compressImage(file);
-        setAttachedImage(compressed);
-      } catch {
-        const reader = new FileReader();
-        reader.onload = () => setAttachedImage(reader.result as string);
-        reader.readAsDataURL(file);
-      }
-    } else if (file.type === "application/pdf") {
-      // Store actual PDF data URL so it can be opened later.
-      // Format: pdfdata:<filename>|||<dataUrl>
-      try {
-        const dataUrl: string = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        setAttachedImage(`pdfdata:${file.name}|||${dataUrl}`);
-      } catch {
-        setAttachedImage("pdf:" + file.name);
+    const files = Array.from(e.target.files ?? []);
+    if (files.length === 0) return;
+    setAttaching(true);
+    const added: string[] = [];
+    for (const file of files) {
+      if (file.type.startsWith("image/")) {
+        try {
+          added.push(await compressImage(file));
+        } catch {
+          try { added.push(await readAsDataUrl(file)); } catch { /* skip unreadable file */ }
+        }
+      } else if (file.type === "application/pdf") {
+        // Store actual PDF data URL so it can be opened later.
+        // Format: pdfdata:<filename>|||<dataUrl>
+        try {
+          added.push(`pdfdata:${file.name}|||${await readAsDataUrl(file)}`);
+        } catch {
+          added.push("pdf:" + file.name);
+        }
       }
     }
+    if (added.length > 0) setAttachedFiles((prev) => [...prev, ...added]);
+    setAttaching(false);
     if (imageInputRef.current) imageInputRef.current.value = "";
+  };
+
+  const removeAttachment = (idx: number) => {
+    setAttachedFiles((prev) => prev.filter((_, i) => i !== idx));
   };
 
   // Open a stored PDF for viewing — renders pages as images inside the app on all platforms
@@ -331,7 +407,7 @@ const LabTestsPage = () => {
 
   const handleSave = async () => {
     const hasManualValues = manualEntries.some((entry) => entry.value.trim() !== "");
-    const canSaveNow = Boolean(name.trim() || notes.trim() || attachedImage || hasManualValues);
+    const canSaveNow = Boolean(name.trim() || notes.trim() || attachedFiles.length > 0 || hasManualValues);
     if (!canSaveNow) return;
 
     const testId = editingId || crypto.randomUUID();
@@ -344,7 +420,7 @@ const LabTestsPage = () => {
       id: testId,
       name: generatedName,
       notes: notes.trim(),
-      fileUrl: attachedImage || existingTest?.fileUrl || undefined,
+      fileUrl: encodeFiles(attachedFiles),
       date: existingTest?.date || new Date().toISOString(),
     };
 
@@ -359,7 +435,7 @@ const LabTestsPage = () => {
       setTests(store.getLabTests());
       resetForm();
     } catch {
-      if (attachedImage && attachedImage.length > 1000) {
+      if (test.fileUrl && test.fileUrl.length > 1000) {
         test.fileUrl = undefined;
         try {
           await store.saveLabTest(test);
@@ -371,7 +447,7 @@ const LabTestsPage = () => {
           }
           setTests(store.getLabTests());
           resetForm();
-          toast.warning(isRTL ? "تم الحفظ بدون الصورة (المساحة ممتلئة)" : "Saved without image (storage full)");
+          toast.warning(isRTL ? "تم الحفظ بدون الصور (المساحة ممتلئة)" : "Saved without images (storage full)");
         } catch {
           toast.error(isRTL ? "فشل الحفظ - المساحة ممتلئة" : "Save failed - storage full");
         }
@@ -387,8 +463,7 @@ const LabTestsPage = () => {
     setNotes("");
     setManualEntries([]);
     setShowTestPicker(false);
-    setAttachedImage(null);
-    setAttachedImageName("");
+    setAttachedFiles([]);
     setEditingId(null);
   };
 
@@ -396,8 +471,7 @@ const LabTestsPage = () => {
     setEditingId(test.id);
     setName(test.name);
     setNotes(test.notes);
-    setAttachedImage(test.fileUrl || null);
-    setAttachedImageName("");
+    setAttachedFiles(parseFiles(test.fileUrl));
     // Load existing results into manual entries
     const allResults = getStoredLabResults();
     const testResults = allResults[test.id] as AnalyzedResult[] | undefined;
@@ -439,7 +513,7 @@ const LabTestsPage = () => {
   const handlePrint = async (test: LabTest) => {
     const results = savedResults[test.id] || getStoredLabResults()[test.id];
     const dateStr = format(new Date(test.date), "yyyy/MM/dd - hh:mm a");
-    const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:");
+    const imageFiles = parseFiles(test.fileUrl).filter(isImageFile);
 
     const { default: jsPDF } = await import("jspdf");
     const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
@@ -457,20 +531,27 @@ const LabTestsPage = () => {
     pdf.setTextColor(0);
     y += 8;
 
-    // If there's an attached image, show it prominently
-    if (hasImage && test.fileUrl) {
+    // Show each attached image prominently, one after another
+    for (let idx = 0; idx < imageFiles.length; idx++) {
+      const fileUrl = imageFiles[idx];
       try {
         const img = document.createElement("img");
         img.crossOrigin = "anonymous";
         await new Promise<void>((resolve, reject) => {
           img.onload = () => resolve();
           img.onerror = () => reject();
-          img.src = test.fileUrl!;
+          img.src = fileUrl;
         });
 
         const imgRatio = img.naturalWidth / img.naturalHeight;
         const maxW = pageWidth - 20; // 10mm margins
-        const maxH = pageHeight - y - 15; // leave bottom margin
+        let maxH = pageHeight - y - 15; // leave bottom margin
+        // Start each extra image on a fresh page if little room remains
+        if (idx > 0 && maxH < 60) {
+          pdf.addPage();
+          y = 15;
+          maxH = pageHeight - y - 15;
+        }
         let w = maxW;
         let h = w / imgRatio;
         if (h > maxH) {
@@ -478,7 +559,7 @@ const LabTestsPage = () => {
           w = h * imgRatio;
         }
         const x = (pageWidth - w) / 2;
-        pdf.addImage(test.fileUrl, "JPEG", x, y, w, h);
+        pdf.addImage(fileUrl, "JPEG", x, y, w, h);
         y += h + 5;
       } catch {
         // Image failed to load, continue without it
@@ -630,17 +711,18 @@ const LabTestsPage = () => {
   };
 
   const hasManualValues = manualEntries.some((entry) => entry.value.trim() !== "");
-  const canSave = Boolean(name.trim() || notes.trim() || attachedImage || hasManualValues);
+  const canSave = Boolean(name.trim() || notes.trim() || attachedFiles.length > 0 || hasManualValues);
   const manualResults = getManualResults();
 
   return (
     <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={t.labTests} showBack onAdd={() => setShowForm(true)} />
 
-      {fullscreenImage && (
+      {fullscreen && (
         <FullscreenViewer
-          src={fullscreenImage}
-          onClose={() => setFullscreenImage(null)}
+          images={fullscreen.images}
+          startIndex={fullscreen.index}
+          onClose={() => setFullscreen(null)}
           isRTL={isRTL}
         />
       )}
@@ -755,10 +837,11 @@ const LabTestsPage = () => {
           {filteredList.map((test, index) => {
             const hasResults = savedResults[test.id] || allStoredResults[test.id];
             const testNumber = filteredList.length - index;
-            const hasImage = test.fileUrl && !test.fileUrl.startsWith("pdf:") && !test.fileUrl.startsWith("pdfdata:");
-            const hasPdf = test.fileUrl && test.fileUrl.startsWith("pdf:");
-            const hasPdfData = test.fileUrl && test.fileUrl.startsWith("pdfdata:");
-            const pdfDataName = hasPdfData ? (test.fileUrl!.slice("pdfdata:".length).split("|||")[0] || "PDF") : "";
+            const files = parseFiles(test.fileUrl);
+            const imageFiles = files.filter(isImageFile);
+            const pdfDataFiles = files.filter(isPdfData);
+            const legacyPdfFiles = files.filter(isPdfLegacy);
+            const hasImage = imageFiles.length > 0;
 
             return (
               <div key={test.id} className="bg-card rounded-3xl border-2 border-primary/30 shadow-sm overflow-hidden">
@@ -793,31 +876,34 @@ const LabTestsPage = () => {
                   <div className="flex gap-2 mt-3 flex-wrap">
                     {hasImage && (
                       <button
-                        onClick={() => setFullscreenImage(test.fileUrl!)}
+                        onClick={() => setFullscreen({ images: imageFiles, index: 0 })}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
                       >
                         <ZoomIn className="w-3.5 h-3.5" />
-                        {isRTL ? "عرض الصورة" : "View Image"}
+                        {isRTL ? "عرض الصور" : "View Images"}
+                        {imageFiles.length > 1 && ` (${imageFiles.length})`}
                       </button>
                     )}
-                    {hasPdf && (
+                    {legacyPdfFiles.map((f, i) => (
                       <button
+                        key={`legacy-${i}`}
                         onClick={() => toast.info(isRTL
                           ? "اضغط (تعديل) ثم أعد إرفاق الملف لتتمكن من فتحه"
                           : "Tap edit and re-attach the file to open it")}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-muted text-muted-foreground text-xs font-bold hover:bg-accent transition-colors"
                       >
-                        📄 {test.fileUrl!.replace("pdf:", "")}
+                        📄 {f.replace("pdf:", "")}
                       </button>
-                    )}
-                    {hasPdfData && (
+                    ))}
+                    {pdfDataFiles.map((f, i) => (
                       <button
-                        onClick={() => openPdf(test.fileUrl!)}
+                        key={`pdf-${i}`}
+                        onClick={() => openPdf(f)}
                         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold hover:bg-primary/20 transition-colors"
                       >
-                        📄 {isRTL ? "فتح" : "Open"} {pdfDataName}
+                        📄 {isRTL ? "فتح" : "Open"} {pdfDataName(f)}
                       </button>
-                    )}
+                    ))}
                     {hasResults && (
                       <button
                         onClick={() => loadSavedResults(test.id)}
@@ -840,19 +926,36 @@ const LabTestsPage = () => {
                 </div>
 
                 {hasImage && (
-                  <div
-                    className="relative cursor-pointer group border-t border-border"
-                    onClick={() => setFullscreenImage(test.fileUrl!)}
-                  >
-                    <img
-                      src={test.fileUrl}
-                      alt={test.name}
-                      className="w-full max-h-40 object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                      <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                  imageFiles.length === 1 ? (
+                    <div
+                      className="relative cursor-pointer group border-t border-border"
+                      onClick={() => setFullscreen({ images: imageFiles, index: 0 })}
+                    >
+                      <img
+                        src={imageFiles[0]}
+                        alt={test.name}
+                        className="w-full max-h-40 object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                        <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="grid grid-cols-3 gap-1 p-1 border-t border-border">
+                      {imageFiles.map((img, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setFullscreen({ images: imageFiles, index: i })}
+                          className="relative group aspect-square overflow-hidden rounded-lg"
+                        >
+                          <img src={img} alt={`${test.name} ${i + 1}`} className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                            <ZoomIn className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )
                 )}
 
                 {showResults === test.id && savedResults[test.id] && (
@@ -887,49 +990,71 @@ const LabTestsPage = () => {
             </div>
 
             <div>
-              <label className="text-base font-bold text-foreground block mb-2">📷 {isRTL ? "إرفاق صورة التحليل" : "Attach Lab Image"}</label>
-              {attachedImage ? (
-                <div className="relative rounded-xl border border-border overflow-hidden">
-                  {attachedImage.startsWith("pdfdata:") ? (
-                    <button
-                      onClick={() => openPdf(attachedImage)}
-                      className="w-full p-4 flex items-center gap-2 bg-muted/50 hover:bg-muted text-start"
-                    >
-                      <span className="text-2xl">📄</span>
-                      <span className="text-sm font-medium text-foreground flex-1 truncate">
-                        {attachedImage.slice("pdfdata:".length).split("|||")[0]}
-                      </span>
-                      <span className="text-xs text-primary font-bold">{isRTL ? "فتح" : "Open"}</span>
-                    </button>
-                  ) : attachedImage.startsWith("pdf:") ? (
-                    <div className="p-4 flex items-center gap-2 bg-muted/50">
-                      <span className="text-2xl">📄</span>
-                      <span className="text-sm font-medium text-foreground">{attachedImage.replace("pdf:", "")}</span>
+              <label className="text-base font-bold text-foreground block mb-2">
+                📷 {isRTL ? "إرفاق صور/ملفات التحليل" : "Attach Lab Images/Files"}
+                {attachedFiles.length > 0 && (
+                  <span className="text-sm font-normal text-muted-foreground"> ({attachedFiles.length})</span>
+                )}
+              </label>
+
+              {attachedFiles.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 mb-2">
+                  {attachedFiles.map((file, idx) => (
+                    <div key={idx} className="relative rounded-xl border border-border overflow-hidden aspect-square bg-muted/30">
+                      {isImageFile(file) ? (
+                        <img
+                          src={file}
+                          alt={`attachment ${idx + 1}`}
+                          className="w-full h-full object-cover cursor-pointer"
+                          onClick={() => setFullscreen({ images: attachedFiles.filter(isImageFile), index: attachedFiles.filter(isImageFile).indexOf(file) })}
+                        />
+                      ) : (
+                        <button
+                          onClick={() => isPdfData(file) && openPdf(file)}
+                          className="w-full h-full flex flex-col items-center justify-center gap-1 p-2 text-center"
+                        >
+                          <span className="text-2xl">📄</span>
+                          <span className="text-[10px] font-medium text-foreground truncate w-full">
+                            {isPdfData(file) ? pdfDataName(file) : file.replace("pdf:", "")}
+                          </span>
+                        </button>
+                      )}
+                      <button
+                        onClick={() => removeAttachment(idx)}
+                        className="absolute top-1 end-1 bg-destructive text-destructive-foreground rounded-full p-1 shadow"
+                        aria-label="Remove"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                  ) : (
-                    <img src={attachedImage} alt="preview" className="w-full max-h-48 object-contain bg-muted/30" />
-                  )}
-                  <button
-                    onClick={() => { setAttachedImage(null); setAttachedImageName(""); }}
-                    className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
+                  ))}
                 </div>
-              ) : (
-                <button
-                  onClick={() => imageInputRef.current?.click()}
-                  className="w-full border-2 border-dashed border-border rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors flex flex-col items-center gap-2"
-                >
-                  <Image className="w-6 h-6 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">{isRTL ? "اضغط لإرفاق صورة" : "Tap to attach image"}</p>
-                  <p className="text-xs text-muted-foreground">JPG, PNG, WebP, PDF</p>
-                </button>
               )}
+
+              <button
+                onClick={() => imageInputRef.current?.click()}
+                disabled={attaching}
+                className="w-full border-2 border-dashed border-border rounded-xl p-4 text-center cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition-colors flex flex-col items-center gap-2 disabled:opacity-50"
+              >
+                {attaching ? (
+                  <p className="text-sm text-muted-foreground">{isRTL ? "جاري المعالجة..." : "Processing..."}</p>
+                ) : (
+                  <>
+                    <Plus className="w-6 h-6 text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">
+                      {attachedFiles.length > 0
+                        ? (isRTL ? "إضافة المزيد" : "Add more")
+                        : (isRTL ? "اضغط لإرفاق صور (يمكن اختيار أكثر من صورة)" : "Tap to attach images (select multiple)")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">JPG, PNG, WebP, PDF</p>
+                  </>
+                )}
+              </button>
               <input
                 ref={imageInputRef}
                 type="file"
                 accept="image/*,.pdf"
+                multiple
                 onChange={handleFileAttach}
                 className="hidden"
               />
