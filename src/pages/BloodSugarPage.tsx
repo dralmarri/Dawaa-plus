@@ -35,6 +35,23 @@ const BloodSugarPage = () => {
 
   const periodLabel = (k: BloodSugarReading["period"]) => periodLabels[periodKeys.indexOf(k)];
 
+  // Smart default for the meal-relative period based on the current hour.
+  // The user can still change it — fasting vs. after-meal can't be known
+  // from the clock alone, so this is only a sensible starting point.
+  const smartDefaultPeriod = (): BloodSugarReading["period"] => {
+    const h = new Date().getHours();
+    return h >= 4 && h < 10 ? "Fasting" : "Random";
+  };
+
+  const openAdd = () => {
+    setValue(110);
+    setNotes("");
+    setPeriod(smartDefaultPeriod());
+    setDate(format(new Date(), "yyyy-MM-dd"));
+    setTime(format(new Date(), "HH:mm"));
+    setShowForm(true);
+  };
+
   const classify = (v: number, p: BloodSugarReading["period"]) => {
     // Simple classification per ADA guidance (mg/dL)
     if (p === "Fasting" || p === "Before meal") {
@@ -65,8 +82,10 @@ const BloodSugarPage = () => {
     setReadings(store.getBloodSugarReadings());
     setShowForm(false);
     setValue(110);
-    setPeriod("Fasting");
+    setPeriod(smartDefaultPeriod());
     setNotes("");
+    setDate(format(new Date(), "yyyy-MM-dd"));
+    setTime(format(new Date(), "HH:mm"));
     toast.success(isRTL ? "تم حفظ القراءة" : "Reading saved");
   };
 
@@ -79,7 +98,7 @@ const BloodSugarPage = () => {
 
   return (
     <div className="pb-28 pt-header overflow-x-hidden">
-      <PageHeader title={isRTL ? "قياس السكر" : "Blood Sugar"} showBack onAdd={() => setShowForm(true)} />
+      <PageHeader title={isRTL ? "قياس السكر" : "Blood Sugar"} showBack onAdd={openAdd} />
 
       {showForm && (
         <div className="mx-4 mt-4 bg-card rounded-3xl border-2 border-primary/30 p-5 space-y-4 shadow-sm">
@@ -113,7 +132,7 @@ const BloodSugarPage = () => {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-sm font-semibold text-foreground block mb-2">{isRTL ? "التاريخ" : "Date"}</label>
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)}
+              <input type="date" value={date} max={format(new Date(), "yyyy-MM-dd")} onChange={(e) => setDate(e.target.value)}
                 className="w-full px-3 py-3 rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
             </div>
             <div>
@@ -151,7 +170,7 @@ const BloodSugarPage = () => {
           title={isRTL ? "لا توجد قراءات" : "No readings yet"}
           subtitle={isRTL ? "سجّل أول قراءة سكر" : "Record your first blood sugar reading"}
           actionLabel={isRTL ? "إضافة قراءة" : "Add reading"}
-          onAction={() => setShowForm(true)}
+          onAction={openAdd}
         />
       ) : (
         <div className="px-4 mt-4 space-y-3">
@@ -185,7 +204,7 @@ const BloodSugarPage = () => {
 
       {!showForm && readings.length > 0 && (
         <button
-          onClick={() => setShowForm(true)}
+          onClick={openAdd}
           className="fixed bottom-24 ltr:right-4 rtl:left-4 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg flex items-center justify-center"
           aria-label="add"
         >
