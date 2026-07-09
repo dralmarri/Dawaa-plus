@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { CalendarDays, X, Pencil, Clock, MapPin, StickyNote, User } from "lucide-react";
+import { CalendarDays, X, Pencil, Clock, MapPin, StickyNote, User, CalendarPlus } from "lucide-react";
 import { store } from "@/lib/store";
 import { format, differenceInCalendarDays, isPast } from "date-fns";
 import PageHeader from "@/components/PageHeader";
@@ -100,6 +100,20 @@ const AppointmentsPage = () => {
     setShowForm(true);
   };
 
+  // Book a follow-up: a brand-new appointment pre-filled with the same
+  // doctor's details, so the user only needs to pick the new date/time.
+  const openFollowUp = (apt: Appointment) => {
+    setEditingId(null);
+    setDoctorName(apt.doctorName || "");
+    setSpecialty(apt.specialty);
+    setDate(format(new Date(), "yyyy-MM-dd"));
+    setTime(apt.time);
+    setLocation(apt.location);
+    setReminder(apt.reminderBefore);
+    setNotes("");
+    setShowForm(true);
+  };
+
   const handleSave = () => {
     const apt: Appointment = {
       id: editingId || crypto.randomUUID(), doctorName: doctorName.trim() || undefined,
@@ -191,6 +205,11 @@ const AppointmentsPage = () => {
                     <button onClick={() => toggleComplete(apt.id)}
                       className={`rounded-xl py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity ${apt.completed ? "bg-summary-taken text-summary-taken-foreground" : "bg-accent text-accent-foreground"}`}>
                       {apt.completed ? `✓ ${t.done}` : t.markDone}
+                    </button>
+                    <button onClick={() => openFollowUp(apt)}
+                      className="rounded-xl border-2 border-primary/40 text-primary bg-transparent py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:bg-primary/10 transition-colors">
+                      <CalendarPlus className="w-4 h-4" />
+                      {isRTL ? "متابعة" : "Follow-up"}
                     </button>
                     <button onClick={() => setDeleteId(apt.id)}
                       className="rounded-xl bg-summary-missed text-summary-missed-foreground py-2.5 px-5 font-semibold text-sm flex items-center justify-center gap-1.5 hover:opacity-90 transition-opacity">
