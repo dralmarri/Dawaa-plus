@@ -33,12 +33,17 @@ const defaultSettings: AppSettings = {
 const cache: Record<string, unknown> = {};
 
 async function loadAll() {
-  for (const key of Object.values(KEYS)) {
-    const { value } = await Preferences.get({ key });
-    if (value) {
-      try { cache[key] = JSON.parse(value); } catch { cache[key] = null; }
-    }
-  }
+  // Read every key in parallel. On native each Preferences.get is a bridge
+  // round-trip, so reading them sequentially made the first launch wait on
+  // 7 back-to-back calls before the app could render.
+  await Promise.all(
+    Object.values(KEYS).map(async (key) => {
+      const { value } = await Preferences.get({ key });
+      if (value) {
+        try { cache[key] = JSON.parse(value); } catch { cache[key] = null; }
+      }
+    })
+  );
 }
 
 function getCache<T>(key: string, fallback: T): T {
