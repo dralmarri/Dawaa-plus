@@ -138,7 +138,7 @@ const FullscreenViewer = ({ images, startIndex, onClose, isRTL }: { images: stri
   return (
     <div className="fixed inset-0 z-50 bg-black flex flex-col" onClick={onClose}>
       {/* Top bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black/80 z-10" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center justify-between px-4 pb-3 bg-black/80 z-10 pt-[calc(env(safe-area-inset-top)+0.75rem)]" onClick={(e) => e.stopPropagation()}>
         <button onClick={onClose} className="bg-white/20 text-white rounded-full p-2">
           <X className="w-5 h-5" />
         </button>
@@ -737,7 +737,7 @@ const LabTestsPage = () => {
 
       {pdfViewer && (
         <div className="fixed inset-0 z-[100] bg-black flex flex-col">
-          <div className="flex items-center justify-between gap-2 p-3 bg-background border-b">
+          <div className="flex items-center justify-between gap-2 px-3 pb-3 bg-background border-b pt-[calc(env(safe-area-inset-top)+0.75rem)]">
             <button
               onClick={() => {
                 URL.revokeObjectURL(pdfViewer.downloadUrl);
