@@ -262,7 +262,7 @@ export async function scheduleMedicationNotifications() {
     notifications.push({
       id, title, body, schedule,
       sound: 'default',
-      smallIcon: 'ic_notification',
+      smallIcon: 'ic_stat_dawaa',
     });
   };
 
@@ -301,7 +301,7 @@ export async function scheduleMedicationNotifications() {
           body,
           schedule: { at, allowWhileIdle: true },
           sound: 'default',
-          smallIcon: 'ic_notification',
+          smallIcon: 'ic_stat_dawaa',
         });
       }
     });
@@ -327,7 +327,7 @@ export async function scheduleMedicationNotifications() {
           : `Time to measure your blood pressure (${timeLabel})`,
         schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_notification',
+        smallIcon: 'ic_stat_dawaa',
       });
     });
   }
@@ -352,7 +352,7 @@ export async function scheduleMedicationNotifications() {
           : `Time to measure your blood sugar (${timeLabel})`,
         schedule: { on: { hour: h, minute: m }, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_notification',
+        smallIcon: 'ic_stat_dawaa',
       });
     });
   }
@@ -383,7 +383,7 @@ export async function scheduleMedicationNotifications() {
         : `Low stock (below 20%): ${names}`,
       schedule: { on: { hour: 9, minute: 0 }, allowWhileIdle: true },
       sound: 'default',
-      smallIcon: 'ic_notification',
+      smallIcon: 'ic_stat_dawaa',
     });
   }
 
@@ -415,7 +415,7 @@ export async function scheduleMedicationNotifications() {
         : `Medications expiring soon or expired: ${all}`,
       schedule: { on: { hour: 9, minute: 5 }, allowWhileIdle: true },
       sound: 'default',
-      smallIcon: 'ic_notification',
+      smallIcon: 'ic_stat_dawaa',
     });
   }
 
@@ -444,7 +444,7 @@ export async function scheduleMedicationNotifications() {
           : `You have a ${appt.specialty}${doctorInfo} appointment tomorrow at ${appt.time}`,
         schedule: { at: dayBefore, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_notification',
+        smallIcon: 'ic_stat_dawaa',
       });
     }
 
@@ -462,7 +462,7 @@ export async function scheduleMedicationNotifications() {
           : `${appt.specialty}${doctorInfo} appointment at ${appt.time}`,
         schedule: { at: twoHoursBefore, allowWhileIdle: true },
         sound: 'default',
-        smallIcon: 'ic_notification',
+        smallIcon: 'ic_stat_dawaa',
       });
     }
   });

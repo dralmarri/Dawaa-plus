@@ -19,8 +19,8 @@ const config: CapacitorConfig = {
       splashImmersive: true,
     },
     LocalNotifications: {
-      smallIcon: 'ic_notification',
-      iconColor: '#1a9e7a',
+      smallIcon: 'ic_stat_dawaa',
+      iconColor: '#11A99B',
     },
   },
 };
