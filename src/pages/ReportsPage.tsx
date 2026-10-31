@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Download, User, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
+import { FilePlus2, FileDown, Pencil, Check, UserPlus, Loader2 } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { format, subDays, isAfter, parseISO } from "date-fns";
@@ -438,99 +438,159 @@ const ReportsPage = () => {
     }
   };
 
+  const filled = countProfileFilled(settings);
+  const isEmptyProfile = filled === 0;
+  const displayName = settings.userName || authName;
+  const initial = displayName.trim().charAt(0).toUpperCase();
+  const diseaseNames = [
+    ...(settings.chronicDiseases || []).map((k) => {
+      const d = diseaseOptions.find((x) => x.key === k);
+      return d ? (isRTL ? d.ar : d.en) : k;
+    }),
+    ...(settings.customDiseases ? [settings.customDiseases] : []),
+  ];
+  const formatDob = (iso?: string) => (iso ? iso.replace(/-/g, "/") : "—");
+
+  const reportItems = isRTL
+    ? ["بيانات المريض", "قائمة الأدوية والجرعات", "مخطط ضغط الدم لآخر 30 يوماً", "قراءات السكر لآخر 30 يوماً", "المواعيد القادمة", "ملخص التحاليل"]
+    : ["Patient profile", "Medications & dosages", "Blood pressure chart (last 30 days)", "Blood sugar readings (last 30 days)", "Upcoming appointments", "Lab results summary"];
+
   return (
     <div className="pb-28 pt-header overflow-x-hidden">
-      <PageHeader title={isRTL ? "التقارير" : "Reports"} showBack />
+      <PageHeader title={isRTL ? "التقارير الطبية" : "Medical Reports"} showBack />
 
-      <div className="px-4 space-y-4">
-        {(() => {
-          const filled = countProfileFilled(settings);
-          const Chevron = isRTL ? ChevronLeft : ChevronRight;
-          const diseases = [
-            ...(settings.chronicDiseases || []).map((k) => {
-              const d = diseaseOptions.find((x) => x.key === k);
-              return d ? (isRTL ? d.ar : d.en) : k;
-            }),
-            ...(settings.customDiseases ? [settings.customDiseases] : []),
-          ];
-          const facts = [
-            settings.bloodType && `${isRTL ? "فصيلة الدم" : "Blood"}: ${settings.bloodType}`,
-            settings.dateOfBirth && `${isRTL ? "الميلاد" : "DOB"}: ${settings.dateOfBirth}`,
-            diseases.length > 0 && `${isRTL ? "الأمراض" : "Conditions"}: ${diseases.join(isRTL ? "، " : ", ")}`,
-            settings.allergies && `${isRTL ? "الحساسية" : "Allergies"}: ${settings.allergies}`,
-          ].filter(Boolean) as string[];
-          return (
+      <div className="px-5 pt-4 space-y-6">
+        {/* Patient profile */}
+        {isEmptyProfile ? (
+          <div className="bg-card rounded-3xl p-6 shadow-sm border border-border flex flex-col items-center text-center">
+            <div className="w-20 h-20 rounded-full border-2 border-dashed border-border bg-muted/40 flex items-center justify-center mb-4">
+              <UserPlus className="w-8 h-8 text-muted-foreground" />
+            </div>
+            <h2 className="text-base font-bold text-foreground">
+              {isRTL ? "بياناتك الصحية غير مكتملة" : "Your health profile is empty"}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-2 leading-relaxed max-w-[15rem]">
+              {isRTL ? "أضف بياناتك الصحية لتظهر في التقرير الطبي الشامل" : "Add your health details to include them in the full medical report"}
+            </p>
             <button
               onClick={() => setProfileOpen(true)}
-              className="w-full bg-card rounded-2xl p-5 shadow-sm border border-border text-start hover:bg-muted/30 transition-colors"
+              className="mt-6 w-full bg-accent text-primary font-bold py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                  <User className="w-6 h-6 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h2 className="text-lg font-bold text-foreground truncate">
-                    {settings.userName || (isRTL ? "بيانات المستخدم" : "User Profile")}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {filled}/{PROFILE_TOTAL} {isRTL ? "حقول مكتملة" : "fields completed"}
-                  </p>
-                </div>
-                {filled === 0 ? <Chevron className="w-5 h-5 text-muted-foreground" /> : <Pencil className="w-4 h-4 text-primary" />}
-              </div>
-              {facts.length > 0 ? (
-                <ul className="mt-3 space-y-1 text-sm text-foreground/80">
-                  {facts.map((f) => <li key={f} className="truncate">• {f}</li>)}
-                </ul>
-              ) : (
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {isRTL ? "أضف بياناتك الصحية لتظهر في التقرير" : "Add your health details to include them in the report"}
-                </p>
-              )}
+              {isRTL ? "إضافة البيانات" : "Add Details"}
             </button>
-          );
-        })()}
+          </div>
+        ) : (
+          <button
+            onClick={() => setProfileOpen(true)}
+            className="w-full text-start bg-card rounded-3xl p-5 shadow-sm border border-border active:scale-[0.98] transition-transform"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-14 h-14 rounded-full bg-primary/10 border-2 border-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xl font-bold text-primary">{initial || "؟"}</span>
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-lg font-bold text-foreground truncate">
+                    {displayName || (isRTL ? "بدون اسم" : "No name")}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                      <div className="h-full bg-primary rounded-full" style={{ width: `${(filled / PROFILE_TOTAL) * 100}%` }} />
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {filled}/{PROFILE_TOTAL} {isRTL ? "حقول مكتملة" : "fields completed"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <span className="p-2 text-primary rounded-full">
+                <Pencil className="w-4 h-4" />
+              </span>
+            </div>
 
-        <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-              <FileText className="w-6 h-6 text-primary" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-background/60 p-3 rounded-2xl border border-border/50">
+                <p className="text-[10px] text-muted-foreground mb-1 font-medium">{isRTL ? "فصيلة الدم" : "Blood Type"}</p>
+                <p className="text-sm font-bold text-primary" dir="ltr" style={{ textAlign: isRTL ? "right" : "left" }}>
+                  {settings.bloodType || "—"}
+                </p>
+              </div>
+              <div className="bg-background/60 p-3 rounded-2xl border border-border/50">
+                <p className="text-[10px] text-muted-foreground mb-1 font-medium">{isRTL ? "تاريخ الميلاد" : "Date of Birth"}</p>
+                <p className="text-sm font-bold text-foreground">{formatDob(settings.dateOfBirth)}</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-bold text-foreground">
-                {isRTL ? "التقرير الصحي الشامل" : "Comprehensive Health Report"}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {isRTL ? "PDF يحتوي على جميع بياناتك الطبية" : "PDF with all your medical data"}
-              </p>
+
+            {(diseaseNames.length > 0 || settings.allergies) && (
+              <div className="space-y-2 mt-4">
+                {diseaseNames.length > 0 && (
+                  <div className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 flex-shrink-0" />
+                    <p className="text-sm text-foreground/80">
+                      <span className="text-muted-foreground font-medium">{isRTL ? "الأمراض المزمنة: " : "Conditions: "}</span>
+                      {diseaseNames.join(isRTL ? "، " : ", ")}
+                    </p>
+                  </div>
+                )}
+                {settings.allergies && (
+                  <div className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-destructive mt-2 flex-shrink-0" />
+                    <p className="text-sm text-foreground/80">
+                      <span className="text-muted-foreground font-medium">{isRTL ? "الحساسية: " : "Allergies: "}</span>
+                      {settings.allergies}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </button>
+        )}
+
+        {/* Comprehensive report */}
+        <div className="bg-card rounded-3xl p-6 shadow-sm border border-border">
+          <div className="mb-6">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
+              <FilePlus2 className="w-6 h-6 text-primary" />
             </div>
+            <h3 className="text-lg font-bold text-foreground">
+              {isRTL ? "التقرير الصحي الشامل" : "Comprehensive Health Report"}
+            </h3>
+            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+              {isRTL ? "ملف PDF يحتوي جميع بياناتك الطبية" : "A PDF with all your medical data"}
+            </p>
           </div>
 
-          <ul className="text-sm text-foreground/80 space-y-1.5 mb-4 ms-2">
-            <li>• {isRTL ? "بيانات المريض (الاسم، العمر، فصيلة الدم، الحساسية، الأمراض، جهة الطوارئ)" : "Patient profile (name, DOB, blood type, allergies, conditions, emergency contact)"}</li>
-            <li>• {isRTL ? "قائمة الأدوية مع الجرعات والمواعيد" : "Medications list with dosage & schedule"}</li>
-            <li>• {isRTL ? "مخطط ضغط الدم لآخر 30 يوماً (في حال تسجيلها)" : "Blood pressure chart (last 30 days, if recorded)"}</li>
-            <li>• {isRTL ? "قراءات السكر لآخر 30 يوماً (في حال تسجيلها)" : "Blood sugar readings (last 30 days, if recorded)"}</li>
-            <li>• {isRTL ? "المواعيد الطبية القادمة" : "Upcoming appointments"}</li>
-            <li>• {isRTL ? "ملخص نتائج التحاليل" : "Lab results summary"}</li>
+          <ul className="space-y-4 mb-8">
+            {reportItems.map((item) => (
+              <li key={item} className="flex items-center gap-3">
+                <span className="w-6 h-6 bg-success/10 rounded-full flex items-center justify-center flex-shrink-0">
+                  <Check className="w-3 h-3 text-success" strokeWidth={3} />
+                </span>
+                <span className="text-sm text-foreground/80">{item}</span>
+              </li>
+            ))}
           </ul>
 
           <button
             onClick={handleExport}
             disabled={loading}
-            className="w-full bg-primary text-primary-foreground font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-[0.98] transition disabled:opacity-50"
+            className="w-full bg-primary text-primary-foreground font-bold py-4 rounded-2xl flex items-center justify-center gap-3 shadow-md active:scale-[0.98] transition disabled:bg-primary/40 disabled:cursor-not-allowed"
           >
-            <Download className="w-5 h-5" />
-            {loading
-              ? (isRTL ? "جارٍ الإنشاء..." : "Generating...")
-              : (isRTL ? "تصدير PDF" : "Export PDF")}
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <FileDown className="w-5 h-5" />}
+            <span>
+              {loading ? (isRTL ? "جارٍ الإنشاء..." : "Generating...") : (isRTL ? "تصدير PDF" : "Export PDF")}
+            </span>
           </button>
         </div>
 
-        <div className="bg-muted/50 rounded-xl p-4 text-xs text-muted-foreground">
-          {isRTL
-            ? "💡 سيتم إنشاء تقرير شامل يحمل اسمك وتاريخ اليوم، يمكنك مشاركته مع طبيبك."
-            : "💡 The report includes your name and today's date — share it with your doctor."}
+        {/* Tip */}
+        <div className="bg-primary/5 rounded-3xl p-5 flex gap-4 border border-primary/10">
+          <span className="text-xl leading-none">💡</span>
+          <p className="text-sm text-primary leading-relaxed">
+            {isRTL
+              ? "سيُنشأ تقرير يحمل اسمك وتاريخ اليوم، يمكنك مشاركته مع طبيبك."
+              : "The report includes your name and today's date — share it with your doctor."}
+          </p>
         </div>
       </div>
 
