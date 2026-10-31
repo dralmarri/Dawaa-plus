@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { App as CapApp } from "@capacitor/app";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { Footprints, Dumbbell, HeartPulse, RefreshCw, X, Flame, Timer, Route, AlertTriangle, Loader2, Moon, Gauge, Wind, Heart, Scale } from "lucide-react";
@@ -80,9 +81,9 @@ const ActivityPage = () => {
 
   const supported = isHealthImportSupported();
 
-  const loadActivity = useCallback(async () => {
-    setLoading(true);
-    setError(false);
+  // `silent`: background refresh (timer / app resume) — no spinner, keep old data on failure.
+  const loadActivity = useCallback(async (silent = false) => {
+    if (!silent) { setLoading(true); setError(false); }
     try {
       await requestActivityAuthorization();
       const [s, w, sl, v] = await Promise.all([
@@ -96,9 +97,9 @@ const ActivityPage = () => {
       setSleep(sl);
       setVitals(v);
     } catch {
-      setError(true);
+      if (!silent) setError(true);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, []);
 
@@ -121,6 +122,21 @@ const ActivityPage = () => {
     if (tab === "ecg") { if (ecgs === null) loadEcgs(); }
     else if (steps === null) loadActivity();
   }, [tab, supported]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep steps/sleep/vitals current: re-read Apple Health every minute while the
+  // page is visible, and immediately when the app comes back to the foreground.
+  useEffect(() => {
+    if (!supported || tab === "ecg") return;
+    const tick = () => { if (document.visibilityState === "visible") loadActivity(true); };
+    const timer = window.setInterval(tick, 60_000);
+    document.addEventListener("visibilitychange", tick);
+    const sub = CapApp.addListener("appStateChange", ({ isActive }) => { if (isActive) loadActivity(true); });
+    return () => {
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+      sub.then((h) => h.remove()).catch(() => {});
+    };
+  }, [tab, supported, loadActivity]);
 
   const refresh = () => (tab === "ecg" ? loadEcgs() : loadActivity());
 
