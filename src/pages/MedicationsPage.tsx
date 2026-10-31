@@ -14,6 +14,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Medication } from "@/types";
+import { formatTimes } from "@/lib/time";
 
 const DetailRow = ({ label, value }: { label: string; value: string }) => (
   <div className="flex items-start justify-between gap-4 px-4 py-3">
@@ -101,7 +102,7 @@ const MedicationsPage = () => {
                         {med.form} · {med.dosage} · {med.frequency}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {t.times}: {med.times.join(", ")}
+                        {t.times}: {formatTimes(med.times, isRTL)}
                       </p>
                       {(() => {
                         const dosesPerCycle = med.times.length;
@@ -244,7 +245,7 @@ const MedicationsPage = () => {
                   <DetailRow label={t.concentration} value={`${detailMed.concentration} ${t.concentrationUnit}`} />
                 )}
                 <DetailRow label={t.frequency} value={freqMap[detailMed.frequency] || detailMed.frequency} />
-                <DetailRow label={t.times} value={detailMed.times.join(" · ")} />
+                <DetailRow label={t.times} value={formatTimes(detailMed.times, isRTL, " · ")} />
                 <DetailRow label={t.mealRelation} value={mealMap[detailMed.mealRelation] || detailMed.mealRelation} />
                 <DetailRow
                   label={t.usageType}

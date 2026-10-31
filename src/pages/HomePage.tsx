@@ -8,6 +8,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
 import type { DoseRecord } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { formatTime12 } from "@/lib/time";
 
 // Helper: classify a HH:mm time into morning/noon/evening with icon + label
 function getTimeOfDay(time: string, isRTL: boolean) {
@@ -171,7 +172,7 @@ const HomePage = () => {
               {isRTL ? "الجرعة القادمة" : "Next dose"}
             </span>
             <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-              {nextDose.scheduledTime}
+              {formatTime12(nextDose.scheduledTime, isRTL)}
             </span>
           </div>
           <div className="flex items-center gap-3">
@@ -410,7 +411,7 @@ const DosesDialog = ({
                       {headerLabel}
                     </span>
                     <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                      {dose.scheduledTime}
+                      {formatTime12(dose.scheduledTime, isRTL)}
                     </span>
                   </div>
                   <div className="flex items-center gap-3">

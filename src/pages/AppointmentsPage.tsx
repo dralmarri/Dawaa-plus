@@ -12,6 +12,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { Appointment } from "@/types";
+import { formatTime12 } from "@/lib/time";
 
 const AppointmentsPage = () => {
   const { t, isRTL } = useLanguage();
@@ -181,7 +182,7 @@ const AppointmentsPage = () => {
                     )}
                     <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
-                      {format(new Date(apt.date), "MMM d, yyyy")} · {apt.time}
+                      {format(new Date(apt.date), "MMM d, yyyy")} · {formatTime12(apt.time, isRTL)}
                     </p>
                     {apt.location && (
                       <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">

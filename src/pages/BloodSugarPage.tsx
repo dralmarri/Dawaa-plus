@@ -13,6 +13,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { BloodSugarReading } from "@/types";
+import { formatTime12 } from "@/lib/time";
 
 const periodKeys: BloodSugarReading["period"][] = ["Fasting", "Before meal", "After meal", "Bedtime", "Random"];
 
@@ -186,7 +187,7 @@ const BloodSugarPage = () => {
                       <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${cls.color}`}>{cls.label}</span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
-                      {periodLabel(r.period)} · {r.date} {r.time}
+                      {periodLabel(r.period)} · {r.date} {formatTime12(r.time, isRTL)}
                     </p>
                     {r.notes && <p className="text-sm text-foreground mt-1">{r.notes}</p>}
                   </div>

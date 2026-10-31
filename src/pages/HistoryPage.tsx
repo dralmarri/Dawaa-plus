@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { formatTime12 } from "@/lib/time";
 
 const HistoryPage = () => {
   const { t, isRTL } = useLanguage();
@@ -153,8 +154,8 @@ const HistoryPage = () => {
                       <div className="min-w-0">
                         <p className="text-lg font-bold text-foreground truncate">{rec.medicationName}</p>
                         <p className="text-sm text-muted-foreground">
-                          {rec.scheduledTime}
-                          {rec.takenAt && ` → ${rec.takenAt}`}
+                          {formatTime12(rec.scheduledTime, isRTL)}
+                          {rec.takenAt && ` → ${formatTime12(rec.takenAt, isRTL)}`}
                         </p>
                       </div>
                     </div>

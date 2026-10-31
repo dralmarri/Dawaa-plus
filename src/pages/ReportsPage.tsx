@@ -11,6 +11,7 @@ import appIcon from "@/assets/app-icon.png";
 import UserProfileDialog from "@/components/UserProfileDialog";
 import { countProfileFilled, PROFILE_TOTAL, diseaseOptions } from "@/lib/profile";
 import { toast } from "sonner";
+import { formatTime12, formatTimes } from "@/lib/time";
 
 const ReportsPage = () => {
   const { isRTL } = useLanguage();
@@ -137,7 +138,7 @@ const ReportsPage = () => {
             ${td(m.name)}
             ${td(`${m.dosage} ${m.concentration || ""}`)}
             ${td(tr(m.frequency))}
-            ${td(m.times.join(", "))}
+            ${td(formatTimes(m.times, isRTL))}
             ${td(m.mealRelation)}
           </tr>`).join("")}</tbody>
         </table>`;
@@ -251,7 +252,7 @@ const ReportsPage = () => {
           </tr></thead>
           <tbody>${bs30.map((r) => `<tr>
             ${td(r.date)}
-            ${td(r.time)}
+            ${td(formatTime12(r.time, isRTL))}
             ${td(`<strong>${r.value}</strong>`)}
             ${td(bsPeriodLabel[r.period]?.[isRTL ? "ar" : "en"] || r.period)}
           </tr>`).join("")}</tbody>
@@ -269,7 +270,7 @@ const ReportsPage = () => {
           </tr></thead>
           <tbody>${bp30.map((r) => `<tr>
             ${td(r.date)}
-            ${td(r.time)}
+            ${td(formatTime12(r.time, isRTL))}
             ${td(`<strong>${r.systolic}</strong>`)}
             ${td(`<strong>${r.diastolic}</strong>`)}
             ${td(r.heartRate ?? "—")}

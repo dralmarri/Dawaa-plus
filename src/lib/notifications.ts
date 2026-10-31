@@ -1,6 +1,7 @@
 import { LocalNotifications, PermissionStatus, type Schedule } from '@capacitor/local-notifications';
 import { store } from './store';
 import type { Medication, Appointment } from '@/types';
+import { formatTime12 } from "@/lib/time";
 
 let scheduledIds: number[] = [];
 let listenersRegistered = false;
@@ -476,8 +477,8 @@ export async function scheduleMedicationNotifications() {
         id: dayId,
         title: isArabic ? '📅 تذكير بموعد طبي غداً' : '📅 Appointment Tomorrow',
         body: isArabic
-          ? `لديك موعد ${appt.specialty}${doctorInfo} غداً الساعة ${appt.time}`
-          : `You have a ${appt.specialty}${doctorInfo} appointment tomorrow at ${appt.time}`,
+          ? `لديك موعد ${appt.specialty}${doctorInfo} غداً الساعة ${formatTime12(appt.time, isArabic)}`
+          : `You have a ${appt.specialty}${doctorInfo} appointment tomorrow at ${formatTime12(appt.time, isArabic)}`,
         schedule: { at: dayBefore, allowWhileIdle: true },
         sound: 'default',
         smallIcon: 'ic_stat_dawaa',
@@ -499,8 +500,8 @@ export async function scheduleMedicationNotifications() {
           id: chosenId,
           title: isArabic ? `📅 موعدك ${offsetLabel}` : `📅 Appointment ${offsetLabel}`,
           body: isArabic
-            ? `موعد ${appt.specialty}${doctorInfo} الساعة ${appt.time}`
-            : `${appt.specialty}${doctorInfo} appointment at ${appt.time}`,
+            ? `موعد ${appt.specialty}${doctorInfo} الساعة ${formatTime12(appt.time, isArabic)}`
+            : `${appt.specialty}${doctorInfo} appointment at ${formatTime12(appt.time, isArabic)}`,
           schedule: { at: chosenBefore, allowWhileIdle: true },
           sound: 'default',
           smallIcon: 'ic_stat_dawaa',

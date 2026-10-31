@@ -13,6 +13,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import type { BloodPressureReading } from "@/types";
+import { formatTime12 } from "@/lib/time";
 
 const BloodPressurePage = () => {
   const { t, isRTL } = useLanguage();
@@ -138,7 +139,7 @@ const BloodPressurePage = () => {
           ${readings.map((r) => `
             <tr>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.date}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.time}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${formatTime12(r.time, isRTL)}</td>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.systolic}</td>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.diastolic}</td>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.heartRate}</td>
@@ -363,7 +364,7 @@ const BloodPressurePage = () => {
                 <div key={r.id} className="flex items-center justify-between border-b border-border pb-3 last:border-0">
                   <div>
                     <p className="font-bold text-foreground">{format(new Date(r.date), "MMMM d, yyyy")}</p>
-                    <p className="text-sm text-muted-foreground">{r.time}</p>
+                    <p className="text-sm text-muted-foreground">{formatTime12(r.time, isRTL)}</p>
                     <span className={`text-xs px-2 py-0.5 rounded-full ${r.period === "Morning" ? "bg-warning/20 text-warning" : "bg-info/20 text-info"}`}>
                       {r.period === "Morning" ? "☀️" : "🌙"} {periodLabels[r.period]}
                     </span>

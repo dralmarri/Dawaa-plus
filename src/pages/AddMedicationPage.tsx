@@ -9,6 +9,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { searchMedications, isKnownMedication } from "@/lib/medications-db";
 import { scheduleMedicationNotifications } from "@/lib/notifications";
 import type { Medication } from "@/types";
+import { formatTimes } from "@/lib/time";
 
 interface MedNameProps {
   name: string;
@@ -504,7 +505,7 @@ const AddMedicationPage = () => {
               {concentration && <div className="flex justify-between"><span className="text-muted-foreground">{t.concentration}</span><span className="font-bold text-foreground">{concentration} {t.concentrationUnit}</span></div>}
               <div className="flex justify-between"><span className="text-muted-foreground">{t.frequency}</span><span className="font-bold text-foreground">{freqMap[frequency]}</span></div>
               {isNonDaily && <div className="flex justify-between"><span className="text-muted-foreground">{t.startDate}</span><span className="font-bold text-foreground">{startDate}</span></div>}
-              <div className="flex justify-between"><span className="text-muted-foreground">{t.times}</span><span className="font-bold text-foreground">{times.join(", ")}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground">{t.times}</span><span className="font-bold text-foreground">{formatTimes(times, isRTL)}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">{t.usageType}</span><span className="font-bold text-foreground">{isChronic ? t.chronic : `${t.temporary} — ${durationDays} ${t[durationUnit]}`}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground">{t.stock}</span><span className="font-bold text-foreground">{stock} {formsMap[form]}</span></div>
             </div>
