@@ -137,8 +137,11 @@ export const store = {
     if (currentUid) await cloudStore.deleteMedication(currentUid, id);
   },
 
+  // Newest first by measurement date/time (imported readings can be older than
+  // ones entered earlier, so insertion order isn't reliable).
   getReadings: (): BloodPressureReading[] =>
-    getCache(KEYS.readings, []),
+    [...getCache<BloodPressureReading[]>(KEYS.readings, [])].sort((a, b) =>
+      `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`)),
 
   saveReading: async (r: BloodPressureReading) => {
     const all = store.getReadings().filter(x => x.id !== r.id);
@@ -223,7 +226,8 @@ export const store = {
 
   // Blood sugar readings (local only)
   getBloodSugarReadings: (): BloodSugarReading[] =>
-    getCache(KEYS.bloodSugar, []),
+    [...getCache<BloodSugarReading[]>(KEYS.bloodSugar, [])].sort((a, b) =>
+      `${b.date} ${b.time}`.localeCompare(`${a.date} ${a.time}`)),
 
   saveBloodSugarReading: async (r: BloodSugarReading) => {
     const all = store.getBloodSugarReadings().filter(x => x.id !== r.id);

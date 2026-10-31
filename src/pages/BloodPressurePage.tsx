@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Heart, Save, Pencil } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Heart, Save, Pencil, RefreshCw } from "lucide-react";
+import { importFromAppleHealth, isHealthImportSupported } from "@/lib/healthImport";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { store } from "@/lib/store";
@@ -34,7 +35,27 @@ const BloodPressurePage = () => {
   const last7 = readings.slice(0, 7);
   const avgSys = last7.length ? Math.round(last7.reduce((s, r) => s + r.systolic, 0) / last7.length) : 0;
   const avgDia = last7.length ? Math.round(last7.reduce((s, r) => s + r.diastolic, 0) / last7.length) : 0;
-  const avgHr = last7.length ? Math.round(last7.reduce((s, r) => s + r.heartRate, 0) / last7.length) : 0;
+  const withHr = last7.filter((r) => r.heartRate > 0);
+  const avgHr = withHr.length ? Math.round(withHr.reduce((s, r) => s + r.heartRate, 0) / withHr.length) : 0;
+  const fmtHr = (hr: number) => (hr > 0 ? `${hr} bpm` : "— bpm");
+
+  // ── Personal build: import from Apple Health ──────────────────
+  const [importing, setImporting] = useState(false);
+  const runHealthImport = async (silent: boolean) => {
+    if (!isHealthImportSupported() || importing) return;
+    setImporting(true);
+    const res = await importFromAppleHealth();
+    setImporting(false);
+    setReadings(store.getReadings());
+    if (res.ok && res.bp > 0) {
+      toast.success(isRTL ? `تم استيراد ${res.bp} قراءة ضغط من تطبيق صحة` : `Imported ${res.bp} BP readings from Health`);
+    } else if (!silent) {
+      toast[res.ok ? "info" : "error"](res.ok
+        ? (isRTL ? "لا توجد قراءات جديدة في تطبيق صحة" : "No new readings in Health")
+        : (isRTL ? "تعذر الاستيراد من تطبيق صحة" : "Could not import from Health"));
+    }
+  };
+  useEffect(() => { runHealthImport(true); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getCategory = (sys: number, dia: number) => {
     if (sys < 90 || dia < 60) return { label: isRTL ? "منخفض" : "Low", color: "text-info", emoji: "🔵" };
@@ -142,7 +163,7 @@ const BloodPressurePage = () => {
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${formatTime12(r.time, isRTL)}</td>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.systolic}</td>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.diastolic}</td>
-              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.heartRate}</td>
+              <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.heartRate > 0 ? r.heartRate : "—"}</td>
               <td style="border:1px solid #d1d5db;padding:10px;color:#111827;">${r.period}</td>
             </tr>
           `).join("")}
@@ -229,13 +250,23 @@ const BloodPressurePage = () => {
     <div className="pb-28 overflow-x-hidden pt-header">
       <PageHeader title={t.bloodPressureMonitoring} showBack />
       <div className="px-3 sm:px-4 space-y-4 max-w-lg mx-auto">
+        {isHealthImportSupported() && (
+          <button
+            onClick={() => runHealthImport(false)}
+            disabled={importing}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-primary/30 bg-primary/5 text-primary font-semibold text-sm disabled:opacity-60"
+          >
+            <RefreshCw className={`w-4 h-4 ${importing ? "animate-spin" : ""}`} />
+            {importing ? (isRTL ? "جارٍ الاستيراد..." : "Importing...") : (isRTL ? "استيراد من تطبيق صحة" : "Import from Apple Health")}
+          </button>
+        )}
         {latestReading && (
           <div className="bg-card rounded-2xl border border-border p-5">
             <div className="flex gap-3">
               <div className="flex-1 min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t.latestReading}</p>
                 <p className="text-2xl sm:text-3xl font-bold text-foreground">{latestReading.systolic}/{latestReading.diastolic}</p>
-                <p className="text-sm text-heart">♥ {latestReading.heartRate} bpm</p>
+                <p className="text-sm text-heart">♥ {fmtHr(latestReading.heartRate)}</p>
                 <span className={`text-sm font-medium ${getCategory(latestReading.systolic, latestReading.diastolic).color}`}>
                   {getCategory(latestReading.systolic, latestReading.diastolic).emoji} {getCategory(latestReading.systolic, latestReading.diastolic).label}
                 </span>
@@ -243,7 +274,7 @@ const BloodPressurePage = () => {
               <div className="border-s border-border ps-3 flex-1 min-w-0">
                 <p className="text-xs sm:text-sm text-muted-foreground">{t.averageOfLast} {last7.length} {t.readings}</p>
                 <p className="text-2xl sm:text-3xl font-bold text-foreground">{avgSys}/{avgDia}</p>
-                <p className="text-sm text-heart">♥ {avgHr} bpm</p>
+                <p className="text-sm text-heart">♥ {fmtHr(avgHr)}</p>
                 <p className="text-xs text-muted-foreground">mmHg</p>
               </div>
             </div>
@@ -371,7 +402,7 @@ const BloodPressurePage = () => {
                   </div>
                   <div className="text-end">
                     <p className="font-bold text-foreground text-lg">{r.systolic}<span className="text-muted-foreground font-normal">/{r.diastolic}</span></p>
-                    <p className="text-sm text-heart">♥ {r.heartRate} bpm</p>
+                    <p className="text-sm text-heart">♥ {fmtHr(r.heartRate)}</p>
                     <span className={`text-xs font-semibold ${getCategory(r.systolic, r.diastolic).color}`}>
                       {getCategory(r.systolic, r.diastolic).emoji} {getCategory(r.systolic, r.diastolic).label}
                     </span>
