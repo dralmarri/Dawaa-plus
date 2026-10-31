@@ -1,0 +1,416 @@
+/**
+ * PERSONAL BUILD ONLY (branch: personal-healthkit) — do not merge into main.
+ * Steps, workouts and ECG recordings read live from Apple Health.
+ */
+import { useCallback, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { format } from "date-fns";
+import { ar } from "date-fns/locale";
+import { Footprints, Dumbbell, HeartPulse, RefreshCw, X, Flame, Timer, Route, AlertTriangle, Loader2 } from "lucide-react";
+import type { Workout } from "@capgo/capacitor-health";
+import PageHeader from "@/components/PageHeader";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { isHealthImportSupported } from "@/lib/healthImport";
+import { formatTime12 } from "@/lib/time";
+import {
+  Ecg, loadDailySteps, loadWorkouts, requestActivityAuthorization, workoutName,
+  type DaySteps, type EcgSummary, type EcgClassification,
+} from "@/lib/healthActivity";
+
+type Tab = "steps" | "workouts" | "ecg";
+const STEP_GOAL = 10000;
+
+const timeOf = (d: Date) => format(d, "HH:mm");
+
+// ── ECG strip ──────────────────────────────────────────────────────
+// Standard ECG paper: 25 mm/s, 10 mm/mV. 1 SVG unit = 1 mm.
+const SECONDS_PER_ROW = 5;
+const ROW_HEIGHT_MM = 30;
+
+const EcgStrip = ({ values, hz }: { values: number[]; hz: number }) => {
+  const perRow = Math.round(SECONDS_PER_ROW * hz);
+  const rows: number[][] = [];
+  for (let i = 0; i < values.length; i += perRow) rows.push(values.slice(i, i + perRow));
+  const width = SECONDS_PER_ROW * 25;
+  const mid = ROW_HEIGHT_MM / 2;
+
+  return (
+    <div className="space-y-1" dir="ltr">
+      {rows.map((row, r) => {
+        const points = row
+          .map((v, i) => {
+            const x = (i / hz) * 25;
+            const y = Math.max(0.5, Math.min(ROW_HEIGHT_MM - 0.5, mid - v / 100)); // µV → mm
+            return `${x.toFixed(2)},${y.toFixed(2)}`;
+          })
+          .join(" ");
+        return (
+          <svg key={r} viewBox={`0 0 ${width} ${ROW_HEIGHT_MM}`} className="w-full h-auto rounded-md bg-[#fff5f5]">
+            {Array.from({ length: width + 1 }, (_, x) => (
+              <line key={`v${x}`} x1={x} y1={0} x2={x} y2={ROW_HEIGHT_MM}
+                stroke="#f5b5b5" strokeWidth={x % 5 === 0 ? 0.25 : 0.08} />
+            ))}
+            {Array.from({ length: ROW_HEIGHT_MM + 1 }, (_, y) => (
+              <line key={`h${y}`} x1={0} y1={y} x2={width} y2={y}
+                stroke="#f5b5b5" strokeWidth={y % 5 === 0 ? 0.25 : 0.08} />
+            ))}
+            <polyline points={points} fill="none" stroke="#1f2937" strokeWidth={0.35} strokeLinejoin="round" />
+          </svg>
+        );
+      })}
+    </div>
+  );
+};
+
+const ActivityPage = () => {
+  const { isRTL } = useLanguage();
+  const [tab, setTab] = useState<Tab>("steps");
+
+  const [steps, setSteps] = useState<DaySteps[] | null>(null);
+  const [workouts, setWorkouts] = useState<Workout[] | null>(null);
+  const [ecgs, setEcgs] = useState<EcgSummary[] | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const [openEcg, setOpenEcg] = useState<EcgSummary | null>(null);
+  const [wave, setWave] = useState<{ values: number[]; hz: number } | null>(null);
+  const [waveError, setWaveError] = useState(false);
+
+  const supported = isHealthImportSupported();
+
+  const loadActivity = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      await requestActivityAuthorization();
+      const [s, w] = await Promise.all([loadDailySteps(7), loadWorkouts(30)]);
+      setSteps(s);
+      setWorkouts(w);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const loadEcgs = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      await Ecg.requestAuthorization();
+      const { items } = await Ecg.list({ limit: 30 });
+      setEcgs(items);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!supported) return;
+    if (tab === "ecg") { if (ecgs === null) loadEcgs(); }
+    else if (steps === null) loadActivity();
+  }, [tab, supported]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const refresh = () => (tab === "ecg" ? loadEcgs() : loadActivity());
+
+  const openRecording = async (e: EcgSummary) => {
+    setOpenEcg(e);
+    setWave(null);
+    setWaveError(false);
+    try {
+      const res = await Ecg.waveform({ id: e.id, step: 4 });
+      setWave({ values: res.values, hz: res.samplingFrequency });
+    } catch {
+      setWaveError(true);
+    }
+  };
+
+  const dateLabel = (d: Date) => format(d, isRTL ? "d MMMM yyyy" : "MMM d, yyyy", { locale: isRTL ? ar : undefined });
+
+  const ecgInfo = (c: EcgClassification): { label: string; tone: string } => {
+    switch (c) {
+      case "sinusRhythm":
+        return { label: isRTL ? "نظم جيبي (طبيعي)" : "Sinus rhythm", tone: "bg-success/10 text-success" };
+      case "atrialFibrillation":
+        return { label: isRTL ? "رجفان أذيني" : "Atrial fibrillation", tone: "bg-destructive/10 text-destructive" };
+      case "inconclusiveLowHeartRate":
+        return { label: isRTL ? "غير حاسم - نبض منخفض" : "Inconclusive - low HR", tone: "bg-warning/10 text-warning" };
+      case "inconclusiveHighHeartRate":
+        return { label: isRTL ? "غير حاسم - نبض مرتفع" : "Inconclusive - high HR", tone: "bg-warning/10 text-warning" };
+      case "inconclusivePoorReading":
+        return { label: isRTL ? "غير حاسم - تسجيل ضعيف" : "Inconclusive - poor recording", tone: "bg-muted text-muted-foreground" };
+      default:
+        return { label: isRTL ? "غير حاسم" : "Inconclusive", tone: "bg-muted text-muted-foreground" };
+    }
+  };
+
+  const tabs: { key: Tab; label: string; icon: typeof Footprints }[] = [
+    { key: "steps", label: isRTL ? "الخطوات" : "Steps", icon: Footprints },
+    { key: "workouts", label: isRTL ? "التمارين" : "Workouts", icon: Dumbbell },
+    { key: "ecg", label: isRTL ? "تخطيط القلب" : "ECG", icon: HeartPulse },
+  ];
+
+  // ── Steps view ─────────────────────────────────────────────────
+  const renderSteps = () => {
+    if (!steps) return null;
+    const today = steps[steps.length - 1]?.steps ?? 0;
+    const avg = Math.round(steps.reduce((s, d) => s + d.steps, 0) / steps.length);
+    const max = Math.max(STEP_GOAL, ...steps.map((d) => d.steps));
+    const pct = Math.min(100, Math.round((today / STEP_GOAL) * 100));
+    return (
+      <div className="space-y-4">
+        <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+          <p className="text-sm text-muted-foreground">{isRTL ? "خطوات اليوم" : "Steps today"}</p>
+          <p className="text-4xl font-bold text-foreground mt-1">{today.toLocaleString("en-US")}</p>
+          <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground">
+            <span>{pct}% {isRTL ? "من الهدف" : "of goal"}</span>
+            <span>{isRTL ? "الهدف" : "Goal"}: {STEP_GOAL.toLocaleString("en-US")}</span>
+          </div>
+        </div>
+
+        <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+          <div className="flex items-baseline justify-between mb-5">
+            <h3 className="font-bold text-foreground">{isRTL ? "آخر 7 أيام" : "Last 7 days"}</h3>
+            <span className="text-xs text-muted-foreground">
+              {isRTL ? "المتوسط" : "Average"}: <span className="font-bold text-foreground">{avg.toLocaleString("en-US")}</span>
+            </span>
+          </div>
+          <div className="flex items-end justify-between gap-2 h-40">
+            {steps.map((d, i) => {
+              const isToday = i === steps.length - 1;
+              return (
+                <div key={d.date.toISOString()} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                  <span className="text-[10px] text-muted-foreground">
+                    {d.steps >= 1000 ? `${(d.steps / 1000).toFixed(1)}k` : d.steps}
+                  </span>
+                  <div
+                    className={`w-full rounded-t-lg ${isToday ? "bg-primary" : "bg-primary/25"}`}
+                    style={{ height: `${Math.max(4, (d.steps / max) * 100)}%` }}
+                  />
+                  <span className={`text-[10px] ${isToday ? "font-bold text-primary" : "text-muted-foreground"}`}>
+                    {format(d.date, "EEE", { locale: isRTL ? ar : undefined })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Workouts view ──────────────────────────────────────────────
+  const renderWorkouts = () => {
+    if (!workouts) return null;
+    if (workouts.length === 0) {
+      return (
+        <div className="bg-card rounded-3xl p-8 border border-border text-center">
+          <Dumbbell className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{isRTL ? "لا توجد تمارين في آخر 30 يوماً" : "No workouts in the last 30 days"}</p>
+        </div>
+      );
+    }
+    return (
+      <div className="space-y-3">
+        {workouts.map((w) => {
+          const start = new Date(w.startDate);
+          const mins = Math.round(w.duration / 60);
+          return (
+            <div key={`${w.startDate}-${w.workoutType}`} className="bg-card rounded-3xl p-4 border border-border shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Dumbbell className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-foreground truncate">{workoutName(w.workoutType, isRTL)}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {dateLabel(start)} · {formatTime12(timeOf(start), isRTL)}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-muted text-foreground">
+                  <Timer className="w-3.5 h-3.5" /> {mins} {isRTL ? "دقيقة" : "min"}
+                </span>
+                {w.totalEnergyBurned != null && w.totalEnergyBurned > 0 && (
+                  <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-warning/10 text-warning">
+                    <Flame className="w-3.5 h-3.5" /> {Math.round(w.totalEnergyBurned)} {isRTL ? "سعرة" : "kcal"}
+                  </span>
+                )}
+                {w.totalDistance != null && w.totalDistance > 0 && (
+                  <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-info/10 text-info">
+                    <Route className="w-3.5 h-3.5" /> {(w.totalDistance / 1000).toFixed(2)} {isRTL ? "كم" : "km"}
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // ── ECG view ───────────────────────────────────────────────────
+  const disclaimer = (
+    <div className="bg-warning/10 border border-warning/20 rounded-2xl p-3 flex gap-2 text-xs text-foreground/80">
+      <AlertTriangle className="w-4 h-4 text-warning flex-shrink-0 mt-0.5" />
+      <span>
+        {isRTL
+          ? "هذه التسجيلات من Apple Watch للاطلاع فقط وليست تشخيصاً طبياً. راجع طبيبك عند أي قلق."
+          : "These Apple Watch recordings are for reference only and are not a medical diagnosis. See your doctor if concerned."}
+      </span>
+    </div>
+  );
+
+  const renderEcg = () => {
+    if (!ecgs) return null;
+    return (
+      <div className="space-y-3">
+        {disclaimer}
+        {ecgs.length === 0 ? (
+          <div className="bg-card rounded-3xl p-8 border border-border text-center">
+            <HeartPulse className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm">
+              {isRTL ? "لا توجد تسجيلات تخطيط قلب في تطبيق صحة" : "No ECG recordings in Apple Health"}
+            </p>
+          </div>
+        ) : (
+          ecgs.map((e) => {
+            const d = new Date(e.startDate);
+            const info = ecgInfo(e.classification);
+            return (
+              <button key={e.id} onClick={() => openRecording(e)}
+                className="w-full text-start bg-card rounded-3xl p-4 border border-border shadow-sm active:scale-[0.98] transition-transform">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-heart/10 flex items-center justify-center flex-shrink-0">
+                    <HeartPulse className="w-6 h-6 text-heart" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${info.tone}`}>{info.label}</span>
+                    <p className="text-xs text-muted-foreground mt-1.5">
+                      {dateLabel(d)} · {formatTime12(timeOf(d), isRTL)}
+                    </p>
+                  </div>
+                  {e.averageHeartRate != null && (
+                    <div className="text-end flex-shrink-0">
+                      <p className="text-lg font-bold text-foreground">{Math.round(e.averageHeartRate)}</p>
+                      <p className="text-[10px] text-muted-foreground">bpm</p>
+                    </div>
+                  )}
+                </div>
+              </button>
+            );
+          })
+        )}
+      </div>
+    );
+  };
+
+  return (
+    <div className="pb-28 pt-header overflow-x-hidden">
+      <PageHeader title={isRTL ? "النشاط والقلب" : "Activity & Heart"} showBack />
+
+      <div className="px-5 pt-4 space-y-5">
+        {!supported ? (
+          <div className="bg-card rounded-3xl p-8 border border-border text-center text-sm text-muted-foreground">
+            {isRTL ? "هذه الميزة متاحة على الآيفون فقط" : "This feature is available on iPhone only"}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-2 bg-muted/60 p-1 rounded-2xl">
+              {tabs.map((t) => (
+                <button key={t.key} onClick={() => setTab(t.key)}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                    tab === t.key ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
+                  }`}>
+                  <t.icon className="w-4 h-4" />
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-end">
+              <button onClick={refresh} disabled={loading}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary disabled:opacity-50">
+                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+                {isRTL ? "تحديث من تطبيق صحة" : "Refresh from Health"}
+              </button>
+            </div>
+
+            {error && (
+              <div className="bg-destructive/10 text-destructive rounded-2xl p-4 text-sm">
+                {isRTL
+                  ? "تعذر قراءة البيانات. تأكد من السماح لدواء+ في: تطبيق صحة ← الملف الشخصي ← التطبيقات."
+                  : "Could not read data. Check Dawaa+ permissions in Health → Profile → Apps."}
+              </div>
+            )}
+
+            {loading && ((tab === "ecg" && !ecgs) || (tab !== "ecg" && !steps)) ? (
+              <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
+            ) : tab === "steps" ? renderSteps() : tab === "workouts" ? renderWorkouts() : renderEcg()}
+          </>
+        )}
+      </div>
+
+      {openEcg && createPortal(
+        <div className="fixed inset-0 bg-foreground/50 z-[60] flex items-end justify-center" onClick={() => setOpenEcg(null)}>
+          <div dir={isRTL ? "rtl" : "ltr"} onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg max-h-[92vh] bg-background rounded-t-[32px] flex flex-col">
+            <div className="w-full flex justify-center pt-3 pb-1"><div className="w-12 h-1.5 bg-border rounded-full" /></div>
+            <div className="px-6 pt-2 pb-3 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-foreground">{isRTL ? "تخطيط القلب" : "ECG"}</h2>
+              <button onClick={() => setOpenEcg(null)} className="text-muted-foreground p-1" aria-label="Close"><X className="w-6 h-6" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] space-y-4">
+              <div className="bg-card rounded-3xl p-4 border border-border">
+                <span className={`inline-block text-xs font-bold px-2.5 py-1 rounded-full ${ecgInfo(openEcg.classification).tone}`}>
+                  {ecgInfo(openEcg.classification).label}
+                </span>
+                <div className="grid grid-cols-2 gap-3 mt-3 text-sm">
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">{isRTL ? "التاريخ" : "Date"}</p>
+                    <p className="font-bold text-foreground">
+                      {dateLabel(new Date(openEcg.startDate))} · {formatTime12(timeOf(new Date(openEcg.startDate)), isRTL)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground">{isRTL ? "متوسط النبض" : "Average heart rate"}</p>
+                    <p className="font-bold text-foreground">
+                      {openEcg.averageHeartRate != null ? `${Math.round(openEcg.averageHeartRate)} bpm` : "—"}
+                    </p>
+                  </div>
+                </div>
+                {openEcg.symptoms && (
+                  <p className="text-xs text-warning mt-3">{isRTL ? "تم تسجيل أعراض مع هذا التخطيط" : "Symptoms were logged with this recording"}</p>
+                )}
+              </div>
+
+              <div className="bg-card rounded-3xl p-3 border border-border">
+                {wave ? (
+                  <>
+                    <EcgStrip values={wave.values} hz={wave.hz} />
+                    <p className="text-[10px] text-muted-foreground mt-2 text-center" dir="ltr">25 mm/s · 10 mm/mV · Lead I</p>
+                  </>
+                ) : waveError ? (
+                  <p className="text-sm text-destructive text-center py-10">{isRTL ? "تعذر تحميل التخطيط" : "Could not load the recording"}</p>
+                ) : (
+                  <div className="flex justify-center py-12"><Loader2 className="w-7 h-7 text-primary animate-spin" /></div>
+                )}
+              </div>
+
+              {disclaimer}
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+    </div>
+  );
+};
+
+export default ActivityPage;

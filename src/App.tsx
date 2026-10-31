@@ -37,6 +37,7 @@ const BloodSugarPage    = lazy(() => import("@/pages/BloodSugarPage"));
 const AppointmentsPage  = lazy(() => import("@/pages/AppointmentsPage"));
 const LabTestsPage      = lazy(() => import("@/pages/LabTestsPage"));
 const ReportsPage       = lazy(() => import("@/pages/ReportsPage"));
+const ActivityPage      = lazy(() => import("@/pages/ActivityPage")); // personal build only
 
 const queryClient = new QueryClient();
 
@@ -205,6 +206,7 @@ const AppRoutes = () => {
         <Route path="/appointments" element={<ProtectedRoute guestMode={guestMode}><AppointmentsPage /></ProtectedRoute>} />
         <Route path="/lab-tests" element={<ProtectedRoute guestMode={guestMode}><LabTestsPage /></ProtectedRoute>} />
         <Route path="/reports" element={<ProtectedRoute guestMode={guestMode}><ReportsPage /></ProtectedRoute>} />
+        <Route path="/activity" element={<ProtectedRoute guestMode={guestMode}><ActivityPage /></ProtectedRoute>} />
         <Route path="/emergency-contact" element={<ProtectedRoute guestMode={guestMode}><EmergencyContactPage /></ProtectedRoute>} />
         
         <Route path="/terms" element={<TermsOfUsePage />} />
