@@ -381,7 +381,7 @@ const ActivityPage = () => {
                   <div>
                     <p className="text-[10px] text-muted-foreground">{isRTL ? "متوسط النبض" : "Average heart rate"}</p>
                     <p className="font-bold text-foreground">
-                      {openEcg.averageHeartRate != null ? `${Math.round(openEcg.averageHeartRate)} bpm` : "—"}
+                      <span dir="ltr">{openEcg.averageHeartRate != null ? `${Math.round(openEcg.averageHeartRate)} bpm` : "—"}</span>
                     </p>
                   </div>
                 </div>
