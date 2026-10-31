@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import AuthPage from "@/pages/AuthPage";
 import PageHeader from "@/components/PageHeader";
-import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, Globe, Smartphone, Bell, Languages } from "lucide-react";
+import { Share2, FileText, Shield, Mail, Info, LogOut, LogIn, ChevronRight, ChevronLeft, Moon, Sun, Trash2, MessageCircle, Send, Copy, X, MapPin, Globe, Smartphone, Bell, Languages, Siren } from "lucide-react";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -185,6 +185,14 @@ const SettingsPage = ({ onSwitchToAuth }: { onSwitchToAuth?: () => void }) => {
             { icon: Languages, label: t.language, value: lang === "ar" ? "العربية" : "English", onClick: () => setLanguageOpen(true) },
             { icon: theme === "dark" ? Moon : Sun, label: t.theme, value: theme === "dark" ? t.darkMode : t.lightMode, onClick: () => setThemeOpen(true) },
             { icon: Bell, label: t.notifications, value: notifSummary, onClick: () => setNotificationsOpen(true) },
+            {
+              icon: Siren,
+              label: isRTL ? "جهة اتصال الطوارئ" : "Emergency Contact",
+              value: settings.emergencyContact?.name
+                ? `${settings.emergencyContact.name} · ${settings.emergencyContact.phone}`
+                : (isRTL ? "غير محددة" : "Not set"),
+              onClick: () => navigate("/emergency-contact"),
+            },
           ];
           return (
             <div className="bg-card rounded-2xl border border-border divide-y divide-border overflow-hidden">

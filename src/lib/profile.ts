@@ -15,7 +15,7 @@ export const diseaseOptions = [
 export const bloodTypes = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 
 /** Number of filled profile fields, out of PROFILE_TOTAL. */
-export const PROFILE_TOTAL = 8;
+export const PROFILE_TOTAL = 6;
 export const countProfileFilled = (s: AppSettings) =>
   [
     s.userName,
@@ -24,6 +24,4 @@ export const countProfileFilled = (s: AppSettings) =>
     s.allergies,
     (s.chronicDiseases || []).length > 0 ? "1" : "",
     s.customDiseases,
-    s.emergencyContact?.name,
-    s.emergencyContact?.phone,
   ].filter(Boolean).length;
