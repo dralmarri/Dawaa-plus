@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, User, Pencil, ChevronLeft, ChevronRight } from "lucide-react";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { format, subDays, isAfter, parseISO } from "date-fns";
@@ -8,6 +8,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { store } from "@/lib/store";
 import { supabase } from "@/integrations/supabase/client";
 import appIcon from "@/assets/app-icon.png";
+import UserProfileDialog from "@/components/UserProfileDialog";
+import { countProfileFilled, PROFILE_TOTAL, diseaseOptions } from "@/lib/profile";
 import { toast } from "sonner";
 
 const ReportsPage = () => {
@@ -19,7 +21,8 @@ const ReportsPage = () => {
   const readings = store.getReadings();
   const appointments = store.getAppointments?.() || [];
   const labs = store.getLabTests?.() || [];
-  const settings = store.getSettings();
+  const [settings, setSettings] = useState(store.getSettings());
+  const [profileOpen, setProfileOpen] = useState(false);
   const bsReadings = store.getBloodSugarReadings?.() || [];
 
   useEffect(() => {
@@ -440,6 +443,54 @@ const ReportsPage = () => {
       <PageHeader title={isRTL ? "التقارير" : "Reports"} showBack />
 
       <div className="px-4 space-y-4">
+        {(() => {
+          const filled = countProfileFilled(settings);
+          const Chevron = isRTL ? ChevronLeft : ChevronRight;
+          const diseases = [
+            ...(settings.chronicDiseases || []).map((k) => {
+              const d = diseaseOptions.find((x) => x.key === k);
+              return d ? (isRTL ? d.ar : d.en) : k;
+            }),
+            ...(settings.customDiseases ? [settings.customDiseases] : []),
+          ];
+          const facts = [
+            settings.bloodType && `${isRTL ? "فصيلة الدم" : "Blood"}: ${settings.bloodType}`,
+            settings.dateOfBirth && `${isRTL ? "الميلاد" : "DOB"}: ${settings.dateOfBirth}`,
+            diseases.length > 0 && `${isRTL ? "الأمراض" : "Conditions"}: ${diseases.join(isRTL ? "، " : ", ")}`,
+            settings.allergies && `${isRTL ? "الحساسية" : "Allergies"}: ${settings.allergies}`,
+          ].filter(Boolean) as string[];
+          return (
+            <button
+              onClick={() => setProfileOpen(true)}
+              className="w-full bg-card rounded-2xl p-5 shadow-sm border border-border text-start hover:bg-muted/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <User className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg font-bold text-foreground truncate">
+                    {settings.userName || (isRTL ? "بيانات المستخدم" : "User Profile")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {filled}/{PROFILE_TOTAL} {isRTL ? "حقول مكتملة" : "fields completed"}
+                  </p>
+                </div>
+                {filled === 0 ? <Chevron className="w-5 h-5 text-muted-foreground" /> : <Pencil className="w-4 h-4 text-primary" />}
+              </div>
+              {facts.length > 0 ? (
+                <ul className="mt-3 space-y-1 text-sm text-foreground/80">
+                  {facts.map((f) => <li key={f} className="truncate">• {f}</li>)}
+                </ul>
+              ) : (
+                <p className="mt-3 text-sm text-muted-foreground">
+                  {isRTL ? "أضف بياناتك الصحية لتظهر في التقرير" : "Add your health details to include them in the report"}
+                </p>
+              )}
+            </button>
+          );
+        })()}
+
         <div className="bg-card rounded-2xl p-5 shadow-sm border border-border">
           <div className="flex items-center gap-3 mb-3">
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -482,6 +533,8 @@ const ReportsPage = () => {
             : "💡 The report includes your name and today's date — share it with your doctor."}
         </div>
       </div>
+
+      <UserProfileDialog open={profileOpen} onOpenChange={setProfileOpen} onSaved={setSettings} />
     </div>
   );
 };
