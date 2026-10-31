@@ -46,17 +46,33 @@ export async function importFromAppleHealth(): Promise<HealthImportResult> {
         return [];
       }
     };
-    const [bpSamples, hrSamples, sugarSamples] = await Promise.all([
-      read("bloodPressure"),
-      read("heartRate"),
-      read("bloodGlucose"),
-    ]);
+    const [bpSamples, sugarSamples] = await Promise.all([read("bloodPressure"), read("bloodGlucose")]);
+
+    // Watches record heart rate every few minutes (thousands per month), so
+    // fetch only the pulse readings around each blood pressure reading.
+    const pulseNear = async (when: Date): Promise<number | null> => {
+      try {
+        const { samples } = await Health.readSamples({
+          dataType: "heartRate",
+          startDate: new Date(when.getTime() - PULSE_MATCH_WINDOW_MS).toISOString(),
+          endDate: new Date(when.getTime() + PULSE_MATCH_WINDOW_MS).toISOString(),
+          limit: 100,
+        });
+        let best: { diff: number; v: number } | null = null;
+        for (const s of samples ?? []) {
+          const diff = Math.abs(new Date(s.startDate).getTime() - when.getTime());
+          if (!best || diff < best.diff) best = { diff, v: s.value };
+        }
+        return best ? Math.round(best.v) : null;
+      } catch {
+        return null;
+      }
+    };
 
     // ── Blood pressure (+ nearest pulse) ──────────────────────────
     const existingBp = store.getReadings();
     const bpIds = new Set(existingBp.map((r) => r.id));
     const bpKeys = new Set(existingBp.map((r) => `${r.date}|${r.time}|${r.systolic}|${r.diastolic}`));
-    const hrTimes = hrSamples.map((s) => ({ t: new Date(s.startDate).getTime(), v: s.value }));
 
     let bpCount = 0;
     for (const s of bpSamples) {
@@ -76,12 +92,8 @@ export async function importFromAppleHealth(): Promise<HealthImportResult> {
       const key = `${reading.date}|${reading.time}|${reading.systolic}|${reading.diastolic}`;
       if (bpIds.has(id) || bpKeys.has(key)) continue;
 
-      let best: { diff: number; v: number } | null = null;
-      for (const hr of hrTimes) {
-        const diff = Math.abs(hr.t - when.getTime());
-        if (diff <= PULSE_MATCH_WINDOW_MS && (!best || diff < best.diff)) best = { diff, v: hr.v };
-      }
-      if (best) reading.heartRate = Math.round(best.v);
+      const pulse = await pulseNear(when);
+      if (pulse) reading.heartRate = pulse;
 
       await store.saveReading(reading);
       bpIds.add(id);

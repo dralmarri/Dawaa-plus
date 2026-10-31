@@ -6,18 +6,18 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Footprints, Dumbbell, HeartPulse, RefreshCw, X, Flame, Timer, Route, AlertTriangle, Loader2 } from "lucide-react";
+import { Footprints, Dumbbell, HeartPulse, RefreshCw, X, Flame, Timer, Route, AlertTriangle, Loader2, Moon, Gauge, Wind, Heart, Scale } from "lucide-react";
 import type { Workout } from "@capgo/capacitor-health";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { isHealthImportSupported } from "@/lib/healthImport";
 import { formatTime12 } from "@/lib/time";
 import {
-  Ecg, loadDailySteps, loadWorkouts, requestActivityAuthorization, workoutName,
-  type DaySteps, type EcgSummary, type EcgClassification,
+  Ecg, loadDailySteps, loadWorkouts, loadSleep, loadVitals, requestActivityAuthorization, workoutName,
+  type DaySteps, type EcgSummary, type EcgClassification, type NightSleep, type VitalPoint, type StageKey,
 } from "@/lib/healthActivity";
 
-type Tab = "steps" | "workouts" | "ecg";
+type Tab = "steps" | "sleep" | "workouts" | "vitals" | "ecg";
 const STEP_GOAL = 10000;
 
 const timeOf = (d: Date) => format(d, "HH:mm");
@@ -68,6 +68,8 @@ const ActivityPage = () => {
 
   const [steps, setSteps] = useState<DaySteps[] | null>(null);
   const [workouts, setWorkouts] = useState<Workout[] | null>(null);
+  const [sleep, setSleep] = useState<NightSleep[] | null>(null);
+  const [vitals, setVitals] = useState<{ spo2: VitalPoint[]; restingHr: VitalPoint[]; weight: VitalPoint[] } | null>(null);
   const [ecgs, setEcgs] = useState<EcgSummary[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -83,9 +85,16 @@ const ActivityPage = () => {
     setError(false);
     try {
       await requestActivityAuthorization();
-      const [s, w] = await Promise.all([loadDailySteps(7), loadWorkouts(30)]);
+      const [s, w, sl, v] = await Promise.all([
+        loadDailySteps(7),
+        loadWorkouts(30),
+        loadSleep(7).catch(() => [] as NightSleep[]),
+        loadVitals(30),
+      ]);
       setSteps(s);
       setWorkouts(w);
+      setSleep(sl);
+      setVitals(v);
     } catch {
       setError(true);
     } finally {
@@ -148,7 +157,9 @@ const ActivityPage = () => {
 
   const tabs: { key: Tab; label: string; icon: typeof Footprints }[] = [
     { key: "steps", label: isRTL ? "الخطوات" : "Steps", icon: Footprints },
+    { key: "sleep", label: isRTL ? "النوم" : "Sleep", icon: Moon },
     { key: "workouts", label: isRTL ? "التمارين" : "Workouts", icon: Dumbbell },
+    { key: "vitals", label: isRTL ? "القياسات" : "Vitals", icon: Gauge },
     { key: "ecg", label: isRTL ? "تخطيط القلب" : "ECG", icon: HeartPulse },
   ];
 
@@ -200,6 +211,169 @@ const ActivityPage = () => {
             })}
           </div>
         </div>
+      </div>
+    );
+  };
+
+  // ── Sleep view ─────────────────────────────────────────────────
+  const hm = (mins: number) => {
+    const h = Math.floor(mins / 60);
+    const m = mins % 60;
+    return isRTL ? `${h} س ${m} د` : `${h}h ${m}m`;
+  };
+  const STAGES: { key: StageKey; label: string; color: string }[] = [
+    { key: "deep", label: isRTL ? "عميق" : "Deep", color: "#1e3a8a" },
+    { key: "light", label: isRTL ? "خفيف" : "Light", color: "#3b82f6" },
+    { key: "rem", label: isRTL ? "حركة العين السريعة" : "REM", color: "#8b5cf6" },
+    { key: "asleep", label: isRTL ? "نوم" : "Asleep", color: "#60a5fa" },
+    { key: "awake", label: isRTL ? "استيقاظ" : "Awake", color: "#f59e0b" },
+  ];
+
+  const renderSleep = () => {
+    if (!sleep) return null;
+    const withData = sleep.filter((n) => n.asleepMinutes > 0);
+    if (withData.length === 0) {
+      return (
+        <div className="bg-card rounded-3xl p-8 border border-border text-center">
+          <Moon className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm">{isRTL ? "لا توجد بيانات نوم في آخر 7 أيام" : "No sleep data in the last 7 days"}</p>
+        </div>
+      );
+    }
+    const last = [...sleep].reverse().find((n) => n.asleepMinutes > 0)!;
+    const avg = Math.round(withData.reduce((a, n) => a + n.asleepMinutes, 0) / withData.length);
+    const maxM = Math.max(8 * 60, ...sleep.map((n) => n.asleepMinutes));
+    const stageTotal = STAGES.reduce((a, st) => a + last.stages[st.key], 0) || 1;
+    const shownStages = STAGES.filter((st) => last.stages[st.key] > 0);
+    return (
+      <div className="space-y-4">
+        <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+          <p className="text-sm text-muted-foreground">
+            {isRTL ? "آخر ليلة" : "Last night"} · {format(last.date, isRTL ? "EEEE d MMMM" : "EEE, MMM d", { locale: isRTL ? ar : undefined })}
+          </p>
+          <p className="text-4xl font-bold text-foreground mt-1">{hm(last.asleepMinutes)}</p>
+          {last.bedtime && last.wake && (
+            <p className="text-sm text-muted-foreground mt-1">
+              {formatTime12(timeOf(last.bedtime), isRTL)} ← {formatTime12(timeOf(last.wake), isRTL)}
+            </p>
+          )}
+          {shownStages.length > 0 && (
+            <>
+              <div className="flex h-3 rounded-full overflow-hidden mt-5" dir="ltr">
+                {shownStages.map((st) => (
+                  <div key={st.key} style={{ width: `${(last.stages[st.key] / stageTotal) * 100}%`, backgroundColor: st.color }} />
+                ))}
+              </div>
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2 mt-4">
+                {shownStages.map((st) => (
+                  <div key={st.key} className="flex items-center gap-2 text-xs">
+                    <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: st.color }} />
+                    <span className="text-muted-foreground">{st.label}</span>
+                    <span className="font-bold text-foreground ms-auto">{hm(last.stages[st.key])}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+          {last.source && <p className="text-[10px] text-muted-foreground mt-4">{isRTL ? "المصدر" : "Source"}: {last.source}</p>}
+        </div>
+
+        <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+          <div className="flex items-baseline justify-between mb-5">
+            <h3 className="font-bold text-foreground">{isRTL ? "آخر 7 ليالٍ" : "Last 7 nights"}</h3>
+            <span className="text-xs text-muted-foreground">
+              {isRTL ? "المتوسط" : "Average"}: <span className="font-bold text-foreground">{hm(avg)}</span>
+            </span>
+          </div>
+          <div className="flex items-end justify-between gap-2 h-40">
+            {sleep.map((n, i) => {
+              const isLast = i === sleep.length - 1;
+              return (
+                <div key={n.date.toISOString()} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                  <span className="text-[10px] text-muted-foreground">{n.asleepMinutes ? (n.asleepMinutes / 60).toFixed(1) : "—"}</span>
+                  <div className={`w-full rounded-t-lg ${isLast ? "bg-[#3b82f6]" : "bg-[#3b82f6]/30"}`}
+                    style={{ height: `${Math.max(4, (n.asleepMinutes / maxM) * 100)}%` }} />
+                  <span className={`text-[10px] ${isLast ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                    {format(n.date, "EEE", { locale: isRTL ? ar : undefined })}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-3 text-center">{isRTL ? "بالساعات" : "Hours"}</p>
+        </div>
+      </div>
+    );
+  };
+
+  // ── Vitals view ────────────────────────────────────────────────
+  const Sparkline = ({ points, color }: { points: VitalPoint[]; color: string }) => {
+    if (points.length < 2) return null;
+    const vals = points.map((p) => p.value);
+    const min = Math.min(...vals);
+    const max = Math.max(...vals);
+    const span = max - min || 1;
+    const t0 = points[0].date.getTime();
+    const tSpan = points[points.length - 1].date.getTime() - t0 || 1;
+    const d = points
+      .map((p) => `${(((p.date.getTime() - t0) / tSpan) * 100).toFixed(2)},${(28 - ((p.value - min) / span) * 24).toFixed(2)}`)
+      .join(" ");
+    return (
+      <svg viewBox="0 0 100 30" preserveAspectRatio="none" className="w-full h-12 mt-3" dir="ltr">
+        <polyline points={d} fill="none" stroke={color} strokeWidth={1.5} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />
+      </svg>
+    );
+  };
+
+  const VitalCard = ({
+    icon: Icon, title, unit, points, color, decimals = 0, note,
+  }: {
+    icon: typeof Heart; title: string; unit: string; points: VitalPoint[]; color: string; decimals?: number; note?: string;
+  }) => {
+    const latest = points[points.length - 1];
+    const vals = points.map((p) => p.value);
+    return (
+      <div className="bg-card rounded-3xl p-5 border border-border shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="w-11 h-11 rounded-2xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: `${color}1a` }}>
+            <Icon className="w-5 h-5" style={{ color }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm text-muted-foreground">{title}</p>
+            {latest ? (
+              <p className="text-2xl font-bold text-foreground">
+                {latest.value.toFixed(decimals)} <span className="text-sm font-normal text-muted-foreground">{unit}</span>
+              </p>
+            ) : (
+              <p className="text-sm text-muted-foreground mt-1">{isRTL ? "لا توجد قراءات" : "No readings"}</p>
+            )}
+          </div>
+          {latest && (
+            <span className="text-[10px] text-muted-foreground text-end flex-shrink-0">
+              {format(latest.date, isRTL ? "d MMM" : "MMM d", { locale: isRTL ? ar : undefined })}
+            </span>
+          )}
+        </div>
+        {latest && vals.length > 1 && (
+          <>
+            <Sparkline points={points} color={color} />
+            <p className="text-[11px] text-muted-foreground">
+              {note ?? (isRTL ? "آخر 30 يوماً" : "Last 30 days")}: {Math.min(...vals).toFixed(decimals)} – {Math.max(...vals).toFixed(decimals)} {unit}
+            </p>
+          </>
+        )}
+      </div>
+    );
+  };
+
+  const renderVitals = () => {
+    if (!vitals) return null;
+    return (
+      <div className="space-y-3">
+        <VitalCard icon={Wind} title={isRTL ? "تشبع الأكسجين" : "Blood oxygen"} unit="%" points={vitals.spo2} color="#0ea5e9" />
+        <VitalCard icon={Heart} title={isRTL ? "نبض القلب أثناء الراحة" : "Resting heart rate"} unit="bpm" points={vitals.restingHr} color="#ef4444" />
+        <VitalCard icon={Scale} title={isRTL ? "الوزن" : "Weight"} unit={isRTL ? "كغ" : "kg"} points={vitals.weight} color="#8b5cf6" decimals={1}
+          note={isRTL ? "آخر سنة" : "Last year"} />
       </div>
     );
   };
@@ -322,10 +496,10 @@ const ActivityPage = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-3 gap-2 bg-muted/60 p-1 rounded-2xl">
+            <div className="grid grid-cols-5 gap-1 bg-muted/60 p-1 rounded-2xl">
               {tabs.map((t) => (
                 <button key={t.key} onClick={() => setTab(t.key)}
-                  className={`flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-colors ${
+                  className={`flex flex-col items-center justify-center gap-1 py-2 rounded-xl text-[11px] font-bold leading-tight transition-colors ${
                     tab === t.key ? "bg-card text-primary shadow-sm" : "text-muted-foreground"
                   }`}>
                   <t.icon className="w-4 h-4" />
@@ -352,7 +526,11 @@ const ActivityPage = () => {
 
             {loading && ((tab === "ecg" && !ecgs) || (tab !== "ecg" && !steps)) ? (
               <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 text-primary animate-spin" /></div>
-            ) : tab === "steps" ? renderSteps() : tab === "workouts" ? renderWorkouts() : renderEcg()}
+            ) : tab === "steps" ? renderSteps()
+              : tab === "sleep" ? renderSleep()
+              : tab === "workouts" ? renderWorkouts()
+              : tab === "vitals" ? renderVitals()
+              : renderEcg()}
           </>
         )}
       </div>
