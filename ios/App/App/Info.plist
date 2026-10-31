@@ -59,7 +59,7 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>يقرأ دواء+ من تطبيق صحة قراءات ضغط الدم والنبض والسكر والخطوات والتمارين وتخطيط القلب لعرضها في سجلك.</string>
+	<string>يقرأ دواء+ من تطبيق صحة قراءات ضغط الدم والنبض والسكر والخطوات والتمارين والنوم والأكسجين والوزن وتخطيط القلب لعرضها في سجلك.</string>
 	<key>NSHealthUpdateUsageDescription</key>
 	<string>لا يكتب دواء+ أي بيانات في تطبيق صحة.</string>
 	<key>NSCameraUsageDescription</key>
