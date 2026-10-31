@@ -269,7 +269,7 @@ const ActivityPage = () => {
                   <div key={st.key} className="flex items-center gap-2 text-xs">
                     <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: st.color }} />
                     <span className="text-muted-foreground">{st.label}</span>
-                    <span className="font-bold text-foreground ms-auto">{hm(last.stages[st.key])}</span>
+                    <span className="font-bold text-foreground ms-auto whitespace-nowrap">{hm(last.stages[st.key])}</span>
                   </div>
                 ))}
               </div>
