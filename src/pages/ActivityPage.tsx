@@ -13,7 +13,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { isHealthImportSupported } from "@/lib/healthImport";
 import { formatTime12 } from "@/lib/time";
 import {
-  Ecg, loadDailySteps, loadWorkouts, loadSleep, loadVitals, requestActivityAuthorization, workoutName,
+  Ecg, sleepDebug, loadDailySteps, loadWorkouts, loadSleep, loadVitals, requestActivityAuthorization, workoutName,
   type DaySteps, type EcgSummary, type EcgClassification, type NightSleep, type VitalPoint, type StageKey,
 } from "@/lib/healthActivity";
 
@@ -237,6 +237,20 @@ const ActivityPage = () => {
         <div className="bg-card rounded-3xl p-8 border border-border text-center">
           <Moon className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground text-sm">{isRTL ? "لا توجد بيانات نوم في آخر 7 أيام" : "No sleep data in the last 7 days"}</p>
+          <p className="text-muted-foreground/70 text-[11px] mt-3 leading-relaxed" dir="ltr">
+            {sleepDebug.error
+              ? `error: ${sleepDebug.error}`
+              : `samples: ${sleepDebug.raw}` +
+                (Object.keys(sleepDebug.states).length ? ` · ${Object.entries(sleepDebug.states).map(([k, v]) => `${k} ${v}`).join(", ")}` : "") +
+                (sleepDebug.sources.length ? ` · ${sleepDebug.sources.join(", ")}` : "")}
+          </p>
+          {sleepDebug.raw === 0 && !sleepDebug.error && (
+            <p className="text-muted-foreground text-xs mt-3 leading-relaxed">
+              {isRTL
+                ? "إذا كانت بيانات النوم موجودة في تطبيق صحة، فعّل إذن «النوم» من: الإعدادات ← صحة ← الوصول إلى البيانات والأجهزة ← Dawaa+"
+                : "If Apple Health has sleep data, enable Sleep in Settings → Health → Data Access & Devices → Dawaa+"}
+            </p>
+          )}
         </div>
       );
     }

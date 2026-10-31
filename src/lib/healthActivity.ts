@@ -127,7 +127,22 @@ const unionMinutes = (intervals: [number, number][]) => {
  * Several apps (watch, iPhone, Google Health) may record the same night, so per
  * night we use the single source that recorded the most sleep.
  */
+/** Diagnostics for the empty sleep state (what HealthKit actually returned). */
+export const sleepDebug: { raw: number; states: Record<string, number>; sources: string[]; error?: string } = {
+  raw: 0, states: {}, sources: [],
+};
+
 export async function loadSleep(nights = 7): Promise<NightSleep[]> {
+  try {
+    return await loadSleepInner(nights);
+  } catch (e) {
+    sleepDebug.error = e instanceof Error ? e.message : String(e);
+    throw e;
+  }
+}
+
+async function loadSleepInner(nights: number): Promise<NightSleep[]> {
+  sleepDebug.raw = 0; sleepDebug.states = {}; sleepDebug.sources = []; sleepDebug.error = undefined;
   const today = startOfDay(new Date());
   const from = new Date(today);
   from.setDate(from.getDate() - nights);
@@ -143,6 +158,14 @@ export async function loadSleep(nights = 7): Promise<NightSleep[]> {
   // Night key: a segment starting before noon belongs to that morning;
   // one starting in the evening belongs to the next morning.
   const nightKey = (start: Date) => startOfDay(new Date(start.getTime() + 12 * 60 * 60 * 1000)).toDateString();
+
+  sleepDebug.raw = samples?.length ?? 0;
+  for (const s of samples ?? []) {
+    const st = s.sleepState ?? "unknown";
+    sleepDebug.states[st] = (sleepDebug.states[st] ?? 0) + 1;
+    const src = s.sourceName || s.sourceId || "?";
+    if (!sleepDebug.sources.includes(src)) sleepDebug.sources.push(src);
+  }
 
   const byNight = new Map<string, Map<string, typeof samples>>();
   for (const s of samples ?? []) {
