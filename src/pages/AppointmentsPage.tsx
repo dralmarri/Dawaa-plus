@@ -32,10 +32,9 @@ const AppointmentsPage = () => {
 
   const reminderMap: Record<string, string> = {
     "At time": t.atTime, "15 minutes": t.min15, "30 minutes": t.min30,
-    "60 minutes": t.min60, "120 minutes": t.min120,
+    "60 minutes": t.min60, "120 minutes": t.min120, "1 day": t.dayBefore,
   };
   const reminderKeys = Object.keys(reminderMap);
-  const reminderLabels = Object.values(reminderMap);
 
   const [doctorName, setDoctorName] = useState("");
   const [specialty, setSpecialty] = useState("General Practitioner");
@@ -259,8 +258,21 @@ const AppointmentsPage = () => {
               </div>
               <div>
                 <label className="text-base font-bold text-foreground block mb-2">{t.reminderBeforeAppointment}</label>
-                <ChipSelector options={reminderLabels} value={reminderMap[reminder]}
-                  onChange={(v) => setReminder(reminderKeys[reminderLabels.indexOf(v)])} />
+                <select
+                  value={reminder}
+                  onChange={(e) => setReminder(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-ring appearance-none"
+                  style={{
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
+                    backgroundRepeat: "no-repeat",
+                    backgroundPosition: isRTL ? "left 1rem center" : "right 1rem center",
+                    paddingInlineEnd: "2.5rem",
+                  }}
+                >
+                  {reminderKeys.map((key) => (
+                    <option key={key} value={key}>{reminderMap[key]}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-base font-bold text-foreground block mb-2">{t.notes}</label>

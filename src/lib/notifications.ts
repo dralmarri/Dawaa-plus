@@ -59,22 +59,58 @@ function parseMinutes(reminderBefore: string): number {
   }
 }
 
-function getNotificationBody(meds: Medication[], isArabic: boolean): { title: string; body: string } {
-  if (meds.length === 1) {
-    const med = meds[0];
-    return {
-      title: isArabic ? '⏰ موعد الدواء' : '⏰ Medication Reminder',
-      body: isArabic
-        ? `الآن موعد جرعة ${med.name} - ${med.dosage} ${med.form}`
-        : `Time to take ${med.name} - ${med.dosage} ${med.form}`,
-    };
+// Appointment reminder offset (minutes before the appointment) from the
+// value stored on the appointment. Used in addition to the always-on
+// day-before reminder.
+function parseApptReminderMinutes(reminderBefore: string): number {
+  switch (reminderBefore) {
+    case 'At time': return 0;
+    case '15 minutes': return 15;
+    case '30 minutes': return 30;
+    case '60 minutes': return 60;
+    case '120 minutes': return 120;
+    case '1 day': return 1440;
+    default: return 120;
   }
-  const names = meds.map(m => m.name);
+}
+
+function getApptOffsetLabel(minutes: number, isArabic: boolean): string {
+  if (minutes <= 0) return isArabic ? 'الآن' : 'now';
+  if (minutes < 60) return isArabic ? `خلال ${minutes} دقيقة` : `in ${minutes} minutes`;
+  if (minutes === 60) return isArabic ? 'خلال ساعة' : 'in 1 hour';
+  if (minutes === 120) return isArabic ? 'خلال ساعتين' : 'in 2 hours';
+  const hours = Math.round(minutes / 60);
+  return isArabic ? `خلال ${hours} ساعات` : `in ${hours} hours`;
+}
+
+// Non-daily medications (weekly / biweekly / monthly / specific days) get a
+// clearly distinct reminder so the user knows today is a scheduled periodic
+// dose — separate from the regular daily dose reminders.
+function getScheduledDoseFreqLabel(frequency: string, isArabic: boolean): string {
+  switch (frequency) {
+    case 'Every week':
+    case 'weekly':
+      return isArabic ? 'الجرعة الأسبوعية' : 'weekly dose';
+    case 'Every 2 weeks':
+    case 'every_two_weeks':
+      return isArabic ? 'جرعة كل أسبوعين' : 'biweekly dose';
+    case 'Every month':
+    case 'monthly':
+      return isArabic ? 'الجرعة الشهرية' : 'monthly dose';
+    case 'Specific days':
+      return isArabic ? 'جرعة اليوم المحدد' : 'scheduled-day dose';
+    default:
+      return isArabic ? 'الجرعة المجدولة' : 'scheduled dose';
+  }
+}
+
+function getScheduledDoseText(med: Medication, isArabic: boolean): { title: string; body: string } {
+  const freqLabel = getScheduledDoseFreqLabel(med.frequency, isArabic);
   return {
-    title: isArabic ? '⏰ موعد الأدوية' : '⏰ Medications Reminder',
+    title: isArabic ? '📌 موعد جرعة مجدولة اليوم' : '📌 Scheduled Dose Today',
     body: isArabic
-      ? `موعد الأدوية: ${names.join('، ')}`
-      : `Time to take: ${names.join(', ')}`,
+      ? `اليوم موعد ${freqLabel}: ${med.name} - ${med.dosage} ${med.form}`
+      : `Today is your ${freqLabel}: ${med.name} - ${med.dosage} ${med.form}`,
   };
 }
 
@@ -283,7 +319,7 @@ export async function scheduleMedicationNotifications() {
     med.times.forEach(timeStr => {
       const isToday = nextDate.toDateString() === now.toDateString();
       const allTaken = isToday && takenToday.has(`${med.id}|${timeStr}`);
-      const { title, body } = getNotificationBody([med], isArabic);
+      const { title, body } = getScheduledDoseText(med, isArabic);
       const id = stableId(med.id, timeStr);
       if (isToday) {
         scheduleEntry(id, timeStr, title, body, allTaken);
@@ -448,22 +484,28 @@ export async function scheduleMedicationNotifications() {
       });
     }
 
-    // 2 hours before
-    const twoHoursBefore = new Date(apptDate.getTime() - 2 * 60 * 60 * 1000);
-    if (twoHoursBefore.getTime() > now.getTime()) {
-      const hourId = stableId(appt.id, '2h-before');
-      scheduledIds.push(hourId);
-      const doctorInfo = appt.doctorName ? (isArabic ? ` - د. ${appt.doctorName}` : ` - Dr. ${appt.doctorName}`) : '';
-      notifications.push({
-        id: hourId,
-        title: isArabic ? '📅 موعدك بعد ساعتين' : '📅 Appointment in 2 Hours',
-        body: isArabic
-          ? `موعد ${appt.specialty}${doctorInfo} الساعة ${appt.time}`
-          : `${appt.specialty}${doctorInfo} appointment at ${appt.time}`,
-        schedule: { at: twoHoursBefore, allowWhileIdle: true },
-        sound: 'default',
-        smallIcon: 'ic_stat_dawaa',
-      });
+    // User-chosen reminder (e.g. at time / 15 / 30 / 60 / 120 minutes before).
+    // Skipped when the choice is "1 day" since the day-before reminder above
+    // already covers it.
+    const chosenMinutes = parseApptReminderMinutes(appt.reminderBefore || '120 minutes');
+    if (chosenMinutes !== 1440) {
+      const chosenBefore = new Date(apptDate.getTime() - chosenMinutes * 60 * 1000);
+      if (chosenBefore.getTime() > now.getTime()) {
+        const chosenId = stableId(appt.id, 'chosen-before');
+        scheduledIds.push(chosenId);
+        const doctorInfo = appt.doctorName ? (isArabic ? ` - د. ${appt.doctorName}` : ` - Dr. ${appt.doctorName}`) : '';
+        const offsetLabel = getApptOffsetLabel(chosenMinutes, isArabic);
+        notifications.push({
+          id: chosenId,
+          title: isArabic ? `📅 موعدك ${offsetLabel}` : `📅 Appointment ${offsetLabel}`,
+          body: isArabic
+            ? `موعد ${appt.specialty}${doctorInfo} الساعة ${appt.time}`
+            : `${appt.specialty}${doctorInfo} appointment at ${appt.time}`,
+          schedule: { at: chosenBefore, allowWhileIdle: true },
+          sound: 'default',
+          smallIcon: 'ic_stat_dawaa',
+        });
+      }
     }
   });
 
