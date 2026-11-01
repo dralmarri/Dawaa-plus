@@ -6,7 +6,7 @@ The project has two lines of development:
 | Branch | Who it's for | Contains |
 |---|---|---|
 | `main` | **The store** (App Store / all users) | The public app only |
-| `personal-healthkit` | **The owner's own iPhone only** | Everything in `main` + Apple Health import (BP, pulse, sugar), the "النشاط والقلب" page (steps, workouts, ECG), the local Swift `EcgPlugin` |
+| `personal-healthkit` | **The owner's own iPhone only** | Currently **identical to `main`**: all Apple Health features (BP/pulse/sugar import, the "النشاط والقلب" page, `EcgPlugin`, `PedometerPlugin`) were removed at the owner's request (Nov 2026). Keep merging `main` into it. |
 
 **Before starting ANY requested change to the app, ask the user (in Arabic) unless they already said:**
 
