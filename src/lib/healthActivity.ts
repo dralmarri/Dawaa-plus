@@ -122,17 +122,63 @@ const unionMinutes = (intervals: [number, number][]) => {
   return Math.round(total / 60000);
 };
 
-/**
- * Sleep for the last `nights` nights (oldest first, last night last).
- * Several apps (watch, iPhone, Google Health) may record the same night, so per
- * night we use the single source that recorded the most sleep.
- */
+/** A daytime / evening sleep separate from the main night's sleep. */
+export interface Nap {
+  start: Date;
+  end: Date;
+  minutes: number;
+  source?: string;
+}
+
+export interface SleepData {
+  /** Main night sleep per night, oldest first (last night last). */
+  nights: NightSleep[];
+  /** Naps in the same period, newest first. */
+  naps: Nap[];
+}
+
 /** Diagnostics for the empty sleep state (what HealthKit actually returned). */
 export const sleepDebug: { raw: number; states: Record<string, number>; sources: string[]; error?: string } = {
   raw: 0, states: {}, sources: [],
 };
 
-export async function loadSleep(nights = 7): Promise<NightSleep[]> {
+/** Asleep periods further apart than this are separate sleeps (night vs nap). */
+const SESSION_GAP_MS = 60 * 60 * 1000;
+/** Ignore tiny fragments (e.g. a few dozing minutes) as naps. */
+const MIN_NAP_MINUTES = 10;
+
+type Session = { start: number; end: number; minutes: number };
+
+/** Group asleep intervals into sessions separated by gaps of at least SESSION_GAP_MS. */
+const toSessions = (intervals: [number, number][]): Session[] => {
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0]);
+  const groups: [number, number][][] = [];
+  let groupEnd = -Infinity;
+  for (const iv of sorted) {
+    if (!groups.length || iv[0] - groupEnd >= SESSION_GAP_MS) groups.push([]);
+    groups[groups.length - 1].push(iv);
+    groupEnd = Math.max(groupEnd, iv[1]);
+  }
+  return groups.map((g) => ({
+    start: Math.min(...g.map((iv) => iv[0])),
+    end: Math.max(...g.map((iv) => iv[1])),
+    minutes: unionMinutes(g),
+  }));
+};
+
+/** A short sleep that started during the day (lone afternoon nap with no night sleep). */
+const looksLikeNap = (sess: Session) => {
+  const h = new Date(sess.start).getHours();
+  return sess.minutes < 180 && h >= 9 && h < 20;
+};
+
+/**
+ * Sleep for the last `nights` nights, with naps split out.
+ * Several apps (watch, iPhone, Google Health) may record the same night, so per
+ * night we use the single source that recorded the most sleep. Within it, the
+ * longest continuous sleep is the night; other separate sleeps are naps.
+ */
+export async function loadSleep(nights = 7): Promise<SleepData> {
   try {
     return await loadSleepInner(nights);
   } catch (e) {
@@ -141,7 +187,7 @@ export async function loadSleep(nights = 7): Promise<NightSleep[]> {
   }
 }
 
-async function loadSleepInner(nights: number): Promise<NightSleep[]> {
+async function loadSleepInner(nights: number): Promise<SleepData> {
   sleepDebug.raw = 0; sleepDebug.states = {}; sleepDebug.sources = []; sleepDebug.error = undefined;
   const today = startOfDay(new Date());
   const from = new Date(today);
@@ -156,7 +202,7 @@ async function loadSleepInner(nights: number): Promise<NightSleep[]> {
   });
 
   // Night key: a segment starting before noon belongs to that morning;
-  // one starting in the evening belongs to the next morning.
+  // one starting in the afternoon/evening belongs to the next morning.
   const nightKey = (start: Date) => startOfDay(new Date(start.getTime() + 12 * 60 * 60 * 1000)).toDateString();
 
   sleepDebug.raw = samples?.length ?? 0;
@@ -178,38 +224,67 @@ async function loadSleepInner(nights: number): Promise<NightSleep[]> {
     m.get(src)!.push(s);
   }
 
-  return Array.from({ length: nights }, (_, i) => {
+  const naps: Nap[] = [];
+  const emptyNight = (date: Date): NightSleep => ({
+    date, asleepMinutes: 0, hasStages: false,
+    stages: { deep: 0, light: 0, rem: 0, asleep: 0, awake: 0 },
+  });
+
+  // One extra key (tomorrow) so naps taken this afternoon are included.
+  const result: NightSleep[] = [];
+  for (let i = 0; i <= nights; i++) {
     const date = new Date(today);
     date.setDate(today.getDate() - (nights - 1 - i));
-    const empty: NightSleep = {
-      date, asleepMinutes: 0, hasStages: false,
-      stages: { deep: 0, light: 0, rem: 0, asleep: 0, awake: 0 },
-    };
     const sources = byNight.get(date.toDateString());
-    if (!sources) return empty;
+    let night = emptyNight(date);
 
-    let best: NightSleep = empty;
-    for (const [src, segs] of sources) {
-      const asleepSegs = segs.filter((x) => ASLEEP_STATES.has(x.sleepState!));
-      const intervals = asleepSegs.map((x) => [new Date(x.startDate).getTime(), new Date(x.endDate).getTime()] as [number, number]);
-      const asleepMinutes = unionMinutes(intervals);
-      if (asleepMinutes <= best.asleepMinutes) continue;
-      const stages: Record<StageKey, number> = { deep: 0, light: 0, rem: 0, asleep: 0, awake: 0 };
-      for (const x of segs) stages[x.sleepState as StageKey] += Math.round(x.value);
-      const starts = intervals.map((iv) => iv[0]);
-      const ends = intervals.map((iv) => iv[1]);
-      best = {
-        date,
-        asleepMinutes,
-        stages,
-        hasStages: stages.deep + stages.light + stages.rem > 0,
-        bedtime: starts.length ? new Date(Math.min(...starts)) : undefined,
-        wake: ends.length ? new Date(Math.max(...ends)) : undefined,
-        source: src,
-      };
+    if (sources) {
+      // Pick the source with the most total sleep for this night.
+      let bestSrc = "";
+      let bestTotal = 0;
+      for (const [src, segs] of sources) {
+        const total = unionMinutes(
+          segs.filter((x) => ASLEEP_STATES.has(x.sleepState!))
+            .map((x) => [new Date(x.startDate).getTime(), new Date(x.endDate).getTime()] as [number, number]));
+        if (total > bestTotal) { bestTotal = total; bestSrc = src; }
+      }
+
+      if (bestSrc) {
+        const segs = sources.get(bestSrc)!;
+        const intervals = segs.filter((x) => ASLEEP_STATES.has(x.sleepState!))
+          .map((x) => [new Date(x.startDate).getTime(), new Date(x.endDate).getTime()] as [number, number]);
+        const sessions = toSessions(intervals);
+        const longest = sessions.reduce((a, b) => (b.minutes > a.minutes ? b : a));
+        const main = looksLikeNap(longest) ? null : longest;
+
+        for (const sess of sessions) {
+          if (sess === main || sess.minutes < MIN_NAP_MINUTES) continue;
+          naps.push({ start: new Date(sess.start), end: new Date(sess.end), minutes: sess.minutes, source: bestSrc });
+        }
+
+        if (main) {
+          const stages: Record<StageKey, number> = { deep: 0, light: 0, rem: 0, asleep: 0, awake: 0 };
+          for (const x of segs) {
+            const t = new Date(x.startDate).getTime();
+            if (t >= main.start && t < main.end) stages[x.sleepState as StageKey] += Math.round(x.value);
+          }
+          night = {
+            date,
+            asleepMinutes: main.minutes,
+            stages,
+            hasStages: stages.deep + stages.light + stages.rem > 0,
+            bedtime: new Date(main.start),
+            wake: new Date(main.end),
+            source: bestSrc,
+          };
+        }
+      }
     }
-    return best;
-  });
+    if (i < nights) result.push(night);
+  }
+
+  naps.sort((a, b) => b.start.getTime() - a.start.getTime());
+  return { nights: result, naps };
 }
 
 // ── Vitals (SpO2, resting HR, weight) ──────────────────────────────

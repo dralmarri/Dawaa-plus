@@ -7,7 +7,7 @@ import { createPortal } from "react-dom";
 import { App as CapApp } from "@capacitor/app";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
-import { Footprints, Dumbbell, HeartPulse, RefreshCw, X, Flame, Timer, Route, AlertTriangle, Loader2, Moon, Gauge, Wind, Heart, Scale } from "lucide-react";
+import { Footprints, Dumbbell, HeartPulse, RefreshCw, X, Flame, Timer, Route, AlertTriangle, Loader2, Moon, Sun, Gauge, Wind, Heart, Scale } from "lucide-react";
 import type { Workout } from "@capgo/capacitor-health";
 import PageHeader from "@/components/PageHeader";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -15,7 +15,7 @@ import { isHealthImportSupported } from "@/lib/healthImport";
 import { formatTime12 } from "@/lib/time";
 import {
   Ecg, sleepDebug, loadDailySteps, loadWorkouts, loadSleep, loadVitals, requestActivityAuthorization, workoutName,
-  type DaySteps, type EcgSummary, type EcgClassification, type NightSleep, type VitalPoint, type StageKey,
+  type DaySteps, type EcgSummary, type EcgClassification, type NightSleep, type Nap, type VitalPoint, type StageKey,
 } from "@/lib/healthActivity";
 
 type Tab = "steps" | "sleep" | "workouts" | "vitals" | "ecg";
@@ -70,6 +70,7 @@ const ActivityPage = () => {
   const [steps, setSteps] = useState<DaySteps[] | null>(null);
   const [workouts, setWorkouts] = useState<Workout[] | null>(null);
   const [sleep, setSleep] = useState<NightSleep[] | null>(null);
+  const [naps, setNaps] = useState<Nap[]>([]);
   const [vitals, setVitals] = useState<{ spo2: VitalPoint[]; restingHr: VitalPoint[]; weight: VitalPoint[] } | null>(null);
   const [ecgs, setEcgs] = useState<EcgSummary[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -89,12 +90,13 @@ const ActivityPage = () => {
       const [s, w, sl, v] = await Promise.all([
         loadDailySteps(7),
         loadWorkouts(30),
-        loadSleep(7).catch(() => [] as NightSleep[]),
+        loadSleep(7).catch(() => ({ nights: [] as NightSleep[], naps: [] as Nap[] })),
         loadVitals(30),
       ]);
       setSteps(s);
       setWorkouts(w);
-      setSleep(sl);
+      setSleep(sl.nights);
+      setNaps(sl.naps);
       setVitals(v);
     } catch {
       if (!silent) setError(true);
@@ -248,6 +250,32 @@ const ActivityPage = () => {
   const renderSleep = () => {
     if (!sleep) return null;
     const withData = sleep.filter((n) => n.asleepMinutes > 0);
+    const napsCard = naps.length > 0 && (
+      <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/15 flex items-center justify-center">
+            <Sun className="w-5 h-5 text-amber-500" />
+          </div>
+          <h3 className="font-bold text-foreground">{isRTL ? "القيلولة" : "Naps"}</h3>
+        </div>
+        <div className="divide-y divide-border">
+          {naps.map((n) => (
+            <div key={n.start.toISOString()} className="flex items-center justify-between py-2.5">
+              <div>
+                <p className="text-sm font-medium text-foreground">
+                  {format(n.start, isRTL ? "EEEE d MMMM" : "EEE, MMM d", { locale: isRTL ? ar : undefined })}
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {formatTime12(timeOf(n.start), isRTL)} ← {formatTime12(timeOf(n.end), isRTL)}
+                </p>
+              </div>
+              <span className="font-bold text-foreground whitespace-nowrap">{hm(n.minutes)}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+    if (withData.length === 0 && naps.length > 0) return <div className="space-y-4">{napsCard}</div>;
     if (withData.length === 0) {
       return (
         <div className="bg-card rounded-3xl p-8 border border-border text-center">
@@ -279,7 +307,7 @@ const ActivityPage = () => {
       <div className="space-y-4">
         <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
           <p className="text-sm text-muted-foreground">
-            {isRTL ? "آخر ليلة" : "Last night"} · {format(last.date, isRTL ? "EEEE d MMMM" : "EEE, MMM d", { locale: isRTL ? ar : undefined })}
+            {isRTL ? "نوم آخر ليلة" : "Last night"} · {format(last.date, isRTL ? "EEEE d MMMM" : "EEE, MMM d", { locale: isRTL ? ar : undefined })}
           </p>
           <p className="text-4xl font-bold text-foreground mt-1">{hm(last.asleepMinutes)}</p>
           {last.bedtime && last.wake && (
@@ -307,6 +335,8 @@ const ActivityPage = () => {
           )}
           {last.source && <p className="text-[10px] text-muted-foreground mt-4">{isRTL ? "المصدر" : "Source"}: {last.source}</p>}
         </div>
+
+        {napsCard}
 
         <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
           <div className="flex items-baseline justify-between mb-5">
