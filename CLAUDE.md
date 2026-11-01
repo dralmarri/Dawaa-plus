@@ -6,7 +6,7 @@ The project has two lines of development:
 | Branch | Who it's for | Contains |
 |---|---|---|
 | `main` | **The store** (App Store / all users) | The public app only |
-| `personal-healthkit` | **The owner's own iPhone only** | Everything in `main` + Apple Health import (BP, pulse, sugar). (The "النشاط والقلب" activity page was removed at the owner's request.) |
+| `personal-healthkit` | **The owner's own iPhone only** | Everything in `main` + Apple Health import (BP, pulse, sugar), the "النشاط والقلب" page (steps, workouts, ECG), the local Swift `EcgPlugin` |
 
 **Before starting ANY requested change to the app, ask the user (in Arabic) unless they already said:**
 
@@ -17,7 +17,7 @@ Then act accordingly:
 - **For the store (`main`)**
   1. Work on `main`; build, commit, push `origin main`.
   2. Then bring it into the personal branch too: `git checkout personal-healthkit && git merge main`, resolve conflicts, build, push `origin personal-healthkit`, and return to `main`.
-  3. Never add HealthKit to `main`: no `@capgo/capacitor-health`, no `App.entitlements`/`CODE_SIGN_ENTITLEMENTS`, no `NSHealth*` Info.plist keys, no `EcgPlugin`/`DawaaBridgeViewController`/`PedometerPlugin`, no `/activity` page. App Store review rejects binaries that link HealthKit without justification.
+  3. Never add HealthKit to `main`: no `@capgo/capacitor-health`, no `App.entitlements`/`CODE_SIGN_ENTITLEMENTS`, no `NSHealth*` Info.plist keys, no `EcgPlugin`/`DawaaBridgeViewController`, no `/activity` page. App Store review rejects binaries that link HealthKit without justification.
 - **For the owner only (`personal-healthkit`)**
   1. Work on `personal-healthkit` only; build, commit, push `origin personal-healthkit`.
   2. **Never merge this branch into `main`.**

@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Droplet, Trash2, Plus, RefreshCw } from "lucide-react";
-import { importFromAppleHealth, isHealthImportSupported } from "@/lib/healthImport";
+import { Droplet, Trash2, Plus } from "lucide-react";
 import { format } from "date-fns";
 import { store } from "@/lib/store";
 import PageHeader from "@/components/PageHeader";
@@ -24,26 +23,6 @@ const BloodSugarPage = () => {
   const [readings, setReadings] = useState<BloodSugarReading[]>(store.getBloodSugarReadings());
   const [showForm, setShowForm] = useState(readings.length === 0);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  // ── Personal build: import from Apple Health ──────────────────
-  const [importing, setImporting] = useState(false);
-  const runHealthImport = async (silent: boolean) => {
-    if (!isHealthImportSupported() || importing) return;
-    setImporting(true);
-    const res = await importFromAppleHealth();
-    setImporting(false);
-    const next = store.getBloodSugarReadings();
-    setReadings(next);
-    if (res.ok && res.sugar > 0) {
-      if (next.length > 0) setShowForm(false);
-      toast.success(isRTL ? `تم استيراد ${res.sugar} قراءة سكر من تطبيق صحة` : `Imported ${res.sugar} sugar readings from Health`);
-    } else if (!silent) {
-      toast[res.ok ? "info" : "error"](res.ok
-        ? (isRTL ? "لا توجد قراءات جديدة في تطبيق صحة" : "No new readings in Health")
-        : (isRTL ? "تعذر الاستيراد من تطبيق صحة" : "Could not import from Health"));
-    }
-  };
-  useEffect(() => { runHealthImport(true); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const [value, setValue] = useState<number>(110);
   const [period, setPeriod] = useState<BloodSugarReading["period"]>("Fasting");
@@ -121,19 +100,6 @@ const BloodSugarPage = () => {
   return (
     <div className="pb-28 pt-header overflow-x-hidden">
       <PageHeader title={isRTL ? "قياس السكر" : "Blood Sugar"} showBack onAdd={openAdd} />
-
-      {isHealthImportSupported() && (
-        <div className="px-4 mt-4">
-          <button
-            onClick={() => runHealthImport(false)}
-            disabled={importing}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl border border-primary/30 bg-primary/5 text-primary font-semibold text-sm disabled:opacity-60"
-          >
-            <RefreshCw className={`w-4 h-4 ${importing ? "animate-spin" : ""}`} />
-            {importing ? (isRTL ? "جارٍ الاستيراد..." : "Importing...") : (isRTL ? "استيراد من تطبيق صحة" : "Import from Apple Health")}
-          </button>
-        </div>
-      )}
 
       {showForm && (
         <div className="mx-4 mt-4 bg-card rounded-3xl border-2 border-primary/30 p-5 space-y-4 shadow-sm">
