@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
-import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, Droplet, Activity } from "lucide-react";
-import { isHealthImportSupported } from "@/lib/healthImport";
+import { Pill, Heart, CalendarDays, FlaskConical, Plus, Check, X, AlertTriangle, Clock, FileText, Bell, Sunrise, Sun, Moon, Droplet } from "lucide-react";
 import { store } from "@/lib/store";
 import { generateTodayDoses, markDoseTaken, markDoseMissed, undoDose } from "@/lib/dose-tracker";
 import { format } from "date-fns";
@@ -100,10 +99,6 @@ const HomePage = () => {
     { label: isRTL ? "قياس السكر" : "Blood Sugar", icon: Droplet, path: "/blood-sugar", color: "text-warning" },
     { label: t.appointments, icon: CalendarDays, path: "/appointments", color: "text-warning" },
     { label: isRTL ? "التقارير الصحية" : "Health Reports", icon: FileText, path: "/reports", color: "text-primary" },
-    // Personal build only: Apple Health activity, workouts and ECG
-    ...(isHealthImportSupported()
-      ? [{ label: isRTL ? "النشاط والقلب" : "Activity & Heart", icon: Activity, path: "/activity", color: "text-heart", wide: true }]
-      : []),
   ];
 
   // Group doses by scheduled time
@@ -267,7 +262,7 @@ const HomePage = () => {
           <button
             key={link.path}
             onClick={() => navigate(link.path)}
-            className={`bg-card rounded-2xl p-5 flex flex-col items-center gap-2 border border-border hover:border-primary/30 transition-colors ${"wide" in link && link.wide ? "col-span-2" : ""}`}
+            className="bg-card rounded-2xl p-5 flex flex-col items-center gap-2 border border-border hover:border-primary/30 transition-colors"
           >
             <link.icon className={`w-7 h-7 ${link.color}`} />
             <span className="text-sm font-semibold text-foreground">{link.label}</span>
