@@ -227,7 +227,20 @@ const ActivityPage = () => {
             )}
           </div>
           <p className="text-4xl font-bold text-foreground mt-1">{today.toLocaleString("en-US")}</p>
-          <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
+          <div className="grid grid-cols-2 gap-2 mt-4">
+            <div className={`rounded-xl px-3 py-2 ${!isLive ? "bg-primary/10" : "bg-muted"}`}>
+              <p className="text-[10px] text-muted-foreground">{isRTL ? "صحة (الساعات + الآيفون)" : "Apple Health (watches + iPhone)"}</p>
+              <p className="text-sm font-bold text-foreground">{healthToday.toLocaleString("en-US")}</p>
+            </div>
+            <div className={`rounded-xl px-3 py-2 ${isLive ? "bg-primary/10" : "bg-muted"}`}>
+              <p className="text-[10px] text-muted-foreground">{isRTL ? "مستشعر الآيفون (مباشر)" : "iPhone sensor (live)"}</p>
+              <p className="text-sm font-bold text-foreground">{liveSteps !== null ? liveSteps.toLocaleString("en-US") : "—"}</p>
+            </div>
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            {isRTL ? "يُعرض الرقم الأعلى بين المصدرين" : "The higher of the two is shown"}
+          </p>
+          <div className="mt-3 h-2 bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
