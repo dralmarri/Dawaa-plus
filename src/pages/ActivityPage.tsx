@@ -14,7 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { isHealthImportSupported } from "@/lib/healthImport";
 import { formatTime12 } from "@/lib/time";
 import {
-  Ecg, sleepDebug, loadDailySteps, loadWorkouts, loadSleep, loadVitals, requestActivityAuthorization, workoutName,
+  Ecg, Pedometer, sleepDebug, loadDailySteps, loadWorkouts, loadSleep, loadVitals, requestActivityAuthorization, workoutName,
   type DaySteps, type EcgSummary, type EcgClassification, type NightSleep, type Nap, type VitalPoint, type StageKey,
 } from "@/lib/healthActivity";
 
@@ -71,6 +71,8 @@ const ActivityPage = () => {
   const [workouts, setWorkouts] = useState<Workout[] | null>(null);
   const [sleep, setSleep] = useState<NightSleep[] | null>(null);
   const [naps, setNaps] = useState<Nap[]>([]);
+  // Today's steps straight from the iPhone motion sensor (updates while walking).
+  const [liveSteps, setLiveSteps] = useState<number | null>(null);
   const [vitals, setVitals] = useState<{ spo2: VitalPoint[]; restingHr: VitalPoint[]; weight: VitalPoint[] } | null>(null);
   const [ecgs, setEcgs] = useState<EcgSummary[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -140,6 +142,25 @@ const ActivityPage = () => {
     };
   }, [tab, supported, loadActivity]);
 
+  // Live iPhone step count: start on mount and again whenever the app comes back
+  // to the foreground (so the count resets correctly after midnight).
+  useEffect(() => {
+    if (!supported) return;
+    let cancelled = false;
+    const start = () => Pedometer.start()
+      .then(({ steps: n }) => { if (!cancelled) setLiveSteps(n); })
+      .catch(() => {});
+    start();
+    const stepsSub = Pedometer.addListener("steps", ({ steps: n }) => { if (!cancelled) setLiveSteps(n); });
+    const appSub = CapApp.addListener("appStateChange", ({ isActive }) => { if (isActive) start(); });
+    return () => {
+      cancelled = true;
+      Pedometer.stop().catch(() => {});
+      stepsSub.then((h) => h.remove()).catch(() => {});
+      appSub.then((h) => h.remove()).catch(() => {});
+    };
+  }, [supported]);
+
   const refresh = () => (tab === "ecg" ? loadEcgs() : loadActivity());
 
   const openRecording = async (e: EcgSummary) => {
@@ -184,14 +205,27 @@ const ActivityPage = () => {
   // ── Steps view ─────────────────────────────────────────────────
   const renderSteps = () => {
     if (!steps) return null;
-    const today = steps[steps.length - 1]?.steps ?? 0;
-    const avg = Math.round(steps.reduce((s, d) => s + d.steps, 0) / steps.length);
-    const max = Math.max(STEP_GOAL, ...steps.map((d) => d.steps));
+    // Apple Health total (watch + iPhone, de-duplicated) can lag behind the live
+    // iPhone count, so show whichever is higher for today.
+    const healthToday = steps[steps.length - 1]?.steps ?? 0;
+    const isLive = liveSteps !== null && liveSteps > healthToday;
+    const today = isLive ? liveSteps : healthToday;
+    const days = steps.map((d, i) => (i === steps.length - 1 ? { ...d, steps: today } : d));
+    const avg = Math.round(days.reduce((s, d) => s + d.steps, 0) / days.length);
+    const max = Math.max(STEP_GOAL, ...days.map((d) => d.steps));
     const pct = Math.min(100, Math.round((today / STEP_GOAL) * 100));
     return (
       <div className="space-y-4">
         <div className="bg-card rounded-3xl p-6 border border-border shadow-sm">
-          <p className="text-sm text-muted-foreground">{isRTL ? "خطوات اليوم" : "Steps today"}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{isRTL ? "خطوات اليوم" : "Steps today"}</p>
+            {isLive && (
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold text-primary bg-primary/10 rounded-full px-2.5 py-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                {isRTL ? "مباشر من الآيفون" : "Live from iPhone"}
+              </span>
+            )}
+          </div>
           <p className="text-4xl font-bold text-foreground mt-1">{today.toLocaleString("en-US")}</p>
           <div className="mt-4 h-2 bg-muted rounded-full overflow-hidden">
             <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
@@ -210,8 +244,8 @@ const ActivityPage = () => {
             </span>
           </div>
           <div className="flex items-end justify-between gap-2 h-40">
-            {steps.map((d, i) => {
-              const isToday = i === steps.length - 1;
+            {days.map((d, i) => {
+              const isToday = i === days.length - 1;
               return (
                 <div key={d.date.toISOString()} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
                   <span className="text-[10px] text-muted-foreground">

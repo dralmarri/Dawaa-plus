@@ -1,6 +1,7 @@
 import UIKit
 import Capacitor
 import HealthKit
+import CoreMotion
 
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -182,9 +183,51 @@ public class EcgPlugin: CAPPlugin, CAPBridgedPlugin {
     }
 }
 
-/// Bridge view controller that registers the local ECG plugin.
+// MARK: - PERSONAL BUILD ONLY — live step count from the iPhone's motion
+// coprocessor (CoreMotion). Apple Health only receives iPhone steps in batches,
+// so this gives today's count as you walk.
+
+@objc(PedometerPlugin)
+public class PedometerPlugin: CAPPlugin, CAPBridgedPlugin {
+    public let identifier = "PedometerPlugin"
+    public let jsName = "Pedometer"
+    public let pluginMethods: [CAPPluginMethod] = [
+        CAPPluginMethod(name: "start", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "stop", returnType: CAPPluginReturnPromise)
+    ]
+    private let pedometer = CMPedometer()
+
+    /// Resolves with today's steps so far, then emits "steps" events while walking.
+    @objc func start(_ call: CAPPluginCall) {
+        guard CMPedometer.isStepCountingAvailable() else {
+            call.reject("Step counting is not available on this device")
+            return
+        }
+        let from = Calendar.current.startOfDay(for: Date())
+        pedometer.stopUpdates()
+        pedometer.queryPedometerData(from: from, to: Date()) { [weak self] data, error in
+            if let error = error {
+                call.reject(error.localizedDescription)
+                return
+            }
+            call.resolve(["steps": data?.numberOfSteps.intValue ?? 0])
+            self?.pedometer.startUpdates(from: from) { data, _ in
+                guard let data = data else { return }
+                self?.notifyListeners("steps", data: ["steps": data.numberOfSteps.intValue])
+            }
+        }
+    }
+
+    @objc func stop(_ call: CAPPluginCall) {
+        pedometer.stopUpdates()
+        call.resolve()
+    }
+}
+
+/// Bridge view controller that registers the local personal-build plugins.
 class DawaaBridgeViewController: CAPBridgeViewController {
     override func capacitorDidLoad() {
         bridge?.registerPluginInstance(EcgPlugin())
+        bridge?.registerPluginInstance(PedometerPlugin())
     }
 }

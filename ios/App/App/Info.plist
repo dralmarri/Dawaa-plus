@@ -58,6 +58,8 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSMotionUsageDescription</key>
+	<string>يقرأ دواء+ خطواتك من مستشعر الحركة في الآيفون لعرضها مباشرة أثناء المشي.</string>
 	<key>NSHealthShareUsageDescription</key>
 	<string>يقرأ دواء+ من تطبيق صحة قراءات ضغط الدم والنبض والسكر والخطوات والتمارين والنوم والأكسجين والوزن وتخطيط القلب لعرضها في سجلك.</string>
 	<key>NSHealthUpdateUsageDescription</key>

@@ -36,6 +36,14 @@ interface EcgPlugin {
 
 export const Ecg = registerPlugin<EcgPlugin>("Ecg");
 
+// ── Live steps (local native plugin, iPhone motion sensor) ─────────
+interface PedometerPlugin {
+  start(): Promise<{ steps: number }>;
+  stop(): Promise<void>;
+  addListener(event: "steps", cb: (d: { steps: number }) => void): Promise<{ remove: () => Promise<void> }>;
+}
+export const Pedometer = registerPlugin<PedometerPlugin>("Pedometer");
+
 // ── Steps ──────────────────────────────────────────────────────────
 export interface DaySteps {
   date: Date;
